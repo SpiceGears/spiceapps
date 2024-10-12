@@ -3,7 +3,12 @@ import Image from "next/image"; // Importing the Image component from Next.js
 export default function Home() {
   return (
     // Main container to center the content vertically and horizontally
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+      <link rel="icon" href="/favicon.ico" sizes="any" />
+      {/* Logo at the top center */}
+      <div className="mb-8">
+        <Image src="/images/logo.png" alt="Logo" width={300} height={300} />
+      </div>
       {/* Container to hold both the Login and Register forms side by side */}
       <div className="flex space-x-5">
         {/* Register form container */}
