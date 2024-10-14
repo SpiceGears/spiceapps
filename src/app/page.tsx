@@ -7,7 +7,7 @@ export default function Home() {
       <link rel="icon" href="/favicon.ico" sizes="any" />
       {/* Logo at the top center */}
       <div className="mb-8">
-        <Image src="/images/logo.png" alt="Logo" width={300} height={300} />
+        <Image src="/images/logo.png" alt="Logo" width={300} height={300} priority={true}/>
       </div>
       {/* Container to hold both the Login and Register forms side by side */}
       <div className="flex space-x-5">
