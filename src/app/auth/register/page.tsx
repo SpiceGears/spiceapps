@@ -1,6 +1,6 @@
 import Image from "next/image"; // Importing the Image component from Next.js
 
-export default function Login() {
+export default function Register() {
   return (
     // Main container to center the content vertically and horizontally
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
