@@ -1,4 +1,5 @@
 import Image from "next/image"; // Importing the Image component from Next.js
+import Link from "next/link"; // Importing the Link component from Next.js
 
 export default function Login() {
   return (
@@ -51,7 +52,7 @@ export default function Login() {
         </form>
         {/* Link to register page */}
         <p className="mt-4 text-sm text-gray-600">
-        Nie masz konta? <a href="/auth/register" className="text-indigo-600 hover:text-indigo-500">Zarejestruj się</a>
+        Nie masz konta? <Link href="/auth/register" className="text-indigo-600 hover:text-indigo-500">Zarejestruj się</Link>
         </p>
       </div>
     </div>
