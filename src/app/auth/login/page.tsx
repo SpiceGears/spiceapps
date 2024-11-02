@@ -54,6 +54,9 @@ export default function Login() {
         <p className="mt-4 text-sm text-gray-600">
         Nie masz konta? <Link href="/auth/register" className="text-indigo-600 hover:text-indigo-500">Zarejestruj się</Link>
         </p>
+        <p className="mt-4 text-sm text-gray-600">
+        Zapomniałeś hasła? <Link href="/auth/forgotpass" className="text-indigo-600 hover:text-indigo-500">Zresetuj hasło</Link>
+        </p>
       </div>
     </div>
     </div>
