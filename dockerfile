@@ -1,18 +1,17 @@
 # Use Node.js 14 as base image
-FROM node:14-alpine
+FROM node:20-alpine
 
 # Create app directory
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY . .
+WORKDIR /app/spicelab
 
 # Install dependencies
 RUN npm install
 
 # Copy rest of the application
-COPY . .
-
 # Build the Next.js application
 RUN npm run build
 
