@@ -1,7 +1,30 @@
+'use client';
 import Image from "next/image"; // Importing the Image component from Next.js
 import Link from "next/link"; // Importing the Link component from Next.js
+import { useRef } from "react";
 
 export default function Login() {
+  const logine = useRef(null);
+  const password = useRef(null);
+  
+  
+  async function login() 
+  {
+    if (logine == null || password == null) return;
+
+
+    const response = await fetch('/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({login: logine.current.value, password: password.current.value})
+    });
+    console.log("wiadommosc", response)
+    localStorage.setItem("atok", JSON.parse(await response.json()).access_token)
+    localStorage.setItem("rtb", JSON.parse(await response.json()).refresh_token)
+  }
+  
   return (
     // Main container to center the content vertically and horizontally
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
@@ -27,6 +50,7 @@ export default function Login() {
             id="username"
             name="username"
             className="w-full px-3 py-2 mt-1 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
+            ref={logine}
           />
         </div>
         <div>
@@ -40,12 +64,14 @@ export default function Login() {
             name="password"
             className="w-full px-3 py-2 mt-1 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
             //style={{ WebkitTextSecurity: 'disc' }}
+            ref={password}
           />
         </div>
         {/* Login button */}
         <button
           type="submit"
           className="w-full px-4 py-2 font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          onClick={(e: any) => {e.preventDefault(); login()}}
         >
           Zaloguj się
         </button>
