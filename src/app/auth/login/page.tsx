@@ -12,17 +12,33 @@ export default function Login() {
   {
     if (logine == null || password == null) return;
 
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({login: logine.current.value, password: password.current.value})
+      });
 
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({login: logine.current.value, password: password.current.value})
-    });
-    console.log("wiadommosc", response)
-    localStorage.setItem("atok", JSON.parse(await response.json()).access_token)
-    localStorage.setItem("rtb", JSON.parse(await response.json()).refresh_token)
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+      console.log('Response data:', data);
+      console.log('Access Token:', data.access_Token);
+      console.log('Refresh Token:', data.refresh_Token);
+      if (data.access_Token && data.refresh_Token) {
+        localStorage.setItem("atok", data.access_Token);
+        localStorage.setItem("rtb", data.refresh_Token);
+      } else {
+        throw new Error('Invalid token data received');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      // Handle error appropriately (e.g., show error message to user)
+    }
   }
   
   return (
