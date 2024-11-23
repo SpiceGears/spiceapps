@@ -1,5 +1,7 @@
 'use server'
 
+import { env } from "process";
+
 export async function POST(request: Request) {
     if(request.method === 'POST') {
         console.log('Request Method:', request.method);
@@ -7,7 +9,7 @@ export async function POST(request: Request) {
         const body = await request.json();
         console.log('Request Body:', body);
         
-        const backend = "http://localhost:5086/";
+        const backend = process.env.BACKEND;
         console.log('Backend URL:', backend);
         
         try {

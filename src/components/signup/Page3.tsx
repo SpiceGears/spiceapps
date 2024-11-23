@@ -4,8 +4,11 @@ import { FormStepComponentType } from "./FormStepProps";
 import FormikSelect from "../formik/FormikSelect";
 import FormikTextField from "../formik/FormikTextField";
 import Image from "next/image";
+import { Suspense } from "react";
 
 const Page3: FormStepComponentType = (props) => {
+  
+  
   return (
     <div className="flex flex-col gap-4 w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
       <div className="flex justify-center mb-4">
@@ -39,7 +42,7 @@ const Page3: FormStepComponentType = (props) => {
         <Button onClick={props.onPrevious} className="flex-grow">
           Wróć
         </Button>
-        <Button type="submit" variant="contained">
+        <Button type="submit" variant="contained" >
           Stwórz konto
         </Button>
       </div>

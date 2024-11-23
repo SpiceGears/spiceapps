@@ -1,50 +1,142 @@
-'use client'
-// app/signup/page.tsx
-import Page1 from "@/components/signup/Page1";
-import Page2 from "@/components/signup/Page2";
-import Page3 from "@/components/signup/Page3";
-import SignUpForm from "@/components/signup/SignUpForm";
-import React from "react";
-import { Suspense } from "react";
-import { useRef } from "react";
-import { useRouter } from 'next/navigation';
+'use client';
+import { useState } from 'react';
+import styles from './register.module.css';
 
-export default function SignupPage(){
-  const router = useRouter();
-  const email = useRef<HTMLInputElement | null>(null);
-  const password = useRef<HTMLInputElement | null>(null);
-  const repeatPassword = useRef<HTMLInputElement | null>(null);
-  const name = useRef<HTMLInputElement | null>(null);
-  const surname = useRef<HTMLInputElement | null>(null);
-  const dateOfBirth = useRef<HTMLInputElement | null>(null);
-  const phoneNumber = useRef<HTMLInputElement | null>(null);
-  const department = useRef<HTMLSelectElement | null>(null);
-  async function register() 
-  {
-    if (email == null || password == null || repeatPassword == null || name == null || surname == null || dateOfBirth == null || phoneNumber == null || department == null) return;
+const RegisterPage = () => {
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    name: '',
+    surname: '',
+    dateOfBirth: '',
+    phoneNumber: '',
+    selection: ''
+  });
 
-    try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({email: email.current.value, password: password.current.value, repeatPassword: repeatPassword.current.value, name: name.current.value, surname: surname.current.value, dateOfBirth: dateOfBirth.current.value, phoneNumber: phoneNumber.current.value, department: department.current.value})
-      });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
-      if (!response.ok) {
-        throw new Error('Register failed');
-      }
+  const handleNext = () => {
+    setStep(prev => prev + 1);
+  };
 
-      const data = await response.json();
-    } catch (error) {
-      console.error('Register error:', error);
-      // Handle error appropriately (e.g., show error message to user)
-    }
-  }
+  const handlePrevious = () => {
+    setStep(prev => prev - 1);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle form submission here
+    console.log('Form submitted:', formData);
+  };
+
   return (
-    <div className="grid h-screen place-items-center bg-white">
-      <Suspense fallback={<></>}> <SignUpForm steps={[Page1, Page2, Page3]} /></Suspense>
+    <div className={styles.container}>
+      <form onSubmit={handleSubmit} className={styles.form}>
+        {step === 1 && (
+          <div className={styles.step}>
+            <h2>Step 1: Account Details</h2>
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleInputChange}
+              required
+            />
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleInputChange}
+              required
+            />
+            <input
+              type="password"
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+              required
+            />
+            <button type="button" onClick={handleNext}>Next</button>
+          </div>
+        )}
+
+        {step === 2 && (
+          <div className={styles.step}>
+            <h2>Step 2: Personal Information</h2>
+            <input
+              type="text"
+              name="name"
+              placeholder="Name"
+              value={formData.name}
+              onChange={handleInputChange}
+              required
+            />
+            <input
+              type="text"
+              name="surname"
+              placeholder="Surname"
+              value={formData.surname}
+              onChange={handleInputChange}
+              required
+            />
+            <input
+              type="date"
+              name="dateOfBirth"
+              value={formData.dateOfBirth}
+              onChange={handleInputChange}
+              required
+            />
+            <input
+              type="tel"
+              name="phoneNumber"
+              placeholder="Phone Number"
+              value={formData.phoneNumber}
+              onChange={handleInputChange}
+              required
+            />
+            <div className={styles.buttons}>
+              <button type="button" onClick={handlePrevious}>Previous</button>
+              <button type="button" onClick={handleNext}>Next</button>
+            </div>
+          </div>
+        )}
+
+        {step === 3 && (
+          <div className={styles.step}>
+            <h2>Step 3: Final Step</h2>
+            <select
+              name="selection"
+              value={formData.selection}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="">Select an option</option>
+              <option value="option1">Option 1</option>
+              <option value="option2">Option 2</option>
+              <option value="option3">Option 3</option>
+              <option value="option4">Option 4</option>
+              <option value="option5">Option 5</option>
+            </select>
+            <div className={styles.buttons}>
+              <button type="button" onClick={handlePrevious}>Previous</button>
+              <button type="submit">Submit</button>
+            </div>
+          </div>
+        )}
+      </form>
     </div>
   );
 };
+
+export default RegisterPage;</div></div>

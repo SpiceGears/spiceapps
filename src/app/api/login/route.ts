@@ -2,11 +2,9 @@
 // pages/api/login.js
 
 export async function POST(request: Request) {
-  if (request.method === 'POST') {
-    
     const body = await request.json();
     
-    const backend = "http://localhost:5086/";
+    const backend = "http://192.168.0.101:8080/";
   
     try {
       // Send POST request to another API using Fetch API
@@ -34,4 +32,3 @@ export async function POST(request: Request) {
       throw new Error(error);
     }
   }
-}
