@@ -20,14 +20,16 @@ const FormikSelect: React.FC<Props> = ({
 }) => {
   const [field, meta] = useField(name);
 
+  // Ensure there's always a defined value
+  const value = field.value ?? '';
   const error = Boolean(meta.touched && meta.error);
   const showHelperText = error || !!helperText;
   const id = props.id;
 
   return (
-    <FormControl fullWidth error={error} size={size}>
+    <FormControl error={error}>
       <InputLabel id={id + "-label"}>{props.label}</InputLabel>
-      <Select {...props} {...field} id={id} labelId={id + "-label"}>
+      <Select {...props} {...field} value={value} id={id} labelId={id + "-label"}>
         {children}
       </Select>
       {showHelperText && (

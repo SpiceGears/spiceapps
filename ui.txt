@@ -1,0 +1,11 @@
+topbar:
+(od lewej do prawej)
+- przycisk do wysuwania sidebaru
+- fajnie byłoby ogarnąć jakieś logo spicelaba
+- search bar to wyszukiwania różnych rzeczy
+- przycisk z powiadomieniami
+- przycisk ustawienia z ikoną 
+
+
+sidebar:
+- przycisk do dodania nowego projektu czy coś po prostu przycisk z plusem

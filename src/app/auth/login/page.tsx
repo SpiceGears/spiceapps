@@ -2,11 +2,12 @@
 import Image from "next/image"; // Importing the Image component from Next.js
 import Link from "next/link"; // Importing the Link component from Next.js
 import { useRef } from "react";
+import { useRouter } from 'next/navigation';
 
 export default function Login() {
   const logine = useRef(null);
   const password = useRef(null);
-  
+  const router = useRouter();
   
   async function login() 
   {
@@ -16,7 +17,7 @@ export default function Login() {
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({login: logine.current.value, password: password.current.value})
       });
@@ -26,12 +27,10 @@ export default function Login() {
       }
 
       const data = await response.json();
-      console.log('Response data:', data);
-      console.log('Access Token:', data.access_Token);
-      console.log('Refresh Token:', data.refresh_Token);
       if (data.access_Token && data.refresh_Token) {
         localStorage.setItem("atok", data.access_Token);
-        localStorage.setItem("rtb", data.refresh_Token);
+        localStorage.setItem("rtb", data.refresh_Token);  
+        router.push('/dashboard/project');
       } else {
         throw new Error('Invalid token data received');
       }

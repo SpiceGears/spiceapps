@@ -11,6 +11,7 @@ const FormikTextField = ({ name, ...props }: FormikTextFieldProps) => {
   const newProps: TexFieldConfig = {
     ...field,
     ...props,
+    value: field.value ?? '',
   };
 
   if (meta.error) {

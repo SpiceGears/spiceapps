@@ -7,7 +7,7 @@ export async function POST(request: Request) {
         const body = await request.json();
         console.log('Request Body:', body);
         
-        const backend = "http://localhost:5086";
+        const backend = "http://localhost:5086/";
         console.log('Backend URL:', backend);
         
         try {
@@ -17,7 +17,7 @@ export async function POST(request: Request) {
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ 'login': body.login, 'password': body.password })
+                body: JSON.stringify({'email': body.email, 'password': body.password, 'repeatPassword': body.repeatPassword, 'name': body.name, 'surname': body.surname, 'dateOfBirth': body.dateOfBirth, 'phoneNumber': body.phoneNumber, 'department': body.department})
             });
             console.log('Response:', response);
             
