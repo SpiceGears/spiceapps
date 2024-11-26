@@ -30,7 +30,7 @@ export default function Login() {
       if (data.access_Token && data.refresh_Token) {
         localStorage.setItem("atok", data.access_Token);
         localStorage.setItem("rtb", data.refresh_Token);  
-        router.push('/dashboard/project');
+        router.push('/dashboard/home');
       } else {
         throw new Error('Invalid token data received');
       }

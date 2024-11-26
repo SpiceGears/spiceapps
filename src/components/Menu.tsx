@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Menu() {
@@ -5,42 +6,43 @@ export default function Menu() {
         {
             title: "MENU",
             items: [
-                {
-                    title: "Home",
-                    link: "/dashboard/home",
-                },
-                {
-                    title: "Projects",
-                    link: "/dashboard/projects",
-                },
-                {
-                    title: "Profile",
-                    link: "/dashboard/profile",
-                },
+            {
+                label: "Home",
+                href: "/dashboard/home",
+            },
+            {
+                label: "Projects",
+                href: "/dashboard/projects",
+            },
+            {
+                label: "Profile",
+                href: "/dashboard/profile",
+            },
             ],
         },
         {
             title: "OTHER",
             items: [
-                {
-                    title: "Settings",
-                    link: "/dashboard/settings",
-                },
-                {
-                    title: "Logout",
-                    link: "/dashboard/logout",
-                },
+            {
+                label: "Settings",
+                href: "/dashboard/settings",
+            },
+            {
+                label: "Logout",
+                href: "/dashboard/logout",
+            },
             ],
         }
-    ]
+        ]
     return (
         <div className="">
             {menuItems.map((i) => (
-                <div className="" key={i.title}>
-                    <span>{i.title}</span>
+                <div className="flex flex-col gap-2" key={i.title}>
+                    <span className="hidden lg:block text-gray-400 font-light my-4">{i.title}</span>
                     {i.items.map((item) => (
-                        <Link href={item.link} key={item.title}>
-                            <span>{item.title}</span>
+                        <Link href={item.href} key={item.label}>
+                            <Image src="/icon.ico" alt="Logo" width={20} height={20} />
+                            <span>{item.label}</span>
                         </Link>
                     ))}
                 </div>
