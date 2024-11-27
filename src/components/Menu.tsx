@@ -50,19 +50,19 @@ export default function Menu() {
   return (
     <div className="">
       {menuItems.map((i) => (
-        <div className="flex flex-col gap-2" key={i.title}>
-          <span className="hidden lg:block text-gray-400 font-light my-4">
+        <div className="flex flex-col gap-2 pt-4" key={i.title}>
+          <span className="hidden lg:block text-gray-400 font-light my-4 pt-3">
             {i.title}
           </span>
           {i.items.map((item) => (
             <Link
               href={item.href}
               key={item.label}
-              className="flex items-center justify-center lg:justify-start gap-2 text-gray-500 py-1"
+              className="flex items-center justify-center lg:justify-start gap-2 text-gray-500 py-2"
             >
               <FontAwesomeIcon
                 icon={item.icon}
-                className="w-6 h-6 text-black"
+                className="w-6 h-6 text-[#0037A1]"
               />
               <span className="hidden lg:block text-sm">{item.label}</span>
             </Link>

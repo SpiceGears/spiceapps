@@ -11,6 +11,9 @@
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
+    "@fortawesome/fontawesome-svg-core": "^6.7.1",
+    "@fortawesome/free-solid-svg-icons": "^6.7.1",
+    "@fortawesome/react-fontawesome": "^0.2.2",
     "@mui/material": "^6.1.4",
     "formik": "^2.4.6",
     "next": "^14.2.15",
@@ -22,6 +25,7 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/react-fontawesome": "^1.6.8",
     "eslint": "^8",
     "eslint-config-next": "14.2.15",
     "postcss": "^8",

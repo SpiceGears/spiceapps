@@ -12,8 +12,7 @@ export default function DashboardLayout({
         <div className="h-screen flex">
             <div className="w-[14%] md:w-[8%] lg:w-[16%] xl:w[14%] p-4">
                 <Link href="/dashboard/home" className="flex items-center justify-center lg:justify-start gap-2">
-                    <Image src="/icon.ico" alt="icon" width={32} height={32} />
-                    <span className="hidden lg:block">SpiceLab</span>
+                    <Image src="/images/spicelab.png" alt="icon" width={120} height={30} />
                 </Link>
                 <Menu/>
             </div>
