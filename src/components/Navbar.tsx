@@ -26,6 +26,7 @@ export default function Navbar() {
                 </div>
                 <div className="flex flex-col">
                     <span className="text-xs leading-3 font-medium">Jan Kowalski</span>
+                    <span className="text-[13px] text-gray-500 text-right">0 SpiceCoins</span>
                 </div>
                 <Image src="/icons/avatar.png" alt="Avatar" width={40} height={40} className="rounded-full" />
             </div>

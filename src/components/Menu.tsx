@@ -50,8 +50,8 @@ export default function Menu() {
   return (
     <div className="">
       {menuItems.map((i) => (
-        <div className="flex flex-col gap-2" key={i.title}>
-          <span className="hidden lg:block text-gray-400 font-light my-4">
+        <div className="flex flex-col gap-2 py-3" key={i.title}>
+          <span className="hidden lg:block text-gray-400 font-light ">
             {i.title}
           </span>
           {i.items.map((item) => (
