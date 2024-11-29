@@ -1,9 +1,17 @@
+"use client"
 import { faBell, faMessage, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useUserData } from '../hooks/userData';
 
 export default function Navbar() {
+    const { userData, loading, error } = useUserData();
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error loading user data</div>;
+    if (!userData) return <div>No user data available</div>;
+
     return (
         <div className="flex items-center justify-between p-4 bg-gray-200 w-full h-16">
             <Link href="/dashboard/home" className="flex items-center h-full">
@@ -25,8 +33,8 @@ export default function Navbar() {
                     <FontAwesomeIcon icon={faBell} className="w-6 h-6 text-[#0037A1]" />
                 </div>
                 <div className="flex flex-col">
-                    <span className="text-xs leading-3 font-medium">Jan Kowalski</span>
-                    <span className="text-[13px] text-gray-500 text-right">0 SpiceCoins</span>
+                    <span className="text-xs leading-3 font-medium">{userData?.firstName} {userData?.lastName}</span>
+                    <span className="text-[13px] text-gray-500 text-right">{userData?.coins} SpiceCoins</span>
                 </div>
                 <Image src="/icons/avatar.png" alt="Avatar" width={40} height={40} className="rounded-full" />
             </div>
