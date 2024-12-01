@@ -17,7 +17,6 @@ export const metadata: Metadata = {
   title: "SpiceLab",
   description: "Aplikacja do zarządzania projektami SpiceGears",
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{

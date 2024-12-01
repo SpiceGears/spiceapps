@@ -20,7 +20,7 @@ export default function Menu() {
         },
         {
           label: "Projekty",
-          href: "/dashboard/projects",
+          href: "/dashboard/project",
           icon: faFolderOpen,
         },
         {

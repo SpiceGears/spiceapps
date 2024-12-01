@@ -1,24 +1,41 @@
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
-export default function Overview({}) {
+export default function Overview() {
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="flex justify-between items-center px-8 py-4 border-b border-gray-200 bg-white">
-                <h1 className="text-lg font-semibold text-gray-800">Testowy projekt</h1>
-                <button className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
-                    Dostosuj
-                </button>
-            </header>
-
-            <nav className="border-b border-gray-200 px-8 py-4 bg-white">
-                <div className="flex gap-6">
-                    <a href="#" className="text-gray-600 hover:text-blue-600">Przegląd</a>
-                    <a href="#" className="text-gray-600 hover:text-blue-600">Lista</a>
-                    <a href="#" className="text-gray-600 hover:text-blue-600">Tablica</a>
-                    <a href="#" className="text-gray-600 hover:text-blue-600">Oś czasu</a>
-                    <a href="#" className="text-gray-600 hover:text-blue-600">Panel</a>
+            {/* Header Section */}
+            <div className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200">
+                <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-blue-500 rounded"></div>
+                    <span className="text-lg font-semibold text-gray-800">SpiceLab</span>
                 </div>
-            </nav>
+                <div className="flex items-center gap-4">
+                    <button className="px-4 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700">
+                        Ustaw status
+                    </button>
+                </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex items-center px-6 py-2 bg-white border-b border-gray-200">
+                {['Przegląd', 'Lista', 'Tablica', 'Oś czasu', 'Panel', 'Gantt', 'Obciążenie'].map((tab) => (
+                    <button
+                        key={tab}
+                        className={`px-3 py-1 rounded-md ${
+                            tab === 'Przegląd'
+                                ? 'bg-gray-100 text-gray-800'
+                                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                        }`}
+                    >
+                        {tab}
+                    </button>
+                ))}
+                <button className="ml-auto text-gray-600 hover:text-gray-800">
+                    <FontAwesomeIcon icon={faPlus} className="w-4 h-4" />
+                </button>
+            </div>
 
             <div className="flex">
                 <main className="w-3/4 p-8">
@@ -75,19 +92,7 @@ export default function Overview({}) {
                         <h4 className="font-semibold mb-4">Historia projektu</h4>
                         <p className="mb-4">Zespół dołączył - 9 dni temu</p>
                         <p className="mb-4">Dołączyłeś - 9 dni temu</p>
-                        <p>Projekt utworzony przez - Michał Kulik</p>
-                    </div>
-
-                    <div className="mt-10">
-                        <h4 className="font-semibold mb-4 text-gray-800">Szybkie akcje</h4>
-                        <div className="flex flex-col gap-3">
-                            <button className="bg-white text-gray-700 px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50">
-                                Dodaj zadanie
-                            </button>
-                            <button className="bg-white text-gray-700 px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50">
-                                Ustawienia projektu
-                            </button>
-                        </div>
+                        <p>Projekt utworzony przez - Jan Kowalski</p>
                     </div>
                 </aside>
             </div>
