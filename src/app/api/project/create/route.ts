@@ -1,36 +1,53 @@
+// src/app/api/project/create/route.ts
 export async function POST(request: Request) {
     try {
-        const backend = process.env.BACKEND|| "http://localhost:8080/";
-
-        const atok = request.headers.get('Authorization');
-        
-        console.log('Received request:', request);
         const body = await request.json();
-        console.log('Request body:', body);
-        
+        const atok = request.headers.get('Authorization');
+        const backend = process.env.BACKEND || "http://localhost:8080/";
+
+        // Validate request body
+        if (!body.name || !body.description) {
+            return Response.json(
+                { error: 'Missing required fields' },
+                { status: 400 }
+            );
+        }
+
         const response = await fetch(`${backend}api/project/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `${atok}`,
+                'Authorization': `${atok}`
             },
-            body: JSON.stringify({ "name": body.name, "description": body.description, "department": body.department, "scopes": body.scopes })
+            body: JSON.stringify(body)
         });
-        if (response.status === 403) {
-            throw new Error('Forbidden: You do not have permission to access this resource.');
-        }
-        console.log(response.body)
 
-        console.log('Response status:', response.status);
         if (!response.ok) {
-            throw new Error(`Error: ${response.status}`);
+            const errorData = await response.text();
+            return Response.json(
+                { error: errorData || 'Failed to create project' },
+                { status: response.status }
+            );
         }
-        const data = await response.json();
-        console.log('Response data:', data);
-        return Response.json(data);
+
+        const data = await response.text();
+        
+        try {
+            // Try to parse as JSON if possible
+            const jsonData = JSON.parse(data);
+            return Response.json(jsonData);
+        } catch {
+            // If not JSON, return as text
+            return new Response(data, {
+                headers: { 'Content-Type': 'text/plain' }
+            });
+        }
+
     } catch (error: any) {
-        // Handle any errors
-        console.error('Error:', error);
-        throw new Error(error);
+        console.error('Project creation error:', error);
+        return Response.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        );
     }
 }
