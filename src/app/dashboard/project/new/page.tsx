@@ -38,9 +38,9 @@ export default function CreateProject() {
           'Authorization': `${atok}`
         },
         body: JSON.stringify({ 
-          name, 
-          description, 
-          scopes: department ? [department] : [] 
+          "name": name, 
+          "description": description, 
+          "scopes": department ? [department] : [] 
         })
       });
       if (!response.ok) {
