@@ -12,10 +12,10 @@ export async function POST(request: Request) {
         const response = await fetch(`${backend}api/auth/generateAccess`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `${rtb}`
+            'Content-Type': 'application/json',
+            'Authorization': `${rtb}`
             },
-            body: requestBody
+            body: JSON.stringify({ refreshToken: rtb })
         });
         
         console.log("Response status:", response.status);
@@ -26,10 +26,17 @@ export async function POST(request: Request) {
             throw new Error(`Error: ${response.status}`);
         }
         
-        const data = await response.json();
-        console.log("Response data:", data);
+        const text = await response.text();
+        console.log("Response text:", text);
         
-        return Response.json(data);
+        try {
+            const data = JSON.parse(text);
+            console.log("Response data:", data);
+            return Response.json(data);
+        } catch {
+            return new Response(text, { status: 200 });
+        }
+        
     } catch (error: any) {
         // Handle any errors
         console.error('Error:', error);
