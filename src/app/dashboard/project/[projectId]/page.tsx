@@ -1,19 +1,28 @@
 "use client"
-import Overview from '../../../../components/project/Overview';
-import List from '../../../../components/project/List';
+
+import { useState } from 'react';
+import Main from "../../../../components/project/Main";
 import { useProjectData } from '../../../../hooks/projectData';
 
-export default function Project({ params }: { params: { projectId: string } }){
+export default function Project({ params }: { params: { projectId: string } }) {
+    const [activeTab, setActiveTab] = useState('overview');
     const { projectData, loading, error } = useProjectData(params.projectId);
-    console.log(localStorage.getItem('atok'));
 
-    if (loading) return <div className="h-16 bg-white shadow-sm"></div>;
+    const handleTabChange = (tab: string) => {
+        setActiveTab(tab);
+    };
+
+    if (loading) return <div className="h-16 bg-white shadow-sm">loading...</div>;
     if (error) {
         return <div className="h-16 bg-white shadow-sm">Error</div>;
     }
     if (!projectData) return <div className="h-16 bg-white shadow-sm"></div>;
 
-    return(
-        <List />
-    )
+    return (
+        <Main
+            projectId={params.projectId}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+        />
+    );
 }
