@@ -151,10 +151,11 @@ export default function CreateProject() {
                                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                                 >
                                     <option value="">Wybierz wydział</option>
-                                    <option value="IT">IT</option>
-                                    <option value="HR">HR</option>
-                                    <option value="Marketing">Marketing</option>
-                                    <option value="Finance">Finanse</option>
+                                    <option value="programmers">Programiści</option>
+                                    <option value="mechanics">Mechanicy</option>
+                                    <option value="marketing">Marketing</option>
+                                    <option value="socialmedia">More Than Robots</option>
+                                    <option value="executive">Zarządzanie</option>
                                 </select>
                             </div>
                         </div>
