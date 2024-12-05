@@ -46,8 +46,12 @@ export default function ProjectView({ params }: { params: { projectId: string, t
           'Authorization': atok
         },
         body: JSON.stringify({
-          ...taskForm,
-          projectId: params.projectId
+          name: taskForm.name,
+          description: taskForm.description,
+          assignedUsers: ["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"],
+          //dueDate: taskForm.dueDate,
+          priority: taskForm.priority,
+          dependencies: [params.projectId]
         })
       });
 

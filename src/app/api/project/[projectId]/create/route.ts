@@ -3,7 +3,7 @@ export async function POST(
     { params }: { params: { projectId: string } }
     ) {
   const body = await request.json();
-  const rtb = await request.headers.get('Authorization');
+  const atok = await request.headers.get('Authorization');
   const { projectId } = params;
   
   const backend = process.env.BACKEND || "http://localhost:8080/";
@@ -13,9 +13,9 @@ export async function POST(
           method: 'POST',
           headers: {
               'Content-Type': 'application/json',
-              'Authorization': `${rtb}`
+              'Authorization': `${atok}`
           },
-          body: JSON.stringify({ "name": body.name, "description": body.description, "dependencies": [projectId] })
+          body: JSON.stringify({ "name": body.name, "description": body.description, "dependencies": [projectId], 'assignedUsers': ["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"], priority: body.priority })
       });
 
       if (!response.ok) {
