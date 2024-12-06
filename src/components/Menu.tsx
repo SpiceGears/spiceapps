@@ -100,7 +100,7 @@ export default function Menu() {
             onClick={() => setIsSettingsOpen(false)}
           />
 
-          <div className="fixed left-1/3 top-1/3 transform -translate-x-1/4 -translate-y-1/4 w-full max-w-md bg-white rounded-lg shadow-xl">
+          <div className="fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-lg shadow-xl">
             {isSettingsOpen && (
               <Settings
                 isOpen={isSettingsOpen}
