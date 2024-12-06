@@ -1,17 +1,19 @@
 'use client';
-import Image from "next/image"; // Importing the Image component from Next.js
-import Link from "next/link"; // Importing the Link component from Next.js
-import { useRef } from "react";
 import { useRouter } from 'next/navigation';
+import { useRef, useState } from 'react';
+import Image from 'next/image';
 
 export default function Login() {
-  const logine = useRef(null);
-  const password = useRef(null);
   const router = useRouter();
-  
-  async function login() 
-  {
-    if (logine == null || password == null) return;
+  const logine = useRef<HTMLInputElement>(null);
+  const password = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function login() {
+    if (!logine?.current?.value || !password?.current?.value) return;
+    setLoading(true);
+    setError(null);
 
     try {
       const response = await fetch('/api/login', {
@@ -19,7 +21,10 @@ export default function Login() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({login: logine.current.value, password: password.current.value})
+        body: JSON.stringify({
+          login: logine.current.value,
+          password: password.current.value
+        })
       });
 
       if (!response.ok) {
@@ -29,77 +34,92 @@ export default function Login() {
       const data = await response.json();
       if (data.access_Token && data.refresh_Token) {
         localStorage.setItem("atok", data.access_Token);
-        localStorage.setItem("rtb", data.refresh_Token);  
+        localStorage.setItem("rtb", data.refresh_Token);
         router.push('/dashboard/home');
       } else {
         throw new Error('Invalid token data received');
       }
     } catch (error) {
       console.error('Login error:', error);
-      // Handle error appropriately (e.g., show error message to user)
+      setError('Invalid login credentials');
+    } finally {
+      setLoading(false);
     }
   }
-  
+
   return (
-    // Main container to center the content vertically and horizontally
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <link rel="icon" href="/favicon.ico" sizes="any" />
-      {/* Logo at the top center */}
-      <div className="mb-8">
-        <Image src="/images/logo.png" alt="Logo" width={300} height={300} />
-      </div>
-      {/* Container to hold both the Login and Register forms side by side */}
-    <div className="flex space-x-5">
-      {/* Login form container */}
-      <div className="w-full max-w-lg p-20 space-y-6 bg-white rounded shadow-md flex flex-col items-center">
-        <h2 className="text-2xl font-bold text-center text-black">Logowanie</h2>
-        {/* Login form */}
-        <form className="space-y-4" method="post">
-        <div>
-          {/* Username label and input field */}
-          <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-            Nazwa użytkownika
-          </label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-            ref={logine}
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <Image 
+            src="/images/spicelab.png"
+            alt="SpiceLab Logo"
+            width={300}
+            height={100}
+            className="mx-auto dark:brightness-90"
           />
+          <h2 className="mt-6 text-3xl font-bold text-gray-900 dark:text-gray-100">
+            Zaloguj się do konta
+          </h2>
         </div>
-        <div>
-          {/* Password label and input field */}
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-            Hasło
-          </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-black"
-            //style={{ WebkitTextSecurity: 'disc' }}
-            ref={password}
-          />
+
+        <div className="mt-8 space-y-6">
+          <div className="rounded-md shadow-sm space-y-4">
+            <div>
+              <label htmlFor="login" className="sr-only">Login</label>
+              <input
+                id="login"
+                name="login"
+                type="text"
+                ref={logine}
+                required
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 
+                         placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 
+                         rounded-md focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 
+                         focus:border-blue-500 dark:focus:border-blue-400 focus:z-10 sm:text-sm
+                         bg-white dark:bg-gray-700"
+                placeholder="Login"
+              />
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">Hasło</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                ref={password}
+                required
+                className="appearance-none relative block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 
+                         placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 
+                         rounded-md focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 
+                         focus:border-blue-500 dark:focus:border-blue-400 focus:z-10 sm:text-sm
+                         bg-white dark:bg-gray-700"
+                placeholder="Hasło"
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="text-red-600 dark:text-red-400 text-sm text-center">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <button
+              onClick={login}
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent 
+                       text-sm font-medium rounded-md text-white bg-blue-600 dark:bg-blue-500 
+                       hover:bg-blue-700 dark:hover:bg-blue-600 
+                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900
+                       disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Logowanie...' : 'Zaloguj się'}
+            </button>
+          </div>
         </div>
-        {/* Login button */}
-        <button
-          type="submit"
-          className="w-full px-4 py-2 font-medium text-white bg-indigo-600 rounded hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          onClick={(e: any) => {e.preventDefault(); login()}}
-        >
-          Zaloguj się
-        </button>
-        </form>
-        {/* Link to register page */}
-        <p className="mt-4 text-sm text-gray-600">
-        Nie masz konta? <Link href="/auth/register" className="text-indigo-600 hover:text-indigo-500">Zarejestruj się</Link>
-        </p>
-        <p className="mt-4 text-sm text-gray-600">
-        Zapomniałeś hasła? <Link href="/auth/forgotpass" className="text-indigo-600 hover:text-indigo-500">Zresetuj hasło</Link>
-        </p>
       </div>
-    </div>
     </div>
   );
 }

@@ -1,40 +1,33 @@
+// Menu.tsx
 "use client"
-import { useState } from "react";
-import Link from "next/link";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faHouse,
-  faFolderOpen,
-  faUser,
-  faGear,
-  faRightFromBracket,
-  faTimes,
+import React, { useState } from 'react';
+import Link from 'next/link';
+import Settings from './Settings';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { 
+  faHome, 
+  faUsers, 
   faChartLine,
-  faUsers
-} from "@fortawesome/free-solid-svg-icons";
-import Settings from "./Settings";
+  faCog,
+  faRightFromBracket
+} from '@fortawesome/free-solid-svg-icons';
 
 export default function Menu() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const menuItems = [
     {
-      title: "MENU",
+      title: "Menu główne",
       items: [
         {
-          label: "Strona Główna",
+          label: "Home",
           href: "/dashboard/home",
-          icon: faHouse,
-        },
-        {
-          label: "Projekty",
-          href: "/dashboard/project",
-          icon: faFolderOpen,
+          icon: faHome,
         },
       ],
     },
     {
-      title: "UP",
+      title: "Administracja",
       items: [
         {
           label: "Statystyki",
@@ -52,17 +45,20 @@ export default function Menu() {
 
   return (
     <>
-      <div className="w-64 bg-white shadow-lg h-screen flex flex-col">
-        <div className="flex-grow overflow-y-auto">
+      <div className="w-64 bg-white dark:bg-gray-800 shadow-lg h-screen flex flex-col justify-between">
+        {/* Main menu area */}
+        <div className="flex-1">
           {menuItems.map((section, idx) => (
             <div key={idx} className="p-4">
-              <h3 className="text-xs font-semibold text-gray-400 mb-4">{section.title}</h3>
+              <h3 className="text-xs font-semibold text-gray-400 dark:text-gray-500 mb-4">
+                {section.title}
+              </h3>
               <div className="space-y-2">
                 {section.items.map((item, itemIdx) => (
                   <Link
                     key={itemIdx}
                     href={item.href}
-                    className="flex items-center text-gray-700 hover:text-blue-600 p-2 rounded-lg hover:bg-gray-100"
+                    className="flex items-center text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
                   >
                     <FontAwesomeIcon icon={item.icon} className="w-5 h-5 mr-3" />
                     {item.label}
@@ -73,18 +69,20 @@ export default function Menu() {
           ))}
         </div>
 
-        <div className="pb-20 px-4 border-t border-gray-200">
+        {/* Bottom buttons */}
+        <div className="pb-20 border-t border-gray-200 dark:border-gray-700">
           <div className="space-y-2 pt-3">
             <button
               onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center w-full text-gray-700 hover:text-blue-600 p-2 rounded-lg hover:bg-gray-100"
+              className="flex w-full items-center text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
             >
-              <FontAwesomeIcon icon={faGear} className="w-5 h-5 mr-3" />
+              <FontAwesomeIcon icon={faCog} className="w-5 h-5 mr-3" />
               Ustawienia
             </button>
+
             <Link
               href="/logout"
-              className="flex items-center text-gray-700 hover:text-blue-600 p-2 rounded-lg hover:bg-gray-100"
+              className="flex items-center text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <FontAwesomeIcon icon={faRightFromBracket} className="w-5 h-5 mr-3" />
               Wyloguj
@@ -96,17 +94,15 @@ export default function Menu() {
       {isSettingsOpen && (
         <div className="fixed inset-0">
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm"
+            className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 backdrop-blur-sm"
             onClick={() => setIsSettingsOpen(false)}
           />
 
-          <div className="fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-lg shadow-xl">
-            {isSettingsOpen && (
-              <Settings
-                isOpen={isSettingsOpen}
-                onClose={() => setIsSettingsOpen(false)}
-              />
-            )}
+          <div className="fixed left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-xl">
+            <Settings
+              isOpen={isSettingsOpen}
+              onClose={() => setIsSettingsOpen(false)}
+            />
           </div>
         </div>
       )}

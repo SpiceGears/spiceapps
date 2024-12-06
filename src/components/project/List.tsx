@@ -4,7 +4,7 @@ import { faCalendar, faFlag } from '@fortawesome/free-solid-svg-icons';
 import { useProjectData } from '../../hooks/projectData';
 import { useGetTasksData } from '@/hooks/getTasks';
 
-export default function ProjectView({ params }: { params: { projectId: string, taskId: string } }) {
+export default function List({ params }: { params: { projectId: string, taskId: string } }) {
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [editedTaskId, setEditedTaskId] = useState<number | null>(null);
   const [taskForm, setTaskForm] = useState({
@@ -17,10 +17,9 @@ export default function ProjectView({ params }: { params: { projectId: string, t
 
   const { projectData, loading: projectLoading, error: projectError } = useProjectData(params.projectId);
   const { loading: tasksLoading, error: tasksError } = useGetTasksData(params.projectId);
-  const { projectId } = params;
 
-  if (projectLoading || tasksLoading) return <div>Loading...</div>;
-  if (projectError || tasksError) return <div>Error: {projectError?.message || tasksError?.message || 'Unknown error'}</div>;
+  if (projectLoading || tasksLoading) return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
+  if (projectError || tasksError) return <div className="text-red-600 dark:text-red-400">Error: {projectError?.message || tasksError?.message}</div>;
 
   const handleTaskClick = (taskId: number) => {
     if (editedTaskId !== taskId) setEditedTaskId(taskId);
@@ -39,7 +38,7 @@ export default function ProjectView({ params }: { params: { projectId: string, t
       const atok = localStorage.getItem('atok');
       if (!atok) throw new Error('No authentication token found');
 
-      const response = await fetch(`/api/project/${projectId}/create`, {
+      const response = await fetch(`/api/project/${params.projectId}/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -49,7 +48,6 @@ export default function ProjectView({ params }: { params: { projectId: string, t
           name: taskForm.name,
           description: taskForm.description,
           assignedUsers: ["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"],
-          //dueDate: taskForm.dueDate,
           priority: taskForm.priority,
           dependencies: [params.projectId]
         })
@@ -74,16 +72,20 @@ export default function ProjectView({ params }: { params: { projectId: string, t
   }
 
   return (
-    <div className="p-2 sm:p-4 md:p-6">
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-x-auto">
-        {/* Action buttons */}
-        <div className="flex flex-wrap items-center justify-between px-2 py-2 sm:px-4 sm:py-3 border-b border-gray-200">
-          <div className="flex flex-wrap gap-2 sm:gap-4">
+    <div className="p-6 bg-white dark:bg-gray-800">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+          <button
+            onClick={() => setIsAddingTask(true)}
+            className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
+          >
+            + Dodaj zadanie
+          </button>
+          <div className="flex gap-4">
             {['Filtruj', 'Sortuj', 'Grupuj', 'Opcje'].map((action) => (
               <button
                 key={action}
-                onClick={() => console.log(`${action} clicked`)}
-                className="text-xs sm:text-sm text-gray-600 hover:text-gray-800 px-2 py-1 rounded transition-colors duration-200"
+                className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 px-2"
               >
                 {action}
               </button>
@@ -91,17 +93,15 @@ export default function ProjectView({ params }: { params: { projectId: string, t
           </div>
         </div>
 
-        {/* Table Header */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-semibold text-gray-700 bg-gray-50 border-b border-gray-200">
+        <div className="grid grid-cols-4 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
           <div>Nazwa zadania</div>
           <div>Przypisane do</div>
-          <div className="hidden sm:block">Termin</div>
-          <div className="hidden sm:block">Priorytet</div>
+          <div>Termin</div>
+          <div>Priorytet</div>
         </div>
 
-        {/* Add Task Form */}
         {isAddingTask && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 px-2 sm:px-4 py-2 sm:py-3 border-b border-gray-200">
+          <div className="grid grid-cols-4 gap-4 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
             <div>
               <input
                 type="text"
@@ -109,7 +109,7 @@ export default function ProjectView({ params }: { params: { projectId: string, t
                 value={taskForm.name}
                 onChange={handleInputChange}
                 placeholder="Nazwa zadania"
-                className="w-full px-2 py-1 text-xs sm:text-sm border border-gray-300 rounded"
+                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
             <div>
@@ -117,44 +117,44 @@ export default function ProjectView({ params }: { params: { projectId: string, t
                 name="assignedTo"
                 value={taskForm.assignedTo}
                 onChange={handleInputChange}
-                className="w-full px-2 py-1 text-xs sm:text-sm border border-gray-300 rounded"
+                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option value="">Wybierz osobę</option>
-                <option>Użytkownik 1</option>
-                <option>Użytkownik 2</option>
+                <option value="user1">Użytkownik 1</option>
+                <option value="user2">Użytkownik 2</option>
               </select>
             </div>
-            <div className="hidden sm:block">
+            <div>
               <input
                 type="date"
                 name="dueDate"
                 value={taskForm.dueDate}
                 onChange={handleInputChange}
-                className="w-full px-2 py-1 text-xs sm:text-sm border border-gray-300 rounded"
+                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               />
             </div>
-            <div className="hidden sm:block">
+            <div>
               <select
                 name="priority"
                 value={taskForm.priority}
                 onChange={handleInputChange}
-                className="w-full px-2 py-1 text-xs sm:text-sm border border-gray-300 rounded"
+                className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
               >
                 <option value="low">Niski</option>
                 <option value="medium">Średni</option>
                 <option value="high">Wysoki</option>
               </select>
             </div>
-            <div className="col-span-2 sm:col-span-4 flex justify-end gap-2">
+            <div className="col-span-4 flex justify-end gap-2">
               <button
                 onClick={() => setIsAddingTask(false)}
-                className="px-2 py-1 text-xs sm:text-sm text-gray-600 hover:text-gray-800"
+                className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
               >
                 Anuluj
               </button>
               <button
                 onClick={createTask}
-                className="px-2 py-1 text-xs sm:text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
               >
                 Zapisz
               </button>
@@ -162,10 +162,9 @@ export default function ProjectView({ params }: { params: { projectId: string, t
           </div>
         )}
 
-        {/* Add Task Button */}
         <div 
           onClick={() => setIsAddingTask(true)}
-          className="px-4 py-3 text-gray-500 hover:bg-gray-50 cursor-pointer"
+          className="px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
         >
           + Dodaj zadanie...
         </div>

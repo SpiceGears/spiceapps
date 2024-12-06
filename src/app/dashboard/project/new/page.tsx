@@ -92,28 +92,30 @@ export default function CreateProject() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 p-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
             <button 
                 onClick={() => router.back()}
-                className="absolute top-4 left-4 p-2 text-gray-600 hover:text-gray-800 transition-colors"
+                className="absolute top-4 left-4 p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
                 <FontAwesomeIcon icon={faArrowLeft} className="w-5 h-5" />
             </button>
 
             <div className="max-w-2xl mx-auto mt-12">
-                <h1 className="text-3xl font-bold text-gray-800 mb-8">Stwórz nowy projekt</h1>
+                <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-200 mb-8">
+                    Stwórz nowy projekt
+                </h1>
 
                 {error && (
-                    <div className="mb-4 p-4 bg-red-50 border border-red-200 text-red-600 rounded">
+                    <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded">
                         {error}
                     </div>
                 )}
 
                 <form onSubmit={createProject} className="space-y-6">
-                    <div className="bg-white p-6 rounded-lg shadow">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Nazwa projektu
                                 </label>
                                 <input
@@ -121,13 +123,15 @@ export default function CreateProject() {
                                     name="name"
                                     value={formData.name}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                                             bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                                             focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                                     placeholder="Wprowadź nazwę projektu"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Opis
                                 </label>
                                 <textarea
@@ -135,20 +139,24 @@ export default function CreateProject() {
                                     value={formData.description}
                                     onChange={handleInputChange}
                                     rows={4}
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                                             bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                                             focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                                     placeholder="Opisz swój projekt"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Wydział
                                 </label>
                                 <select
                                     name="department"
                                     value={formData.department}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                                             bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
+                                             focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                                 >
                                     <option value="">Wybierz wydział</option>
                                     <option value="programmers">Programiści</option>
@@ -165,8 +173,8 @@ export default function CreateProject() {
                             disabled={isButtonDisabled || loading}
                             className={`mt-8 w-full p-2 rounded-md text-white ${
                                 isButtonDisabled || loading
-                                    ? "bg-gray-400 cursor-not-allowed"
-                                    : "bg-blue-600 hover:bg-blue-700"
+                                    ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed"
+                                    : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                             }`}
                         >
                             {loading ? "Tworzenie..." : "Stwórz projekt"}
