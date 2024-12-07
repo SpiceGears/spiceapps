@@ -30,14 +30,29 @@ export default function Overview({ params: { projectId } }) {
                     <div className="text-gray-600 dark:text-gray-400">
                         {isEditingDesc ? (
                             <input
-                                type="text"
-                                value={editedDesc}
-                                onChange={handleDescChange}
-                                onBlur={() => setIsEditingDesc(false)}
-                                className="w-full p-2 border-b border-gray-300 dark:border-gray-600 
-                                         focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
-                                         bg-transparent text-gray-900 dark:text-gray-100"
-                                autoFocus
+                            type="text"
+                            value={editedDesc}
+                            onChange={(e) => setEditedDesc(e.target.value)}
+                            onBlur={() => {
+                                setIsEditingDesc(false);
+                                // Add your function to save the edited description here
+                                if (editedDesc && editedDesc !== projectData?.description) {
+                                    // Call your save function here
+                                    console.log('Saving new description:', editedDesc);
+                                }
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    setIsEditingDesc(false);
+                                    // Add your function to save the edited description here
+                                    if (editedDesc && editedDesc !== projectData?.description) {
+                                        // Call your save function here
+                                        console.log('Saving new description:', editedDesc);
+                                    }
+                                }
+                            }}
+                            className="text-lg font-semibold text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
+                            autoFocus
                             />
                         ) : (
                             <p 

@@ -38,7 +38,7 @@ export default function Navbar() {
     if (loading) return <div className="h-16 bg-white shadow-sm"></div>;
     if (error) {
         generateAccess();
-        window.location.reload();
+        //window.location.reload();
         return <div className="h-16 bg-white shadow-sm"></div>;
     }
     if (!userData) return <div className="h-16 bg-white shadow-sm"></div>;

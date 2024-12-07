@@ -10,6 +10,8 @@ import List from './List';
 export default function ProjectNav({ activeTab, onTabChange, projectId }: { activeTab: string, onTabChange: (tab: string) => void, projectId: string }) {
     const [currentTab, setCurrentTab] = useState('Przegląd');
     const { projectData, loading, error } = useProjectData(projectId);
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [editedName, setEditedName] = useState('');
 
     if (loading) return <div className="min-h-screen bg-gray-50 dark:bg-gray-900">Loading...</div>;
     if (error) return <div className="min-h-screen bg-gray-50 dark:bg-gray-900">Error: {error.message}</div>;
@@ -35,9 +37,43 @@ export default function ProjectNav({ activeTab, onTabChange, projectId }: { acti
             <div className="flex items-center justify-between px-6 py-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2">
                     <div className="w-6 h-6 bg-blue-500 rounded"></div>
-                    <span className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                        {projectData?.name}
-                    </span>
+                    {isEditingName ? (
+                        <input
+                            type="text"
+                            value={editedName}
+                            onChange={(e) => setEditedName(e.target.value)}
+                            onBlur={() => {
+                                setIsEditingName(false);
+                                // Add your function to save the edited name here
+                                if (editedName && editedName !== projectData?.name) {
+                                    // Call your save function here
+                                    console.log('Saving new name:', editedName);
+                                }
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    setIsEditingName(false);
+                                    // Add your function to save the edited name here
+                                    if (editedName && editedName !== projectData?.name) {
+                                        // Call your save function here
+                                        console.log('Saving new name:', editedName);
+                                    }
+                                }
+                            }}
+                            className="text-lg font-semibold text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
+                            autoFocus
+                        />
+                    ) : (
+                        <span
+                            className="text-lg font-semibold text-gray-800 dark:text-gray-200 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+                            onClick={() => {
+                                setIsEditingName(true);
+                                setEditedName(projectData?.name || '');
+                            }}
+                        >
+                            {projectData?.name || 'Click to add project name...'}
+                        </span>
+                    )}
                 </div>
                 <div className="flex items-center gap-4">
                     <div className="relative inline-block text-left">
