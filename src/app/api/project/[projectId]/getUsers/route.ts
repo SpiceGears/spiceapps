@@ -11,7 +11,7 @@ export async function GET(
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': atok || ''
+                'Authorization': atok
             }
         });
         

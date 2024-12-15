@@ -1,28 +1,28 @@
-export async function GET(request: Request, response: Response) {
+// app/api/user/getInfo/route.ts
+export async function GET(request: Request) {
     try {
-        const atok = request.headers.get('Authorization');
-        const backend = process.env.BACKEND || "http://localhost:8080/";
+        const backend = process.env.BACKEND|| "http://localhost:8080/";
 
-        const response = await fetch(`${backend}/api/project`, {
+        const atok = request.headers.get("Authorization");
+        console.log(atok);
+        const response = await fetch(`${backend}api/project`, {
             method: 'GET',
             headers: {
+                'Content-Type': 'application/json',
                 'Authorization': `${atok}`
             }
-        })
+        });
 
         if (!response.ok) {
-            const errorData = await response.text();
-            return Response.json(
-                { error: errorData || 'Failed to get project' },
-                { status: response.status }
-            );
+            console.log(atok);
+            throw new Error(`Error: ${response.status}`);
         }
 
-        const data = await response.text();
+        const data = await response.json();
         return Response.json(data);
-
-
-    } catch (error) {
-        console.error('Error getting project:', error);
+    } catch (error: any) {
+        // Handle any errors
+        console.error('Error:', error);
+        throw new Error(error);
     }
 }

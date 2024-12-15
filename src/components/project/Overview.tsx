@@ -20,6 +20,39 @@ export default function Overview({ params: { projectId } }) {
     if (loading) return <div>Loading...</div>;
     if (error) return <div>Error: {error}</div>;
 
+    async function editProject() {
+        const atok = localStorage.getItem('atok');
+        if (!atok) {
+            console.error('Authentication token not found');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/project/${projectId}/edit`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': atok
+                },
+                body: JSON.stringify({
+                    name: '',
+                    description: editedDesc,
+                    scopes: []
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update project description');
+            }
+
+            const data = await response.json();
+            console.log('Project updated:', data);
+
+        } catch (error) {
+            console.error('Error updating project:', error);
+        }
+    }
+
     return (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
             <div className="p-6">
@@ -30,32 +63,28 @@ export default function Overview({ params: { projectId } }) {
                     <div className="text-gray-600 dark:text-gray-400">
                         {isEditingDesc ? (
                             <input
-                            type="text"
-                            value={editedDesc}
-                            onChange={(e) => setEditedDesc(e.target.value)}
-                            onBlur={() => {
-                                setIsEditingDesc(false);
-                                // Add your function to save the edited description here
-                                if (editedDesc && editedDesc !== projectData?.description) {
-                                    // Call your save function here
-                                    console.log('Saving new description:', editedDesc);
-                                }
-                            }}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
+                                type="text"
+                                value={editedDesc}
+                                onChange={handleDescChange}
+                                onBlur={() => {
                                     setIsEditingDesc(false);
-                                    // Add your function to save the edited description here
                                     if (editedDesc && editedDesc !== projectData?.description) {
-                                        // Call your save function here
-                                        console.log('Saving new description:', editedDesc);
+                                        editProject();
                                     }
-                                }
-                            }}
-                            className="text-lg font-semibold text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
-                            autoFocus
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        setIsEditingDesc(false);
+                                        if (editedDesc && editedDesc !== projectData?.description) {
+                                            editProject();
+                                        }
+                                    }
+                                }}
+                                className="text-lg font-semibold text-gray-800 dark:text-gray-200 bg-transparent border-b border-gray-300 dark:border-gray-600 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
+                                autoFocus
                             />
                         ) : (
-                            <p 
+                            <p
                                 className="cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
                                 onClick={toggleDescEditing}
                             >
@@ -84,8 +113,8 @@ export default function Overview({ params: { projectId } }) {
                                     Data stworzenia:
                                 </span>
                                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                    {projectData?.createdAt ? 
-                                        new Date(projectData.createdAt).toLocaleDateString() : 
+                                    {projectData?.createdAt ?
+                                        new Date(projectData.createdAt).toLocaleDateString() :
                                         'N/A'}
                                 </span>
                             </div>
@@ -130,12 +159,12 @@ export default function Overview({ params: { projectId } }) {
                         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                             Dokumenty
                         </h3>
-                        <button 
-                            className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 
-                                     rounded-lg text-gray-500 dark:text-gray-400 
-                                     hover:text-gray-700 dark:hover:text-gray-200 
-                                     hover:border-gray-400 dark:hover:border-gray-500 
-                                     transition-colors duration-200 
+                        <button
+                            className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600
+                                     rounded-lg text-gray-500 dark:text-gray-400
+                                     hover:text-gray-700 dark:hover:text-gray-200
+                                     hover:border-gray-400 dark:hover:border-gray-500
+                                     transition-colors duration-200
                                      flex items-center justify-center
                                      bg-transparent"
                         >
@@ -148,12 +177,12 @@ export default function Overview({ params: { projectId } }) {
                         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                             Zasoby
                         </h3>
-                        <button 
-                            className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 
-                                     rounded-lg text-gray-500 dark:text-gray-400 
-                                     hover:text-gray-700 dark:hover:text-gray-200 
-                                     hover:border-gray-400 dark:hover:border-gray-500 
-                                     transition-colors duration-200 
+                        <button
+                            className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600
+                                     rounded-lg text-gray-500 dark:text-gray-400
+                                     hover:text-gray-700 dark:hover:text-gray-200
+                                     hover:border-gray-400 dark:hover:border-gray-500
+                                     transition-colors duration-200
                                      flex items-center justify-center
                                      bg-transparent"
                         >

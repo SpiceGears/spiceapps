@@ -1,4 +1,3 @@
-// Main.tsx
 "use client"
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -31,6 +30,39 @@ export default function ProjectNav({ activeTab, onTabChange, projectId }: { acti
         }
     };
 
+    async function editProject() {
+        const atok = localStorage.getItem('atok');
+        if (!atok) {
+            console.error('Authentication token not found');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/project/${projectId}/edit`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': atok
+                },
+                body: JSON.stringify({
+                    name: editedName,
+                    description: projectData.description,
+                    scopes: projectData.scopes
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update project name');
+            }
+
+            const data = await response.json();
+            console.log('Project updated:', data);
+
+        } catch (error) {
+            console.error('Error updating project:', error);
+        }
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
             {/* Header Section */}
@@ -44,19 +76,15 @@ export default function ProjectNav({ activeTab, onTabChange, projectId }: { acti
                             onChange={(e) => setEditedName(e.target.value)}
                             onBlur={() => {
                                 setIsEditingName(false);
-                                // Add your function to save the edited name here
                                 if (editedName && editedName !== projectData?.name) {
-                                    // Call your save function here
-                                    console.log('Saving new name:', editedName);
+                                    editProject();
                                 }
                             }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
                                     setIsEditingName(false);
-                                    // Add your function to save the edited name here
                                     if (editedName && editedName !== projectData?.name) {
-                                        // Call your save function here
-                                        console.log('Saving new name:', editedName);
+                                        editProject();
                                     }
                                 }
                             }}
@@ -78,7 +106,7 @@ export default function ProjectNav({ activeTab, onTabChange, projectId }: { acti
                 <div className="flex items-center gap-4">
                     <div className="relative inline-block text-left">
                         <button
-                            className="px-4 py-2 text-sm font-medium text-white border border-gray-300 dark:border-gray-600 
+                            className="px-4 py-2 text-sm font-medium text-white border border-gray-300 dark:border-gray-600
                                      rounded-md bg-blue-600 hover:bg-blue-700 focus:outline-none flex items-center gap-2"
                             onClick={(e) => {
                                 const dropdown = document.getElementById('status-dropdown');
@@ -94,21 +122,21 @@ export default function ProjectNav({ activeTab, onTabChange, projectId }: { acti
                         </button>
                         <div
                             id="status-dropdown"
-                            className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 
+                            className="absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800
                                      ring-1 ring-black ring-opacity-5 hidden"
                         >
                             <div className="py-1">
-                                <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 
+                                <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200
                                                      hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
                                     W toku
                                 </a>
-                                <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 
+                                <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200
                                                      hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <div className="w-3 h-3 rounded-full bg-yellow-500 mr-2"></div>
                                     Wstrzymane
                                 </a>
-                                <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 
+                                <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200
                                                      hover:bg-gray-100 dark:hover:bg-gray-700">
                                     <div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
                                     Anulowane

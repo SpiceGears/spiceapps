@@ -24,6 +24,11 @@ export default function Menu() {
           href: "/dashboard/home",
           icon: faHome,
         },
+        {
+            label: "Projekty",
+            href: "/dashboard/project",
+            icon: faChartLine,
+        }
       ],
     },
     {
