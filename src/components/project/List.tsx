@@ -14,7 +14,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
     dueDate: '',
     priority: 'low'
   });
-  const [users, setUsers] = useState<{ id: string, name: string }[]>([]);
+  const [users, setUsers] = useState<{ id: string, firstName: string, lastName: string }[]>([]);
 
   const { projectData, loading: projectLoading, error: projectError } = useProjectData(params.projectId);
   const { loading: tasksLoading, error: tasksError } = useGetTasksData(params.projectId);
@@ -101,6 +101,8 @@ export default function List({ params }: { params: { projectId: string, taskId: 
     }
   }
 
+  console.log(users);
+
   return (
       <div className="p-6 bg-white dark:bg-gray-800">
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
@@ -151,7 +153,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
                   >
                     <option value="">Wybierz osobę</option>
                     {users.map(user => (
-                        <option key={user.id} value={user.id}>{user.name}</option>
+                        <option key={user.id} value={user.id}>{`${user.firstName} ${user.lastName}`}</option>
                     ))}
                   </select>
                 </div>
