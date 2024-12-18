@@ -31,8 +31,9 @@ export default function Projects() {
                     }
                 });
                 const data = await response.json();
-                if (Array.isArray(data)) {
-                    setProjects(data);
+                console.log('API response:', data); // Log the response data
+                if (data && Array.isArray(data.$values)) {
+                    setProjects(data.$values);
                 } else {
                     setError(data.error || 'Unexpected API response');
                 }
@@ -58,7 +59,7 @@ export default function Projects() {
                 {error ? (
                     <div className="px-4 py-3 text-red-500">{error}</div>
                 ) : (
-                    projects.map((project) => (
+                    projects.map(project => (
                         <div
                             key={project.id}
                             className="grid grid-cols-4 px-4 py-3 border-b border-gray-200 dark:border-gray-700 cursor-pointer"
