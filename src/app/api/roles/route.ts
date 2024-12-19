@@ -1,0 +1,25 @@
+export async function GET(request: Request) {
+    try {
+        const backend = process.env.BACKEND || "http://localhost:8080";
+        const atok = request.headers.get("Authorization");
+
+        const response = await fetch(`${backend}/api/roles`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': atok
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        return new Response(JSON.stringify(data), { status: 200 });
+    } catch (error: any) {
+        console.error('Error:', error);
+        return new Response(error.message, { status: 500 });
+    }
+}

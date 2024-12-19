@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendar, faFlag, faUser } from '@fortawesome/free-solid-svg-icons';
-import { useProjectData } from '../../hooks/projectData';
+import { faCalendar, faFlag } from '@fortawesome/free-solid-svg-icons';
+import { useProjectData } from '@/hooks/projectData';
 import { useGetTasksData } from '@/hooks/getTasks';
+
+interface Task {
+  id: number;
+  name: string;
+  description: string;
+  assignedUsers: string[];
+  dueDate: string;
+  priority: number;
+}
 
 export default function List({ params }: { params: { projectId: string, taskId: string } }) {
   const [isAddingTask, setIsAddingTask] = useState(false);
@@ -12,12 +21,13 @@ export default function List({ params }: { params: { projectId: string, taskId: 
     description: '',
     assignedTo: '',
     dueDate: '',
-    priority: 'low'
+    priority: 0
   });
   const [users, setUsers] = useState<{ id: string, firstName: string, lastName: string }[]>([]);
-  const [tasks, setTasks] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [userNames, setUserNames] = useState<{ [key: string]: string }>({});
 
-  const { projectData, loading: projectLoading, error: projectError } = useProjectData(params.projectId);
+  const { loading: projectLoading, error: projectError } = useProjectData(params.projectId);
   const { loading: tasksLoading, error: tasksError } = useGetTasksData(params.projectId);
 
   useEffect(() => {
@@ -85,10 +95,45 @@ export default function List({ params }: { params: { projectId: string, taskId: 
     fetchTasks();
   }, [params.projectId]);
 
+  const getUserName = async (userId: string): Promise<string> => {
+    try {
+      const atok = localStorage.getItem('atok');
+      if (!atok) throw new Error('No authentication token found');
+
+      const response = await fetch(`/api/user/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': atok
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user');
+      }
+
+      const user = await response.json();
+      return `${user.firstName} ${user.lastName}`;
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      return 'Unknown User';
+    }
+  };
+
+  useEffect(() => {
+    const fetchUserNames = async () => {
+      try{
+        const atok = localStorage.getItem('atok');
+        if (!atok) throw new Error('No authentication token found');
+        const response = await fetch(`/api/project/${params.userId}/`, {
+      }
+    }
+  }
+
   if (projectLoading || tasksLoading) return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
   if (projectError || tasksError) return <div className="text-red-600 dark:text-red-400">Error: {projectError?.message || tasksError?.message}</div>;
 
-  const handleTaskClick = (task: any) => {
+  const handleTaskClick = (task: Task) => {
     setTaskForm({
       name: task.name,
       description: task.description,
@@ -104,7 +149,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
     const { name, value } = e.target;
     setTaskForm(prev => ({
       ...prev,
-      [name]: value
+      [name]: name === 'priority' ? (value === 'Niski' ? 0 : value === 'Średni' ? 1 : 2) : value
     }));
   };
 
@@ -137,7 +182,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
         description: '',
         assignedTo: '',
         dueDate: '',
-        priority: 'low'
+        priority: 0
       });
       setIsAddingTask(false);
 
@@ -175,7 +220,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
         description: '',
         assignedTo: '',
         dueDate: '',
-        priority: 'low'
+        priority: 0
       });
       setEditedTaskId(null);
       setIsAddingTask(false);
@@ -255,9 +300,9 @@ export default function List({ params }: { params: { projectId: string, taskId: 
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   >
-                    <option value="low">Niski</option>
-                    <option value="medium">Średni</option>
-                    <option value="high">Wysoki</option>
+                    <option value="0">Niski</option>
+                    <option value="1">Średni</option>
+                    <option value="2">Wysoki</option>
                   </select>
                 </div>
                 <div className="col-span-4 flex justify-end gap-2">
@@ -294,16 +339,22 @@ export default function List({ params }: { params: { projectId: string, taskId: 
                   <span className="text-gray-700">{task.name}</span>
                 </div>
                 <div className="flex items-center justify-start">
-                  <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                    <FontAwesomeIcon icon={faUser} className="w-4 h-4 text-gray-500" />
-                  </div>
+                  {Array.isArray(task.assignedUsers) && task.assignedUsers.map((userId: string) => (
+                      <div key={userId} className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                        <span className="text-gray-700">{userNames[userId]}</span>
+                      </div>
+                  ))}
                 </div>
                 <div className="flex items-center">
-                  <FontAwesomeIcon icon={faCalendar} className="w-4 h-4 text-gray-400 mr-2" />
-                  <span className="text-gray-600">{task.dueDate}</span>
+                  <FontAwesomeIcon icon={faCalendar} className="w-4 h-4 text-gray-400 mr-2"/>
+                  <span className="text-gray-600">{task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}</span>
                 </div>
                 <div className="flex items-center">
-                  <FontAwesomeIcon icon={faFlag} className="w-4 h-4 text-yellow-500" />
+                  <FontAwesomeIcon
+                      icon={faFlag}
+                      className={`w-4 h-4 ${task.priority === 0 ? 'text-green-500' : task.priority === 1 ? 'text-orange-500' : task.priority === 2 ? 'text-red-500' : 'text-gray-400'} mr-2`}
+                  />
+                  <span className="text-gray-600 ml-2">{task.priority}</span>
                 </div>
               </div>
           ))}

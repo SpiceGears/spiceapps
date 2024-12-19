@@ -9,6 +9,8 @@ const Dashboard = () => {
     if (error) return <div className="text-red-600 dark:text-red-400">Error loading user data</div>;
     if (!userData) return <div className="text-gray-600 dark:text-gray-400">No user data available</div>;
 
+    console.log(userData);
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans">
             <header className="p-6 flex justify-between items-center">
