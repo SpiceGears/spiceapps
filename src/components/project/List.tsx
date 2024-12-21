@@ -30,6 +30,8 @@ export default function List({ params }: { params: { projectId: string, taskId: 
   const { loading: projectLoading, error: projectError } = useProjectData(params.projectId);
   const { loading: tasksLoading, error: tasksError } = useGetTasksData(params.projectId);
 
+  console.log(tasks);
+
   useEffect(() => {
     async function fetchUsers() {
       try {
@@ -122,13 +124,41 @@ export default function List({ params }: { params: { projectId: string, taskId: 
 
   useEffect(() => {
     const fetchUserNames = async () => {
-      try{
+      try {
         const atok = localStorage.getItem('atok');
         if (!atok) throw new Error('No authentication token found');
-        const response = await fetch(`/api/project/${params.userId}/`, {
+
+        const response = await fetch(`/api/project/${params.projectId}/getUsers`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': atok
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch users');
+        }
+
+        const data = await response.json();
+        if (data && Array.isArray(data.$values)) {
+          const userNamesMap: { [key: string]: string } = {};
+          for (const user of data.$values) {
+            userNamesMap[user.id] = `${user.firstName} ${user.lastName}`;
+          }
+          setUserNames(userNamesMap);
+        } else {
+          console.error('Invalid data format:', data);
+          throw new Error('Invalid data format');
+        }
+
+      } catch (error) {
+        console.error('Error fetching users:', error);
       }
-    }
-  }
+    };
+
+    fetchUserNames();
+  }, [params.projectId]);
 
   if (projectLoading || tasksLoading) return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
   if (projectError || tasksError) return <div className="text-red-600 dark:text-red-400">Error: {projectError?.message || tasksError?.message}</div>;
@@ -149,7 +179,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
     const { name, value } = e.target;
     setTaskForm(prev => ({
       ...prev,
-      [name]: name === 'priority' ? (value === 'Niski' ? 0 : value === 'Średni' ? 1 : 2) : value
+      [name]: name === 'priority' ? parseInt(value) : value
     }));
   };
 
@@ -354,7 +384,6 @@ export default function List({ params }: { params: { projectId: string, taskId: 
                       icon={faFlag}
                       className={`w-4 h-4 ${task.priority === 0 ? 'text-green-500' : task.priority === 1 ? 'text-orange-500' : task.priority === 2 ? 'text-red-500' : 'text-gray-400'} mr-2`}
                   />
-                  <span className="text-gray-600 ml-2">{task.priority}</span>
                 </div>
               </div>
           ))}

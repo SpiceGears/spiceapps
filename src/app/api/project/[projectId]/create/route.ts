@@ -18,8 +18,8 @@ export async function POST(
             body: JSON.stringify({
                 name: body.name,
                 description: body.description,
-                dependencies: [projectId],
-                assignedUsers: ["eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"],
+                dependencies: [],
+                assignedUsers: [body.assignedUsers],
                 priority: body.priority
             })
         });
