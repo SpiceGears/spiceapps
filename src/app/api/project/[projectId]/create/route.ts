@@ -19,6 +19,7 @@ export async function POST(
                 name: body.name,
                 description: body.description,
                 dependencies: [],
+                deadlineDate: body.deadlineDate,
                 assignedUsers: [body.assignedUsers],
                 priority: body.priority
             })
