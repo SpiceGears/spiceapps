@@ -21,9 +21,13 @@ export async function POST(
                 dependencies: [],
                 deadlineDate: body.deadlineDate,
                 assignedUsers: [body.assignedUsers],
-                priority: body.priority
+                priority: body.priority,
+                status: body.status
             })
         });
+
+        console.log('Response:', response);
+        console.log('Body:', body);
 
         if (!response.ok) {
             const errorText = await response.text();
@@ -40,7 +44,7 @@ export async function POST(
             }
         });
     } catch (error: any) {
-        console.error('Generate access error:', error);
+        console.log('Generate access error:', error);
         return new Response(JSON.stringify({ error: error.message }), { status: 500 });
     }
 }

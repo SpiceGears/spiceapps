@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Image from "next/image";
 
 export default function RegisterPage() {
 
@@ -83,12 +84,19 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full mx-auto space-y-8">
         <div>
+          <Image
+              src="/images/spicelab.png"
+              alt="SpiceLab Logo"
+              width={450}
+              height={250}
+              className="mx-auto dark:brightness-90"
+          />
           <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-gray-100">
             Zarejestruj się
           </h1>
         </div>
       </div>
-      <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+      <form onSubmit={handleSubmit} className="mt-8 max-w-sm mx-auto space-y-6">
         {step === 1 && (
           <div className="space-y-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">

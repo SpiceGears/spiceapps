@@ -12,6 +12,7 @@ interface Task {
   dueDate: string;
   deadlineDate: string;
   priority: number;
+  status: number;
 }
 
 interface User {
@@ -34,7 +35,8 @@ export default function List({ params }: { params: { projectId: string, taskId: 
     description: '',
     assignedUser: '',
     deadlineDate: '',
-    priority: 0
+    priority: 0,
+    status: 0
   });
   const [users, setUsers] = useState<User[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -122,7 +124,8 @@ export default function List({ params }: { params: { projectId: string, taskId: 
       description: task.description,
       assignedUser: task.assignedUsers[0] || '',
       deadlineDate: task.deadlineDate || '',
-      priority: task.priority
+      priority: task.priority,
+      status: task.status
     });
     setEditedTaskId(task.id);
     setIsAddingTask(true);
@@ -133,7 +136,8 @@ export default function List({ params }: { params: { projectId: string, taskId: 
     console.log(`Field: ${name}, Value: ${value}`);  // Debug input change
     setTaskForm(prev => ({
       ...prev,
-      [name]: name === 'priority' ? parseInt(value) : value
+      [name]: name === 'priority' ? parseInt(value) : value,
+      [name]: name === 'status' ? parseInt(value) : value
     }));
   };
 
@@ -154,7 +158,8 @@ export default function List({ params }: { params: { projectId: string, taskId: 
           assignedUsers: taskForm.assignedUser ? [taskForm.assignedUser] : [],
           priority: taskForm.priority,
           deadlineDate: taskForm.deadlineDate,
-          dependencies: [params.projectId]
+          status: taskForm.status,
+          dependencies: []
         })
       });
       console.log('Task payload:', {
@@ -163,6 +168,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
         assignedUsers: taskForm.assignedUser ? [taskForm.assignedUser] : [],
         priority: taskForm.priority,
         deadlineDate: taskForm.deadlineDate,
+        status: taskForm.status
       });
 
       if (!response.ok) {
@@ -174,7 +180,8 @@ export default function List({ params }: { params: { projectId: string, taskId: 
         description: '',
         assignedUser: '',
         deadlineDate: '',
-        priority: 0
+        priority: 0,
+        status: 0
       });
       setIsAddingTask(false);
 
@@ -200,7 +207,8 @@ export default function List({ params }: { params: { projectId: string, taskId: 
           assignedUsers: taskForm.assignedUser ? [taskForm.assignedUser] : [],
           priority: taskForm.priority,
           deadlineDate: taskForm.deadlineDate,
-          dependencies: [params.projectId]
+          dependencies: [params.projectId],
+          status: taskForm.status
         })
       });
       console.log('Update task payload:', {
@@ -209,6 +217,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
         assignedUsers: taskForm.assignedUser ? [taskForm.assignedUser] : [],
         priority: taskForm.priority,
         deadlineDate: taskForm.deadlineDate,
+        status: taskForm.status
       });
 
       if (!response.ok) {
@@ -220,7 +229,8 @@ export default function List({ params }: { params: { projectId: string, taskId: 
         description: '',
         assignedUser: '',
         deadlineDate: '',
-        priority: 0
+        priority: 0,
+        status: 0
       });
       setEditedTaskId(null);
       setIsAddingTask(false);
@@ -267,9 +277,6 @@ export default function List({ params }: { params: { projectId: string, taskId: 
     }
   });
 
-  // Query or process the collected user IDs
-  console.log('Assigned User IDs:', assignedUserIds);
-
   if (projectLoading || tasksLoading) return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
   if (projectError || tasksError) return <div className="text-red-600 dark:text-red-400">Error: {projectError?.message || tasksError?.message}</div>;
 
@@ -295,15 +302,16 @@ export default function List({ params }: { params: { projectId: string, taskId: 
             </div>
           </div>
 
-          <div className="grid grid-cols-4 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+          <div className="grid grid-cols-5 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
             <div>Nazwa zadania</div>
             <div>Przypisane do</div>
             <div>Termin</div>
             <div>Priorytet</div>
+            <div>Status</div>
           </div>
 
           {isAddingTask && (
-              <div className="grid grid-cols-4 gap-4 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+              <div className="grid grid-cols-5 gap-4 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
                 <div>
                   <input
                       type="text"
@@ -348,7 +356,20 @@ export default function List({ params }: { params: { projectId: string, taskId: 
                     <option value="2">Wysoki</option>
                   </select>
                 </div>
-                <div className="col-span-4 flex justify-end gap-2">
+                <div>
+                  <select
+                        name="status"
+                        value={taskForm.status}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  >
+                    <option value="-1">Planowane</option>
+                    <option value="0">W trakcie</option>
+                    <option value="1">Skończone</option>
+                    <option value="2">Problem</option>
+                  </select>
+                </div>
+                <div className="col-span-5 flex justify-end gap-2">
                   <button
                       onClick={() => {
                         setIsAddingTask(false);
@@ -372,7 +393,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
               console.log(task.assignedUsers),
                   <div
                       key={task.id}
-                      className="grid grid-cols-4 px-4 py-3 border-b border-gray-200 hover:bg-gray-50"
+                      className="grid grid-cols-5 px-4 py-3 border-b border-gray-200 hover:bg-gray-50"
                       onClick={() => handleTaskClick(task)}
                   >
                     <div className="flex items-center gap-2">
@@ -414,6 +435,10 @@ export default function List({ params }: { params: { projectId: string, taskId: 
             icon={faFlag}
           className={`w-4 h-4 ${task.priority === 0 ? 'text-green-500' : task.priority === 1 ? 'text-orange-500' : task.priority === 2 ? 'text-red-500' : 'text-gray-400'} mr-2`}
                       />
+                    </div>
+                    <div className="flex items-center">
+                      <span
+                          className="text-gray-600">{task.status === -1 ? 'Planowane' : task.status === 0 ? 'W trakcie' : task.status === 1 ? 'Skończone' : task.status === 2 ? 'Problem' : 'Brak ustawionego statusu'}</span>
                     </div>
                   </div>
           ))}
