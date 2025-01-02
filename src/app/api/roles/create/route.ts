@@ -1,19 +1,21 @@
 export async function POST(
     request: Request,
-    { params }: { params: { rolesId: string } }
 ) {
     try {
         const body = await request.json();
         const backend = process.env.BACKEND || "http://localhost:8080";
         const atok = request.headers.get("Authorization");
 
-        const response = await fetch(`${backend}/api/roles/${params.rolesId}/create`, {
+        const response = await fetch(`${backend}/api/roles/create`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': atok
             },
-            body: JSON.stringify(body)
+            body: JSON.stringify({
+                name: body.name,
+                scopes: body.scopes,
+            })
         });
 
         if (!response.ok) {
