@@ -501,23 +501,23 @@ const AdminPanel = () => {
         }
     };
 
-    if (!isAdmin) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-100">
-                <div className="bg-white p-8 rounded-lg shadow-lg text-center">
-                    <h1 className="text-4xl font-bold text-gray-800 mb-4">418</h1>
-                    <h2 className="text-2xl font-semibold text-gray-700 mb-4">I'm a teapot</h2>
-                    <p className="text-gray-600">You are not the administrator of this site</p>
-                    <img
-                        src="https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fcliparts.co%2Fcliparts%2FriL%2Fg4q%2FriLg4qj4T.png&f=1&nofb=1&ipt=719a3c33ded252d00e97836b1640de7ac2002ee4ca40c091b9a9ae4581db8e55&ipo=images"
-                        alt="Teapot"
-                        className="mx-auto my-6 w-32 h-32"
-                    />
-                    <p className="text-gray-600 text-[10px]">Maybe try "programmers" coffee instead. </p>
-                </div>
-            </div>
-        );
-    }
+    // if (!isAdmin) {
+    //     return (
+    //         <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    //             <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+    //                 <h1 className="text-4xl font-bold text-gray-800 mb-4">418</h1>
+    //                 <h2 className="text-2xl font-semibold text-gray-700 mb-4">I'm a teapot</h2>
+    //                 <p className="text-gray-600">You are not the administrator of this site</p>
+    //                 <img
+    //                     src="https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fcliparts.co%2Fcliparts%2FriL%2Fg4q%2FriLg4qj4T.png&f=1&nofb=1&ipt=719a3c33ded252d00e97836b1640de7ac2002ee4ca40c091b9a9ae4581db8e55&ipo=images"
+    //                     alt="Teapot"
+    //                     className="mx-auto my-6 w-32 h-32"
+    //                 />
+    //                 <p className="text-gray-600 text-[10px]">Maybe try "programmers" coffee instead. </p>
+    //             </div>
+    //         </div>
+    //     );
+    // }
 
     return (
         <div className="container mx-auto p-6">
