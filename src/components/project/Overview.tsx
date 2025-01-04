@@ -35,7 +35,7 @@ export default function Overview({ params: { projectId } }) {
                     'Authorization': atok
                 },
                 body: JSON.stringify({
-                    name: '',
+                    name: projectData.name,
                     description: editedDesc,
                     scopes: []
                 })

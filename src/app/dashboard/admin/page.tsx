@@ -7,6 +7,7 @@ interface Role {
     roleId?: string;
     name: string;
     scope: string[];
+    department?: number;
 }
 
 interface User {
@@ -14,6 +15,9 @@ interface User {
     firstName: string;
     lastName: string;
     roles: string[] | null; // Make roles nullable in the type
+    department: string;
+    birthDate: string;
+    isApproved: boolean;
 }
 
 interface NewRole {
@@ -31,12 +35,16 @@ const AdminPanel = () => {
         name: '',
         scopes: []
     });
+    const [newScope, setNewScope] = useState<Map<string, string>>(new Map()); // State for new scope input for each role
     const [error, setError] = useState<string>('');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
     useEffect(() => {
         fetchRoles();
         fetchUsers();
         fetchUnapprovedUsers();
+        checkAdminAccess();
     }, []);
 
     useEffect(() => {
@@ -61,6 +69,44 @@ const AdminPanel = () => {
         }
     }, [users]);
 
+    const checkAdminAccess = async () => {
+        try {
+            const atok = localStorage.getItem('atok');
+            if (!atok) throw new Error('Authentication token not found');
+
+            const response = await fetch('/api/user/current/roles', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${atok}`
+                }
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch user roles');
+            const data = await response.json();
+            const userRoles = data.$values ?? [];
+
+            // Check if user has admin role
+            const hasAdminRole = userRoles.some((role: any) =>
+                role.name?.toLowerCase() === 'admin' ||
+                role.scopes?.$values?.includes('admin')
+            );
+
+            setIsAdmin(hasAdminRole);
+
+            if (hasAdminRole) {
+                // Only fetch admin data if user is admin
+                fetchRoles();
+                fetchUsers();
+                fetchUnapprovedUsers();
+            }
+        } catch (error) {
+            console.error('Error checking admin access:', error);
+            setIsAdmin(false);
+        }
+    };
+
+
     const handleApiError = (error: unknown, defaultMessage: string) => {
         console.error(defaultMessage, error);
         const errorMessage = error instanceof Error ? error.message : defaultMessage;
@@ -74,18 +120,26 @@ const AdminPanel = () => {
             if (!atok) throw new Error('Authentication token not found');
 
             const response = await fetch('/api/roles', {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `${atok}`
                 }
             });
+
             if (!response.ok) throw new Error('Failed to fetch roles');
             const data = await response.json();
-            setRoles(data.$values?.map((role: any) => ({
-                id: role.id || role.roleId,
+
+            // Handle the nested structure of the response
+            const processedRoles = data.$values?.map((role: any) => ({
+                id: role.roleId, // Use roleId as the main identifier
+                roleId: role.roleId,
                 name: role.name,
-                scope: role.scopes || []
-            })) ?? []);
+                scope: role.scopes?.$values || [], // Extract the nested scopes array
+                department: role.department
+            })) ?? [];
+
+            setRoles(processedRoles);
         } catch (error) {
             handleApiError(error, 'Failed to fetch roles');
             setRoles([]);
@@ -98,6 +152,7 @@ const AdminPanel = () => {
             if (!atok) throw new Error('Authentication token not found');
 
             const response = await fetch('/api/user/getAll', {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `${atok}`
@@ -130,6 +185,7 @@ const AdminPanel = () => {
             if (!atok) throw new Error('Authentication token not found');
 
             const response = await fetch('/api/admin/getUnapprovedUsers', {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `${atok}`
@@ -212,7 +268,10 @@ const AdminPanel = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `${atok}`
                 },
-                body: JSON.stringify(role),
+                body: JSON.stringify({
+                    name: role.name,
+                    scopes: role.scope
+                }),
             });
             if (!response.ok) throw new Error('Failed to update role');
             await fetchRoles();
@@ -260,11 +319,14 @@ const AdminPanel = () => {
         try {
             const atok = localStorage.getItem('atok');
             const response = await fetch(`/api/user/${userId}/approve`, {
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `${atok}`
-                }
+                },
+                body: JSON.stringify({
+                    isApproved: true
+                })
             });
             if (!response.ok) throw new Error('Failed to approve user');
             await fetchUnapprovedUsers();
@@ -324,6 +386,139 @@ const AdminPanel = () => {
         }
     };
 
+    const addScope = async (roleId: string) => {
+        const scope = newScope.get(roleId);
+        if (!scope || !scope.trim()) return;
+
+        setIsLoading(true);
+        try {
+            const atok = localStorage.getItem('atok');
+            if (!atok) throw new Error('Authentication token not found');
+
+            const role = roles.find(r => r.id === roleId);
+            if (!role) throw new Error('Role not found');
+
+            console.log('Current role:', role);
+            console.log('Adding scope:', scope.trim());
+
+            // Check if scope already exists
+            if (role.scope.includes(scope.trim())) {
+                throw new Error('Scope already exists');
+            }
+
+            const updatedScopes = [...role.scope, scope.trim()];
+            console.log('Updated scopes:', updatedScopes);
+
+            const payload = {
+                name: role.name,
+                scopes: updatedScopes
+            };
+            console.log('Sending payload:', payload);
+
+            const response = await fetch(`/api/roles/${roleId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${atok}`
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                console.error('API Error:', errorData);
+                throw new Error(errorData?.message || 'Failed to add scope');
+            }
+
+            const updatedRole = await response.json();
+            console.log('API Response:', updatedRole);
+
+            // Update the local state with the new role data
+            setRoles(prevRoles => prevRoles.map(r =>
+                r.id === roleId ? { ...r, scope: updatedScopes } : r
+            ));
+
+            // Clear the input
+            setNewScope(prev => new Map(prev).set(roleId, ''));
+            setError('');
+        } catch (error) {
+            console.error('Error in addScope:', error);
+            handleApiError(error, 'Failed to add scope');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const deleteScope = async (roleId: string, scopeToDelete: string) => {
+        setIsLoading(true);
+        try {
+            const atok = localStorage.getItem('atok');
+            if (!atok) throw new Error('Authentication token not found');
+
+            const role = roles.find(r => r.id === roleId);
+            if (!role) throw new Error('Role not found');
+
+            console.log('Current role:', role);
+            console.log('Deleting scope:', scopeToDelete);
+
+            const updatedScopes = role.scope.filter(scope => scope !== scopeToDelete);
+            console.log('Updated scopes:', updatedScopes);
+
+            const payload = {
+                name: role.name,
+                scopes: updatedScopes
+            };
+            console.log('Sending payload:', payload);
+
+            const response = await fetch(`/api/roles/${roleId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${atok}`
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                console.error('API Error:', errorData);
+                throw new Error(errorData?.message || 'Failed to delete scope');
+            }
+
+            const updatedRole = await response.json();
+            console.log('API Response:', updatedRole);
+
+            // Update the local state with the new role data
+            setRoles(prevRoles => prevRoles.map(r =>
+                r.id === roleId ? { ...r, scope: updatedScopes } : r
+            ));
+            setError('');
+        } catch (error) {
+            console.error('Error in deleteScope:', error);
+            handleApiError(error, 'Failed to delete scope');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    if (!isAdmin) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-100">
+                <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+                    <h1 className="text-4xl font-bold text-gray-800 mb-4">418</h1>
+                    <h2 className="text-2xl font-semibold text-gray-700 mb-4">I'm a teapot</h2>
+                    <p className="text-gray-600">You are not the administrator of this site</p>
+                    <img
+                        src="https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fcliparts.co%2Fcliparts%2FriL%2Fg4q%2FriLg4qj4T.png&f=1&nofb=1&ipt=719a3c33ded252d00e97836b1640de7ac2002ee4ca40c091b9a9ae4581db8e55&ipo=images"
+                        alt="Teapot"
+                        className="mx-auto my-6 w-32 h-32"
+                    />
+                    <p className="text-gray-600 text-[10px]">Maybe try "programmers" coffee instead. </p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="container mx-auto p-6">
             <h1 className="text-2xl font-bold mb-6">Admin Panel</h1>
@@ -354,21 +549,56 @@ const AdminPanel = () => {
                 </div>
                 <div className="space-y-4">
                     {roles.map((role) => (
-                        <div key={role.id} className="flex items-center">
-                            <input
-                                type="text"
-                                value={role.name}
-                                onChange={(e) => setRoles(
-                                    roles.map(r => r.id === role.id ? {...r, name: e.target.value} : r)
-                                )}
-                                className="border border-gray-300 p-2 rounded mr-2 flex-grow"
-                            />
-                            <button
-                                onClick={() => deleteRole(role.id)}
-                                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-                            >
-                                Delete
-                            </button>
+                        console.log("role: ", role),
+                        <div key={role.id} className="border rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-4">
+                                <input
+                                    type="text"
+                                    value={role.name}
+                                    onChange={(e) => setRoles(prevRoles => prevRoles.map(r => r.id === role.id ? {
+                                        ...r,
+                                        name: e.target.value
+                                    } : r))}
+                                    onBlur={() => updateRole(role)}
+                                    className="border border-gray-300 p-2 rounded mr-2"
+                                />
+                                <button
+                                    onClick={() => deleteRole(role.id)}
+                                    className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                                >
+                                    Delete Role
+                                </button>
+                            </div>
+                            <div className="flex mb-4">
+                                <input
+                                    type="text"
+                                    placeholder="New Scope"
+                                    value={newScope.get(role.id) || ''}
+                                    onChange={(e) => setNewScope(prev => new Map(prev).set(role.id, e.target.value))}
+                                    className="border border-gray-300 p-2 rounded mr-2"
+                                />
+                                <button
+                                    onClick={() => addScope(role.id)}
+                                    disabled={isLoading || !newScope.get(role.id)?.trim()}
+                                    className="bg-blue-500 text-white px-4 py-2 rounded disabled:bg-blue-300"
+                                >
+                                    {isLoading ? 'Adding...' : 'Add Scope'}
+                                </button>
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                                {role.scope.map((scope, index) => (
+                                    <div key={index} className="flex items-center bg-gray-200 px-2 py-1 rounded">
+                                        <span>{scope}</span>
+                                        <button
+                                            onClick={() => deleteScope(role.id, scope)}
+                                            disabled={isLoading}
+                                            className="ml-2 text-red-500 hover:text-red-700 disabled:text-gray-400"
+                                        >
+                                            &times;
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     ))}
                 </div>
@@ -382,33 +612,26 @@ const AdminPanel = () => {
                         <div key={user.id} className="border rounded-lg p-4">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-4">
-                                    <input
-                                        type="text"
-                                        value={user.firstName}
-                                        onChange={(e) => updateUser({...user, firstName: e.target.value})}
-                                        className="border border-gray-300 p-2 rounded"
-                                    />
-                                    <span className="text-gray-500">{user.lastName}</span>
+                                    <span className="font-medium">{user.firstName} {user.lastName}</span>
+                                    <button
+                                        onClick={() => deleteUser(user.id)}
+                                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                                    >
+                                        Delete User
+                                    </button>
                                 </div>
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {roles.map((role) => {
-                                    // Check if the user has the role using userRoles map
-                                    const isRoleAssigned = userRoles.get(user.id)?.includes(role.id) ?? false;
-
+                                    const isAssigned = userRoles.get(user.id)?.includes(role.id);
                                     return (
-                                        <label
-                                            key={`${user.id}-${role.id}`}
-                                            className="flex items-center gap-2 bg-gray-100 p-2 rounded hover:bg-gray-200 cursor-pointer"
+                                        <button
+                                            key={role.id}
+                                            onClick={() => toggleUserRole(user, role.id)}
+                                            className={`px-4 py-2 rounded ${isAssigned ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
                                         >
-                                            <input
-                                                type="checkbox"
-                                                checked={isRoleAssigned}
-                                                onChange={() => toggleUserRole(user, role.id)}
-                                                className="form-checkbox h-4 w-4"
-                                            />
-                                            <span>{role.name}</span>
-                                        </label>
+                                            {role.name}
+                                        </button>
                                     );
                                 })}
                             </div>

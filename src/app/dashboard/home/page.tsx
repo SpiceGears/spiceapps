@@ -1,7 +1,6 @@
 'use client'
-import React, {useEffect} from "react";
-import { useUserData } from "../../../hooks/userData"
-import { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useUserData } from "../../../hooks/userData";
 import { useRouter } from "next/navigation";
 
 interface Project {
@@ -13,12 +12,26 @@ interface Project {
     priority: string;
 }
 
+interface Task {
+    id: string;
+    projectId: string;
+    name: string;
+    status: number;
+    priority: number;
+    percentage: number;
+    created: string;
+    deadlineDate: string;
+    finished: string | null;
+}
+
 const Dashboard = () => {
     const { userData, loading, error } = useUserData();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [selectedOption, setSelectedOption] = useState('Mój tydzień');
     const [activeTab, setActiveTab] = useState('Nadchodzące');
     const [projects, setProjects] = useState<Project[]>([]);
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [doneTasksCount, setDoneTasksCount] = useState(0);
     const router = useRouter();
 
     useEffect(() => {
@@ -49,15 +62,96 @@ const Dashboard = () => {
         getProjects();
     }, []);
 
+    useEffect(() => {
+        if (userData) {
+            fetchUserTasks(userData.id);
+            getDoneTasks(userData.id, 'week');
+        }
+    }, [userData]);
+
+    const fetchUserTasks = async (userId: string) => {
+        try {
+            const atok = localStorage.getItem('atok');
+            const response = await fetch(`/api/user/${userId}/getAssignedTasks`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${atok}`
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch user tasks');
+            const data = await response.json();
+            setTasks(data.$values ?? []);
+        } catch (error) {
+            console.error('Error fetching user tasks:', error);
+        }
+    };
+
+    const getDoneTasks = async (userId: string, period: string) => {
+        try {
+            const atok = localStorage.getItem('atok');
+            const response = await fetch(`/api/user/${userId}/finishedTasks`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${atok}`
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch done tasks');
+            const data = await response.json();
+            const now = new Date();
+            let filteredTasks = data.$values;
+
+            if (period === 'week') {
+                const lastWeek = new Date(now.setDate(now.getDate() - 7));
+                filteredTasks = data.$values.filter(task => new Date(task.finished) >= lastWeek);
+            } else if (period === 'month') {
+                const lastMonth = new Date(now.setMonth(now.getMonth() - 1));
+                filteredTasks = data.$values.filter(task => new Date(task.finished) >= lastMonth);
+            } else if (period === 'season') {
+                const lastSeason = new Date(now.setMonth(now.getMonth() - 3));
+                filteredTasks = data.$values.filter(task => new Date(task.finished) >= lastSeason);
+            }
+
+            setDoneTasksCount(filteredTasks.length);
+        } catch (error) {
+            console.error('Error fetching done tasks:', error);
+        }
+    };
+
+    const getTotalDoneTasks = async (userId: string) => {
+        try {
+            const atok = localStorage.getItem('atok');
+            const response = await fetch(`/api/user/${userId}/finishedTasks/count`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${atok}`
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch total done tasks');
+            const data = await response.json();
+            setDoneTasksCount(data.count);
+        } catch (error) {
+            console.error('Error fetching total done tasks:', error);
+        }
+    };
+
     if (loading) return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
     if (error) return <div className="text-red-600 dark:text-red-400">Error loading user data</div>;
     if (!userData) return <div className="text-gray-600 dark:text-gray-400">No user data available</div>;
 
-
     const handleSelect = (option) => {
         setSelectedOption(option);
         setDropdownOpen(false);
-        // Wywołaj odpowiednią funkcję dla wybranej opcji
+        let period = 'week';
+        if (option === 'Mój miesiąc') period = 'month';
+        else if (option === 'Mój sezon') period = 'season';
+        else if (option === 'Lifetime') {
+            getTotalDoneTasks(userData.id);
+            return;
+        }
+        getDoneTasks(userData.id, period);
         console.log(`Wybrano: ${option}`);
     };
 
@@ -77,16 +171,16 @@ const Dashboard = () => {
                     Coming soon
                 </button>
             </header>
-            
+
             <main className="p-6">
                 {/* Greeting Section */}
                 <div className="text-center mb-10">
                     <p className="text-lg text-gray-500 dark:text-gray-400">
-                        {new Date().toLocaleDateString('pl-PL', { 
-                            weekday: 'long', 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
+                        {new Date().toLocaleDateString('pl-PL', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
                         })}
                     </p>
                     <h2 className="text-5xl font-bold mt-2 text-gray-800 dark:text-gray-200">
@@ -126,52 +220,67 @@ const Dashboard = () => {
                     </div>
                     <div
                         className="bg-white text-lg dark:bg-gray-800 shadow dark:shadow-gray-700 px-4 py-2 rounded-md text-gray-800 dark:text-gray-200">
-                        Wykonano 9999 zadań
+                        Wykonano {doneTasksCount} zadań
                     </div>
                 </div>
 
-                {/* Tasks Section */}
-                <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700 rounded-lg p-6 mb-6">
-                    <div
-                        className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
-                        <div className="flex items-center gap-4">
-                            <img
-                                src={`https://ui-avatars.com/api/?name=${userData.firstName}+${userData.lastName}&background=random&color=fff`}
-                                alt={`${userData.firstName} ${userData.lastName}`}
-                                className="w-10 h-10 rounded-full"
-                            />
-                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Moje zadania</h3>
-                        </div>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
-                             stroke="currentColor" className="w-6 h-6 text-gray-500 dark:text-gray-400 cursor-pointer">
-                            <path strokeLinecap="round" strokeLinejoin="round"
-                                  d="M6.75 12h10.5m-10.5 0l3.375-3.375M6.75 12l3.375 3.375"/>
-                        </svg>
-                    </div>
-
-                    <div
-                        className="flex justify-start space-x-6 text-gray-500 dark:text-gray-400 text-sm border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
-                        {['Nadchodzące', 'Zaległe', 'Ukończone'].map((tab) => (
-                            <button
-                                key={tab}
-                                onClick={() => handleTabClick(tab)}
-                                className={`pb-2 ${activeTab === tab ? 'text-gray-800 dark:text-gray-200 border-b-2 border-gray-800 dark:border-gray-200' : 'hover:text-gray-700 dark:hover:text-gray-300'}`}
-                            >
-                                {tab}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/*<button className="text-gray-500 dark:text-gray-400 flex items-center gap-2 hover:text-gray-800 dark:hover:text-gray-200">*/}
-                    {/*    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-5 h-5">*/}
-                    {/*        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />*/}
-                    {/*    </svg>*/}
-                    {/*    Stwórz zadanie*/}
-                    {/*</button>*/}
-                </div>
-
-                {/* Projects and People Grid */}
+                {/* Tasks and Projects Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Tasks Section */}
+                    <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700 rounded-lg p-6">
+                        <div
+                            className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
+                            <div className="flex items-center gap-4">
+                                <img
+                                    src={`https://ui-avatars.com/api/?name=${userData.firstName}+${userData.lastName}&background=random&color=fff`}
+                                    alt={`${userData.firstName} ${userData.lastName}`}
+                                    className="w-10 h-10 rounded-full"
+                                />
+                                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Moje zadania</h3>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
+                                 stroke="currentColor" className="w-6 h-6 text-gray-500 dark:text-gray-400 cursor-pointer">
+                                <path strokeLinecap="round" strokeLinejoin="round"
+                                      d="M6.75 12h10.5m-10.5 0l3.375-3.375M6.75 12l3.375 3.375"/>
+                            </svg>
+                        </div>
+
+                        <div
+                            className="flex justify-start space-x-6 text-gray-500 dark:text-gray-400 text-sm border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
+                            {['Nadchodzące', 'Zaległe', 'Ukończone'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => handleTabClick(tab)}
+                                    className={`pb-2 ${activeTab === tab ? 'text-gray-800 dark:text-gray-200 border-b-2 border-gray-800 dark:border-gray-200' : 'hover:text-gray-700 dark:hover:text-gray-300'}`}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-3 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                                <div>Nazwa zadania</div>
+                                <div>Status</div>
+                                <div>Priorytet</div>
+                            </div>
+                            {tasks.length === 0 ? (
+                                <div className="px-4 py-3 text-gray-500 dark:text-gray-400">Brak zadań</div>
+                            ) : (
+                                tasks.map(task => (
+                                    <div
+                                        key={task.id}
+                                        className="grid grid-cols-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 cursor-pointer"
+                                    >
+                                        <div>{task.name}</div>
+                                        <div>{task.status}</div>
+                                        <div>{task.priority}</div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
                     {/* Projects Section */}
                     <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700 rounded-lg p-6">
                         <div className="flex justify-between items-center mb-6">
@@ -182,64 +291,29 @@ const Dashboard = () => {
                             </button>
                         </div>
                         <div className="space-y-4">
-                            {/*<div className="flex items-center space-x-4">*/}
-                            {/*    <div className="w-12 h-12 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center text-gray-400 dark:text-gray-500">*/}
-                            {/*        +*/}
-                            {/*    </div>*/}
-                            {/*    <span className="text-sm text-gray-800 dark:text-gray-200">Stwórz projekt</span>*/}
-                            {/*</div>*/}
-                            {/* Projects list */}
                             <div
-                                className="grid grid-cols-4 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                                className="grid grid-cols-3 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
                                 <div>Nazwa projektu</div>
                                 <div>Opis projektu</div>
                                 <div>Status</div>
-                                <div>Priorytet</div>
                             </div>
-                            {error ? (
-                                <div className="px-4 py-3 text-red-500">{error}</div>
+                            {projects.length === 0 ? (
+                                <div className="px-4 py-3 text-gray-500 dark:text-gray-400">Brak projektów</div>
                             ) : (
                                 projects.map(project => (
                                     <div
                                         key={project.id}
-                                        className="grid grid-cols-4 px-4 py-3 border-b border-gray-200 dark:border-gray-700 cursor-pointer"
+                                        className="grid grid-cols-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 cursor-pointer"
                                         onClick={() => handleProjectClick(project.id)}
                                     >
                                         <div>{project.name}</div>
                                         <div>{project.description}</div>
-                                        {/*<div>{project.sTasks.length}</div>*/}
                                         <div>{project.priority}</div>
                                     </div>
                                 ))
                             )}
                         </div>
                     </div>
-
-                    {/*/!* People Section *!/*/}
-                    {/*<div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700 rounded-lg p-6">*/}
-                    {/*    <div className="flex justify-between items-center mb-6">*/}
-                    {/*        <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Wydziały</h2>*/}
-                    {/*    </div>*/}
-                    {/*    <div className="space-y-4">*/}
-                    {/*        {[*/}
-                    {/*            { name: 'Programiści', color: 'bg-blue-200 dark:bg-blue-800' },*/}
-                    {/*            { name: 'Mechanicy', color: 'bg-green-200 dark:bg-green-800' },*/}
-                    {/*            { name: 'Zarządzanie', color: 'bg-purple-200 dark:bg-purple-800' }*/}
-                    {/*        ].map((dept, idx) => (*/}
-                    {/*            <div key={idx} className="flex items-center space-x-4">*/}
-                    {/*                <div className={`w-12 h-12 ${dept.color} rounded-lg flex items-center justify-center`}>*/}
-                    {/*                    <span className="font-semibold text-gray-800 dark:text-gray-200">{dept.name.charAt(0)}</span>*/}
-                    {/*                </div>*/}
-                    {/*                <span className="text-sm text-gray-800 dark:text-gray-200">{dept.name}</span>*/}
-                    {/*            </div>*/}
-                    {/*        ))}*/}
-                    {/*    </div>*/}
-                    {/*    <div className="mt-6">*/}
-                    {/*        <button className="bg-blue-500 dark:bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-600 dark:hover:bg-blue-700">*/}
-                    {/*            Zobacz więcej*/}
-                    {/*        </button>*/}
-                    {/*    </div>*/}
-                    {/*</div>*/}
                 </div>
             </main>
         </div>

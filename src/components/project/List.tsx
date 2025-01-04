@@ -398,14 +398,10 @@ export default function List({ params }: { params: { projectId: string, taskId: 
           {tasks.map(task => (
               <div
                   key={task.id}
-                  className="grid grid-cols-5 px-4 py-3 border-b border-gray-200 hover:bg-gray-50"
+                  className={`grid grid-cols-5 px-4 py-3 border-b border-gray-200 hover:bg-gray-50 ${task.status === 1 ? 'bg-green-100' : ''}`}
                   onClick={() => handleTaskClick(task)}
               >
                 <div className="flex items-center gap-2">
-                  <input
-                      type="checkbox"
-                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
                   <span className="text-gray-700">{task.name}</span>
                 </div>
                 <div className="flex items-center justify-start">
@@ -444,13 +440,6 @@ export default function List({ params }: { params: { projectId: string, taskId: 
                 </div>
               </div>
           ))}
-
-          <div
-              onClick={handleAddTaskClick}
-              className="px-4 py-3 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-          >
-            + Dodaj zadanie...
-          </div>
         </div>
       </div>
   );
