@@ -95,14 +95,11 @@ export default function List({ params }: { params: { projectId: string, taskId: 
         }
 
         const data = await response.json();
-        console.log('Fetched tasks:', data); // Debug fetched tasks
-
         if (data && Array.isArray(data.$values)) {
           const tasks = data.$values.map((task: any) => ({
             ...task,
           }));
           setTasks(tasks);
-          console.log('Tasks with assigned users:', tasks); // Debug tasks with assigned users
         } else {
           console.error('Invalid data format:', data);
           throw new Error('Invalid data format');
@@ -114,6 +111,9 @@ export default function List({ params }: { params: { projectId: string, taskId: 
     }
 
     fetchTasks();
+    const intervalId = setInterval(fetchTasks, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
   }, [params.projectId]);
 
   const handleTaskClick = (task: Task) => {
@@ -192,6 +192,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
 
       resetTaskForm();
       setIsAddingTask(false);
+      await fetchTasks();
 
     } catch (error) {
       console.error('Error creating task:', error);
@@ -235,6 +236,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
       resetTaskForm();
       setEditedTaskId(null);
       setIsAddingTask(false);
+      await fetchTasks();
 
     } catch (error) {
       console.error('Error updating task:', error);
