@@ -4,11 +4,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faMessage, faSearch } from '@fortawesome/free-solid-svg-icons';
-import { useUserData } from '../hooks/userData';
+import { useUserData } from '@/hooks/userData';
+import { useTheme } from 'next-themes';
 
 export default function Navbar() {
     const { userData, loading, error } = useUserData();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const { theme } = useTheme();
 
     async function generateAccess() {
         try {
@@ -54,12 +56,12 @@ export default function Navbar() {
         <div className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-800 w-full h-16">
             <Link href="/dashboard/home" className="flex items-center h-full">
                 <div className="flex items-center justify-center">
-                    <Image 
-                        src="/images/spicelab.png" 
-                        alt="icon" 
-                        width={250} 
-                        height={250} 
-                        className="object-contain dark:brightness-90" 
+                    <Image
+                        src={theme === 'dark' ? '/images/spicelab-dark.png' : '/images/spicelab.png'}
+                        alt="icon"
+                        width={250}
+                        height={250}
+                        className="object-contain dark:brightness-90"
                     />
                 </div>
             </Link>

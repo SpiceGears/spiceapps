@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { useUserData } from "../../../hooks/userData";
 import { useRouter } from "next/navigation";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFlag } from "@fortawesome/free-solid-svg-icons";
 
 interface Project {
     id: string;
@@ -9,7 +11,8 @@ interface Project {
     description: string;
     sTasks: string[];
     scopesRequired: string[];
-    priority: string;
+    priority: number;
+    status: number;
 }
 
 interface Task {
@@ -32,6 +35,7 @@ const Dashboard = () => {
     const [projects, setProjects] = useState<Project[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [doneTasksCount, setDoneTasksCount] = useState(0);
+    const [filteredTasks, setFilteredTasks] = useState<Task[]>([]);
     const router = useRouter();
 
     useEffect(() => {
@@ -68,6 +72,18 @@ const Dashboard = () => {
             getDoneTasks(userData.id, 'week');
         }
     }, [userData]);
+
+    useEffect(() => {
+        let filtered = [];
+        if (activeTab === 'Nadchodzące') {
+            filtered = tasks; // Adjust the condition based on your status values
+        } else if (activeTab === 'Zaległe') {
+            filtered = tasks.filter(task => task.deadlineDate > new Date().toISOString().split('T')[0]); // Adjust the condition based on your status values
+        } else if (activeTab === 'Ukończone') {
+            filtered = tasks.filter(task => task.status === 1); // Adjust the condition based on your status values
+        }
+        setFilteredTasks(filtered);
+    }, [activeTab, tasks]);
 
     const fetchUserTasks = async (userId: string) => {
         try {
@@ -155,7 +171,7 @@ const Dashboard = () => {
         console.log(`Wybrano: ${option}`);
     };
 
-    const handleTabClick = (tab) => {
+    const handleTabClick = (tab: string) => {
         setActiveTab(tab);
     };
 
@@ -164,15 +180,15 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans">
-            <header className="p-6 flex justify-between items-center">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans p-4 md:p-6">
+            <header className="p-4 md:p-6 flex justify-between items-center">
                 <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Home</h1>
                 <button className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-sm px-4 py-2 rounded-md text-gray-800 dark:text-gray-200">
                     Coming soon
                 </button>
             </header>
 
-            <main className="p-6">
+            <main className="p-4 md:p-6">
                 {/* Greeting Section */}
                 <div className="text-center mb-10">
                     <p className="text-lg text-gray-500 dark:text-gray-400">
@@ -189,7 +205,7 @@ const Dashboard = () => {
                 </div>
 
                 {/* Stats Section */}
-                <div className="flex items-center justify-center gap-4 text-sm mb-6">
+                <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-sm mb-6">
                     <div className="relative">
                         <button
                             className="bg-white text-lg dark:bg-gray-800 shadow dark:shadow-gray-700 px-4 py-2 rounded-md flex items-center text-gray-800 dark:text-gray-200"
@@ -225,9 +241,9 @@ const Dashboard = () => {
                 </div>
 
                 {/* Tasks and Projects Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {/* Tasks Section */}
-                    <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700 rounded-lg p-6">
+                    <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700 rounded-lg p-4 md:p-6">
                         <div
                             className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-4 mb-4">
                             <div className="flex items-center gap-4">
@@ -239,7 +255,8 @@ const Dashboard = () => {
                                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Moje zadania</h3>
                             </div>
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
-                                 stroke="currentColor" className="w-6 h-6 text-gray-500 dark:text-gray-400 cursor-pointer">
+                                 stroke="currentColor"
+                                 className="w-6 h-6 text-gray-500 dark:text-gray-400 cursor-pointer">
                                 <path strokeLinecap="round" strokeLinejoin="round"
                                       d="M6.75 12h10.5m-10.5 0l3.375-3.375M6.75 12l3.375 3.375"/>
                             </svg>
@@ -259,22 +276,34 @@ const Dashboard = () => {
                         </div>
 
                         <div className="space-y-4">
-                            <div className="grid grid-cols-3 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                            <div
+                                className="grid grid-cols-3 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
                                 <div>Nazwa zadania</div>
                                 <div>Status</div>
                                 <div>Priorytet</div>
                             </div>
-                            {tasks.length === 0 ? (
-                                <div className="px-4 py-3 text-gray-500 dark:text-gray-400">Brak zadań</div>
+                            {filteredTasks.length === 0 ? (
+                                <div className="px-4 py-3 text-gray-500 dark:text-gray-400">Brak zada��</div>
                             ) : (
-                                tasks.map(task => (
+                                filteredTasks.map(task => (
                                     <div
                                         key={task.id}
                                         className="grid grid-cols-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 cursor-pointer"
                                     >
-                                        <div>{task.name}</div>
-                                        <div>{task.status}</div>
-                                        <div>{task.priority}</div>
+                                        <div className="truncate">{task.name}</div>
+                                        <div>{task.status === -1 ? 'Planowane' : task.status === 0 ? 'W trakcie' : task.status === 1 ? 'Skończone' : task.status === 2 ? 'Problem' : 'Brak statusu'}</div>
+                                        <FontAwesomeIcon
+                                            icon={faFlag}
+                                            className={`w-4 h-4 ${
+                                                task.priority === 0
+                                                    ? 'text-green-500 dark:text-green-400'
+                                                    : task.priority === 1
+                                                        ? 'text-orange-500 dark:text-orange-400'
+                                                        : task.priority === 2
+                                                            ? 'text-red-500 dark:text-red-400'
+                                                            : 'text-gray-400 dark:text-gray-500'
+                                            } mr-2`}
+                                        />
                                     </div>
                                 ))
                             )}
@@ -282,7 +311,7 @@ const Dashboard = () => {
                     </div>
 
                     {/* Projects Section */}
-                    <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700 rounded-lg p-6">
+                    <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700 rounded-lg p-4 md:p-6">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Projekty</h2>
                             <button
@@ -292,10 +321,11 @@ const Dashboard = () => {
                         </div>
                         <div className="space-y-4">
                             <div
-                                className="grid grid-cols-3 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                                className="grid grid-cols-4 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
                                 <div>Nazwa projektu</div>
                                 <div>Opis projektu</div>
                                 <div>Status</div>
+                                <div>Priorytet</div>
                             </div>
                             {projects.length === 0 ? (
                                 <div className="px-4 py-3 text-gray-500 dark:text-gray-400">Brak projektów</div>
@@ -303,12 +333,24 @@ const Dashboard = () => {
                                 projects.map(project => (
                                     <div
                                         key={project.id}
-                                        className="grid grid-cols-3 px-4 py-3 border-b border-gray-200 dark:border-gray-700 cursor-pointer"
+                                        className="grid grid-cols-4 px-4 py-3 border-b border-gray-200 dark:border-gray-700 cursor-pointer"
                                         onClick={() => handleProjectClick(project.id)}
                                     >
-                                        <div>{project.name}</div>
-                                        <div>{project.description}</div>
-                                        <div>{project.priority}</div>
+                                        <div className="truncate">{project.name}</div>
+                                        <div className="truncate">{project.description}</div>
+                                        <div>{project.status === -1 ? 'Planowane' : project.status === 0 ? 'W trakcie' : project.status === 1 ? 'Skończone' : project.status === 2 ? 'Problem' : 'Brak statusu'}</div>
+                                        <FontAwesomeIcon
+                                            icon={faFlag}
+                                            className={`w-4 h-4 ${
+                                                project.priority === 0
+                                                    ? 'text-green-500 dark:text-green-400'
+                                                    : project.priority === 1
+                                                        ? 'text-orange-500 dark:text-orange-400'
+                                                        : project.priority === 2
+                                                            ? 'text-red-500 dark:text-red-400'
+                                                            : 'text-gray-400 dark:text-gray-500'
+                                            } mr-2`}
+                                        />
                                     </div>
                                 ))
                             )}
