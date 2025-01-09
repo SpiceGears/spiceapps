@@ -52,7 +52,7 @@ export default function Projects() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-100 dark:bg-gray-950">
+        <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
             <div className="p-6 max-w-6xl mx-auto">
                 <div
                     className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-sm">

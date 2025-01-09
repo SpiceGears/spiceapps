@@ -8,6 +8,7 @@ export default function CreateProject() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const [formData, setFormData] = useState({
         name: '',
         description: '',
@@ -15,8 +16,6 @@ export default function CreateProject() {
         endDate: '',
         department: ''
     });
-
-    const isButtonDisabled = !formData.name || !formData.description;
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -26,18 +25,32 @@ export default function CreateProject() {
         }));
     };
 
+    const validateForm = () => {
+        const errors: string[] = [];
+        if (!formData.name.trim()) errors.push('Nazwa projektu jest wymagana.');
+        if (!formData.description.trim()) errors.push('Opis projektu jest wymagany.');
+        if (!formData.department) errors.push('Dział projektu jest wymagany.');
+
+        setValidationErrors(errors);
+        return errors.length === 0;
+    };
+
     async function createProject(e: React.FormEvent) {
         e.preventDefault();
+        if (!validateForm()) {
+            return;
+        }
+
         setLoading(true);
         setError(null);
-    
+
         try {
             const atok = localStorage.getItem('atok');
-            
+
             if (!atok) {
                 throw new Error('Authentication token not found');
             }
-    
+
             const response = await fetch('/api/project/create', {
                 method: 'POST',
                 headers: {
@@ -50,24 +63,21 @@ export default function CreateProject() {
                     scopes: formData.department ? [formData.department] : []
                 })
             });
-    
-            // Get response content first
+
             const responseData = await response.text();
             console.log('Raw response:', responseData);
-    
+
             if (!response.ok) {
                 throw new Error(responseData || `HTTP error! status: ${response.status}`);
             }
-    
-            // For empty but successful response, get ID from headers
+
             const locationHeader = response.headers.get('location');
             if (locationHeader) {
                 const projectId = locationHeader.split('/').pop();
                 router.push(`/dashboard/project/${projectId}`);
                 return;
             }
-    
-            // Try parsing response as JSON if not empty
+
             if (responseData) {
                 try {
                     const data = JSON.parse(responseData);
@@ -79,10 +89,9 @@ export default function CreateProject() {
                     console.error('Parse error:', parseError);
                 }
             }
-    
-            // Fallback to projects list if no ID found
+
             router.push('/dashboard/home');
-    
+
         } catch (err) {
             console.error('Project creation error:', err);
             setError(err instanceof Error ? err.message : 'Failed to create project');
@@ -93,7 +102,7 @@ export default function CreateProject() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
-            <button 
+            <button
                 onClick={() => router.back()}
                 className="absolute top-4 left-4 p-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
             >
@@ -111,6 +120,16 @@ export default function CreateProject() {
                     </div>
                 )}
 
+                {validationErrors.length > 0 && (
+                    <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 text-yellow-600 dark:text-yellow-400 rounded">
+                        <ul>
+                            {validationErrors.map((err, index) => (
+                                <li key={index}>{err}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+
                 <form onSubmit={createProject} className="space-y-6">
                     <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
                         <div className="space-y-4">
@@ -123,7 +142,7 @@ export default function CreateProject() {
                                     name="name"
                                     value={formData.name}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md
                                              bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
                                              focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                                     placeholder="Wprowadź nazwę projektu"
@@ -139,7 +158,7 @@ export default function CreateProject() {
                                     value={formData.description}
                                     onChange={handleInputChange}
                                     rows={4}
-                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md
                                              bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
                                              focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                                     placeholder="Opisz swój projekt"
@@ -148,31 +167,32 @@ export default function CreateProject() {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Wydział
+                                    Dział
                                 </label>
                                 <select
                                     name="department"
                                     value={formData.department}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md 
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md
                                              bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
                                              focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                                 >
                                     <option value="">Wybierz wydział</option>
-                                    <option value="programmers">Programiści</option>
-                                    <option value="mechanics">Mechanicy</option>
-                                    <option value="marketing">Marketing</option>
-                                    <option value="socialmedia">More Than Robots</option>
-                                    <option value="executive">Zarządzanie</option>
+                                    <option value="department.designers">Project drużynowy</option>
+                                    <option value="department.programmers">Programiści</option>
+                                    <option value="department.mechanics">Mechanicy</option>
+                                    <option value="department.marketing">Marketing</option>
+                                    <option value="department.socialmedia">More Than Robots</option>
+                                    <option value="department.executive">Zarządzanie</option>
                                 </select>
                             </div>
                         </div>
 
                         <button
                             type="submit"
-                            disabled={isButtonDisabled || loading}
+                            disabled={loading}
                             className={`mt-8 w-full p-2 rounded-md text-white ${
-                                isButtonDisabled || loading
+                                loading
                                     ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed"
                                     : "bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
                             }`}

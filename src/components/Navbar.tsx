@@ -54,16 +54,14 @@ export default function Navbar() {
 
     return (
         <div className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-800 w-full h-16">
-            <Link href="/dashboard/home" className="flex items-center h-full">
-                <div className="flex items-center justify-center">
-                    <Image
-                        src={theme === 'dark' ? '/images/spicelab-dark.png' : '/images/spicelab.png'}
-                        alt="icon"
-                        width={250}
-                        height={250}
-                        className="object-contain dark:brightness-90"
-                    />
-                </div>
+            <Link href="/dashboard/home">
+                <Image
+                    src={theme === 'dark' ? '/images/spicelab-dark.png' : '/images/spicelab.png'}
+                    alt="icon"
+                    width={250}
+                    height={50}
+                    className="object-contain dark:brightness-90 relative z-0 pointer-events-none"
+                />
             </Link>
 
             <div className="flex justify-center w-1/2">
