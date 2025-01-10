@@ -32,7 +32,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
   const [taskForm, setTaskForm] = useState({
     name: '',
     description: '',
-    assignedUser: '',
+    assignedUsers: [] as string[],
     deadlineDate: '',
     priority: 0,
     status: 0
@@ -121,7 +121,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
     setTaskForm({
       name: task.name,
       description: task.description,
-      assignedUser: task.assignedUsers.$values[0] || '',
+      assignedUsers: task.assignedUsers.$values || [],
       deadlineDate: task.deadlineDate || '',
       priority: task.priority,
       status: task.status
@@ -139,11 +139,20 @@ export default function List({ params }: { params: { projectId: string, taskId: 
     }));
   };
 
+  const handleUserChange = (userId: string) => {
+    setTaskForm(prev => {
+      const assignedUsers = prev.assignedUsers.includes(userId)
+          ? prev.assignedUsers.filter(id => id !== userId)
+          : [...prev.assignedUsers, userId];
+      return { ...prev, assignedUsers };
+    });
+  };
+
   const resetTaskForm = () => {
     setTaskForm({
       name: '',
       description: '',
-      assignedUser: '',
+      assignedUsers: [],
       deadlineDate: '',
       priority: 0,
       status: 0
@@ -170,7 +179,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
         body: JSON.stringify({
           name: taskForm.name,
           description: taskForm.description,
-          assignedUsers: taskForm.assignedUser ? [taskForm.assignedUser] : [],
+          assignedUsers: taskForm.assignedUsers,
           priority: taskForm.priority,
           deadlineDate: taskForm.deadlineDate,
           status: taskForm.status,
@@ -180,7 +189,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
       console.log('Task payload:', {
         name: taskForm.name,
         description: taskForm.description,
-        assignedUsers: taskForm.assignedUser ? [taskForm.assignedUser] : [],
+        assignedUsers: taskForm.assignedUsers,
         priority: taskForm.priority,
         deadlineDate: taskForm.deadlineDate,
         status: taskForm.status
@@ -212,7 +221,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
         body: JSON.stringify({
           name: taskForm.name,
           description: taskForm.description,
-          assignedUsers: taskForm.assignedUser ? [taskForm.assignedUser] : [],
+          assignedUsers: taskForm.assignedUsers,
           priority: taskForm.priority,
           deadlineDate: taskForm.deadlineDate,
           dependencies: [],
@@ -222,7 +231,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
       console.log('Update task payload:', {
         name: taskForm.name,
         description: taskForm.description,
-        assignedUsers: taskForm.assignedUser ? [taskForm.assignedUser] : [],
+        assignedUsers: taskForm.assignedUsers,
         priority: taskForm.priority,
         deadlineDate: taskForm.deadlineDate,
         status: taskForm.status
@@ -281,7 +290,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
   if (projectError || tasksError) return <div className="text-red-600 dark:text-red-400">Error: {projectError?.message || tasksError?.message}</div>;
 
   return (
-      <div className="p-6 bg-white dark:bg-gray-900">
+      <div className="p-6 bg-white dark:bg-gray-800">
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
             <button
@@ -294,7 +303,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
               {['Filtruj', 'Sortuj', 'Grupuj', 'Opcje'].map((action) => (
                   <button
                       key={action}
-                      className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white px-2"
+                      className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 px-2"
                   >
                     {action}
                   </button>
@@ -302,8 +311,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
             </div>
           </div>
 
-          <div
-              className="grid grid-cols-5 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600">
+          <div className="grid grid-cols-5 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
             <div>Nazwa zadania</div>
             <div>Przypisane do</div>
             <div>Termin</div>
@@ -311,86 +319,143 @@ export default function List({ params }: { params: { projectId: string, taskId: 
             <div>Status</div>
           </div>
 
-          {tasks.map(task => (
-              <div
-                  key={task.id}
-                  className={`grid grid-cols-5 px-4 py-3 border-b border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 ${
-                      task.status === 1
-                          ? 'bg-green-100 dark:bg-green-900 dark:hover:bg-green-800'
-                          : 'dark:bg-gray-800'
-                  }
-                  ${
-                      task.deadlineDate < new Date().toISOString().split('T')[0]
-                          ? 'bg-red-100 dark:bg-red-900 dark:hover:bg-red-800'
-                          : 'dark:bg-gray-800'
-                  }
-                  `}
-                  onClick={() => handleTaskClick(task)}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-700 dark:text-white">{task.name}</span>
-                </div>
-
-                <div className="flex items-center">
-                  {Array.isArray(task?.assignedUsers?.$values) && task.assignedUsers.$values.length > 0 ? (
-                      task.assignedUsers.$values.map((userId) => {
-                        const user = users.find(u => u.id === userId);
-                        if (!user) return null;
-
-                        return (
-                            <div key={userId} className="flex items-center gap-1">
-                              <img
-                                  src={`https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=random&color=fff`}
-                                  alt={`${user.firstName} ${user.lastName}`}
-                                  className="w-6 h-6 rounded-full"
-                              />
-                              <span
-                                  className="text-gray-600 dark:text-gray-200">{`${user.firstName} ${user.lastName}`}</span>
-                            </div>
-                        );
-                      })
-                  ) : (
-                      <span className="text-gray-500 dark:text-gray-400">Brak</span>
-                  )}
-                </div>
-
-                <div className="flex items-center">
-                  <FontAwesomeIcon icon={faCalendar} className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2"/>
-                  <span className="text-gray-600 dark:text-gray-300">
-            {new Date(task.deadlineDate).toISOString().split('T')[0]}
-          </span>
-                </div>
-
-                <div className="flex items-center">
-                  <FontAwesomeIcon
-                      icon={faFlag}
-                      className={`w-4 h-4 ${
-                          task.priority === 0
-                              ? 'text-green-500 dark:text-green-400'
-                              : task.priority === 1
-                                  ? 'text-orange-500 dark:text-orange-400'
-                                  : task.priority === 2
-                                      ? 'text-red-500 dark:text-red-400'
-                                      : 'text-gray-400 dark:text-gray-500'
-                      } mr-2`}
+          {isAddingTask && (
+              <div className="grid grid-cols-5 gap-4 px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                <div>
+                  <input
+                      type="text"
+                      name="name"
+                      value={taskForm.name}
+                      onChange={handleInputChange}
+                      placeholder="Nazwa zadania"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   />
                 </div>
-
-                <div className="flex items-center">
-          <span className="text-gray-600 dark:text-gray-300">
-            {task.status === -1
-                ? 'Planowane'
-                : task.status === 0
-                    ? 'W trakcie'
-                    : task.status === 1
-                        ? 'Skończone'
-                        : task.status === 2
-                            ? 'Problem'
-                            : 'Brak statusu'}
-          </span>
+                <div>
+                  {users.map(user => (
+                      <div key={user.id} className="flex items-center">
+                        <input
+                            type="checkbox"
+                            id={`user-${user.id}`}
+                            value={user.id}
+                            checked={taskForm.assignedUsers.includes(user.id)}
+                            onChange={() => handleUserChange(user.id)}
+                            className="mr-2"
+                        />
+                        <label htmlFor={`user-${user.id}`} className="text-gray-700 dark:text-gray-200">{`${user.firstName} ${user.lastName}`}</label>
+                      </div>
+                  ))}
+                </div>
+                <div>
+                  <input
+                      type="date"
+                      name="deadlineDate"
+                      value={taskForm.deadlineDate}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  />
+                </div>
+                <div>
+                  <select
+                      name="priority"
+                      value={taskForm.priority}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  >
+                    <option value="0">Niski</option>
+                    <option value="1">Średni</option>
+                    <option value="2">Wysoki</option>
+                  </select>
+                </div>
+                <div>
+                  <select
+                      name="status"
+                      value={taskForm.status}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  >
+                    <option value="-1">Planowane</option>
+                    <option value="0">W trakcie</option>
+                    <option value="1">Skończone</option>
+                    <option value="2">Problem</option>
+                  </select>
+                </div>
+                <div className="col-span-5 flex justify-end gap-2">
+                  <button
+                      onClick={() => {
+                        setIsAddingTask(false);
+                        setEditedTaskId(null);
+                      }}
+                      className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  >
+                    Anuluj
+                  </button>
+                  <button
+                      onClick={deleteTask}
+                      className="px-4 py-2 text-sm bg-red-600 text-white rounded-md hover:bg-red-700"
+                  >
+                    Usuń
+                  </button>
+                  <button
+                      onClick={editedTaskId ? updateTask : createTask}
+                      className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Zapisz
+                  </button>
                 </div>
               </div>
-          ))}
+          )}
+
+          {tasks.map(task => {
+            const isOverdue = new Date(task.deadlineDate) < new Date();
+            const taskBgColor = task.status === 1 ? 'bg-green-300 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800' : isOverdue ? 'bg-red-300 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800' : 'bg-white dark:bg-gray-800';
+
+            return (
+                <div
+                    key={task.id}
+                    className={`grid grid-cols-5 px-4 py-3 border-b border-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 ${taskBgColor}`}
+                    onClick={() => handleTaskClick(task)}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-700 dark:text-gray-200">{task.name}</span>
+                  </div>
+                  <div className="flex items-center justify-start">
+                    {Array.isArray(task?.assignedUsers?.$values) && task.assignedUsers.$values.length > 0 ? (
+                        task.assignedUsers.$values.map((userId) => {
+                          const user = users.find(u => u.id === userId);
+                          if (!user) return null;
+
+                          return (
+                              <div key={userId} className="flex items-center gap-1">
+                                <img
+                                    src={`https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=random&color=fff`}
+                                    alt={`${user.firstName} ${user.lastName}`}
+                                    className="w-6 h-6 rounded-full"
+                                />
+                                <span className="text-gray-600 dark:text-gray-200">{`${user.firstName} ${user.lastName}`}</span>
+                              </div>
+                          );
+                        })
+                    ) : (
+                        <span className="text-gray-500 dark:text-gray-400">No assigned users</span>
+                    )}
+                  </div>
+                  <div className="flex items-center">
+                    <FontAwesomeIcon icon={faCalendar} className="w-4 h-4 text-gray-400 dark:text-gray-500 mr-2"/>
+                    <span className="text-gray-600 dark:text-gray-300">{new Date(task.deadlineDate).toISOString().split('T')[0]}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <FontAwesomeIcon
+                        icon={faFlag}
+                        className={`w-4 h-4 ${task.priority === 0 ? 'text-green-500 dark:text-green-400' : task.priority === 1 ? 'text-orange-500 dark:text-orange-400' : task.priority === 2 ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'} mr-2`}
+                    />
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-gray-600 dark:text-gray-300">{task.status === -1 ? 'Planowane' : task.status === 0 ? 'W trakcie' : task.status === 1 ? 'Skończone' : task.status === 2 ? 'Problem' : 'Brak ustawionego statusu'}</span>
+                  </div>
+                </div>
+            );
+          })}
         </div>
       </div>
   );
