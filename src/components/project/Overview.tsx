@@ -1,12 +1,26 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useProjectData } from '@/hooks/projectData';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+
+interface User {
+    id: string;
+    firstName: string;
+    lastName: string;
+    roles: string[] | null; // Make roles nullable in the type
+    department: string;
+    birthDate: string;
+    isApproved: boolean;
+}
 
 export default function Overview({ params: { projectId } }) {
     const [isEditingDesc, setIsEditingDesc] = useState(false);
     const [editedDesc, setEditedDesc] = useState('');
+    const [users, setUsers] = useState<User[]>([]);
     const { projectData, loading, error } = useProjectData(projectId);
+    const [userError, setError] = useState<string>('');
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
 
     const toggleDescEditing = () => {
         setIsEditingDesc(!isEditingDesc);
@@ -16,9 +30,6 @@ export default function Overview({ params: { projectId } }) {
     const handleDescChange = (e) => {
         setEditedDesc(e.target.value);
     };
-
-    if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error}</div>;
 
     async function editProject() {
         const atok = localStorage.getItem('atok');
@@ -52,6 +63,41 @@ export default function Overview({ params: { projectId } }) {
             console.error('Error updating project:', error);
         }
     }
+
+    const handleApiError = (error: unknown, defaultMessage: string) => {
+        console.error(defaultMessage, error);
+        const errorMessage = error instanceof Error ? error.message : defaultMessage;
+        setError(errorMessage);
+        setTimeout(() => setError(''), 5000); // Clear error after 5 seconds
+    };
+
+    const fetchUsers = async () => {
+        try {
+            const atok = localStorage.getItem('atok');
+            if (!atok) throw new Error('Authentication token not found');
+
+            const response = await fetch('/api/user/getAll', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `${atok}`
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch users');
+            const data = await response.json();
+            const fetchedUsers = data.$values ?? [];
+            setUsers(fetchedUsers);
+
+        } catch (error) {
+            handleApiError(error, 'Failed to fetch users');
+            setUsers([]);
+        }
+    };
+
+    if (loading) return <div>Loading...</div>;
+    if (error) return <div>Error: {error}</div>;
+
+    const creator = users.find(user => user.id === projectData?.creator);
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg">
@@ -105,7 +151,16 @@ export default function Overview({ params: { projectId } }) {
                                     Stworzony przez:
                                 </span>
                                 <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                    {projectData?.creator || 'N/A'}
+                                    {creator ? (
+                                        <div key={creator.id} className="flex items-center gap-1">
+                                            <img
+                                                src={`https://ui-avatars.com/api/?name=${creator.firstName}+${creator.lastName}&background=random&color=fff`}
+                                                alt={`${creator.firstName} ${creator.lastName}`}
+                                                className="w-6 h-6 rounded-full"
+                                            />
+                                            <span className="text-gray-600 dark:text-gray-200">{`${creator.firstName} ${creator.lastName}`}</span>
+                                        </div>
+                                    ) : 'N/A'}
                                 </span>
                             </div>
                             <div>
@@ -151,44 +206,6 @@ export default function Overview({ params: { projectId } }) {
                                 </span>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                    <div>
-                        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                            Dokumenty
-                        </h3>
-                        <button
-                            className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600
-                                     rounded-lg text-gray-500 dark:text-gray-400
-                                     hover:text-gray-700 dark:hover:text-gray-200
-                                     hover:border-gray-400 dark:hover:border-gray-500
-                                     transition-colors duration-200
-                                     flex items-center justify-center
-                                     bg-transparent"
-                        >
-                            <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                            Dodaj dokumenty
-                        </button>
-                    </div>
-
-                    <div>
-                        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                            Zasoby
-                        </h3>
-                        <button
-                            className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600
-                                     rounded-lg text-gray-500 dark:text-gray-400
-                                     hover:text-gray-700 dark:hover:text-gray-200
-                                     hover:border-gray-400 dark:hover:border-gray-500
-                                     transition-colors duration-200
-                                     flex items-center justify-center
-                                     bg-transparent"
-                        >
-                            <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                            Dodaj zasoby
-                        </button>
                     </div>
                 </div>
             </div>

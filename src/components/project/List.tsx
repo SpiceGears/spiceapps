@@ -332,19 +332,17 @@ export default function List({ params }: { params: { projectId: string, taskId: 
                   />
                 </div>
                 <div>
-                  {users.map(user => (
-                      <div key={user.id} className="flex items-center">
-                        <input
-                            type="checkbox"
-                            id={`user-${user.id}`}
-                            value={user.id}
-                            checked={taskForm.assignedUsers.includes(user.id)}
-                            onChange={() => handleUserChange(user.id)}
-                            className="mr-2"
-                        />
-                        <label htmlFor={`user-${user.id}`} className="text-gray-700 dark:text-gray-200">{`${user.firstName} ${user.lastName}`}</label>
-                      </div>
-                  ))}
+                  <select
+                      name="assignedUser"
+                      value={taskForm.assignedUsers}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                  >
+                    <option value="">Wybierz osobę</option>
+                    {users.map(user => (
+                        <option key={user.id} value={user.id}>{`${user.firstName} ${user.lastName}`}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <input

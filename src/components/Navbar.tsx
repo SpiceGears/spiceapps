@@ -56,7 +56,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-800 w-full h-16">
             <Link href="/dashboard/home">
                 <Image
-                    src={theme === 'dark' ? '/images/spicelab-dark.png' : '/images/spicelab.png'}
+                    src={theme === 'dark' ? '/images/spicelab-dark.png' : theme === 'system' ? '/images/spicelab-dark.png' : '/images/spicelab.png'}
                     alt="icon"
                     width={250}
                     height={50}

@@ -4,12 +4,20 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'next/navigation';
 
+interface FormData {
+    name: string;
+    description: string;
+    startDate: string;
+    endDate: string;
+    department: string;
+}
+
 export default function CreateProject() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<FormData>({
         name: '',
         description: '',
         startDate: '',
@@ -50,6 +58,13 @@ export default function CreateProject() {
             if (!atok) {
                 throw new Error('Authentication token not found');
             }
+
+            // if (formData.department === "all") {
+            //     setFormData(prev => ({
+            //         ...prev,
+            //         department: ""
+            //     }));
+            // }
 
             const response = await fetch('/api/project/create', {
                 method: 'POST',
@@ -178,7 +193,7 @@ export default function CreateProject() {
                                              focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                                 >
                                     <option value="">Wybierz wydział</option>
-                                    <option value="department.designers">Project drużynowy</option>
+                                    <option value="all">Project drużynowy</option>
                                     <option value="department.programmers">Programiści</option>
                                     <option value="department.mechanics">Mechanicy</option>
                                     <option value="department.marketing">Marketing</option>
