@@ -2,6 +2,12 @@
 import { useRouter } from 'next/navigation';
 import { useRef, useState } from 'react';
 import Image from 'next/image';
+import * as Sentry from '@sentry/nextjs';
+
+Sentry.init({
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    tracesSampleRate: 1.0,
+})
 
 export default function Login() {
   const router = useRouter();
