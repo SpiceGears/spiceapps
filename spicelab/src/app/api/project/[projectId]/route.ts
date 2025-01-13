@@ -1,4 +1,8 @@
 // app/api/project/[projectId]/route.ts should be in this exact path
+export const dynamic = 'force-dynamic';
+
+
+
 export async function GET(
     request: Request,
     { params }: { params: { projectId: string } }

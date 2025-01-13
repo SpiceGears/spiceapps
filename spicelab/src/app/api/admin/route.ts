@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 // app/api/user/getInfo/route.ts
 export async function GET(request: Request) {
     try {

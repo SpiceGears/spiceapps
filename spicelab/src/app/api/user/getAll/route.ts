@@ -1,4 +1,7 @@
 // app/api/user/getInfo/route.ts
+export const dynamic = 'force-dynamic';
+
+
 export async function GET(request: Request) {
     try {
         const backend = process.env.BACKEND|| "http://localhost:8080/";

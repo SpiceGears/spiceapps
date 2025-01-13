@@ -1,5 +1,5 @@
 // app/api/auth/logout/route.ts
-"use server"
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
     const backend = process.env.BACKEND || "http://localhost:8080";

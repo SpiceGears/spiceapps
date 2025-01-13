@@ -19,6 +19,8 @@ services:
       - "8085:5150"
     depends_on:
       - db
+    networks:
+      - app-network
 
   db:
     image: postgres:latest
@@ -29,6 +31,9 @@ services:
       POSTGRES_DB: db
     volumes:
       - db-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
 
   spicelab:
     image: ${DOCKER_REGISTRY-}spicelab
@@ -42,7 +47,14 @@ services:
       - "80:3000"
     depends_on:
       - spiceapi
+    networks:
+      - app-network
+
 
 volumes:
   db-data:
     driver: local
+
+networks:
+  app-network:
+    driver: bridge

@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // Helper function to validate rolesId
 function validateRolesId(rolesId: string | undefined): boolean {
     return typeof rolesId === 'string' && rolesId.length > 0;
