@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  spiceapi:
+    image: ${DOCKER_REGISTRY-}spiceapi
+    restart: always
+    build:
+      context: .
+      dockerfile: spiceapi/Dockerfile
+    environment:
+      DB_PASS: ${DB_PASS}
+      DB_HOST: ${DB_HOST}
+      DB_USER: ${DB_USER}
+      DB_NAME: ${DB_NAME}
+      CRYPT_COST: "14"
+    ports:
+      - "58831:8080"
+      - "58832:8081"
+      - "58833:5150"
+    networks:
+      - app-network
+
+  spicelab:
+    image: ${DOCKER_REGISTRY-}spicelab
+    restart: always
+    build:
+      context: .
+      dockerfile: spicelab/Dockerfile
+    environment:
+      BACKEND: http://spiceapi:58831/
+    ports:
+      - "58830:3000"
+    depends_on:
+      - spiceapi
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
