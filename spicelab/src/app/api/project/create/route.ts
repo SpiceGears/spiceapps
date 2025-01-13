@@ -1,9 +1,11 @@
 // src/app/api/project/create/route.ts
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();
         const atok = request.headers.get('Authorization');
-        const backend = process.env.BACKEND || "http://localhost:8080/";
+        const backend = process.env.BACKEND || "http://spiceapi:8080/";
 
         // Validate request body
         if (!body.name || !body.description) {

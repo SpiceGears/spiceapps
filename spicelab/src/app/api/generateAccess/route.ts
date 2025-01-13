@@ -1,8 +1,11 @@
+export const dynamic = 'force-dynamic';
+
+
 export async function POST(request: Request) {
   const body = await request.json();
   const rtb = await request.headers.get('Authorization');
   
-  const backend = process.env.BACKEND || "http://localhost:8080/";
+  const backend = process.env.BACKEND || "http://spiceapi:8080/";
 
   try {
       const response = await fetch(`${backend}api/auth/generateAccess`, {

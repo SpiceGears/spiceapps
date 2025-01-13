@@ -9,7 +9,7 @@ export async function POST(request: Request) {
         const body = await request.json();
         console.log('Request Body:', body);
 
-        const backend = process.env.BACKEND|| "http://localhost:8080/";
+        const backend = process.env.BACKEND|| "http://spiceapi:8080/";
         console.log('Backend URL:', backend);
 
         try {

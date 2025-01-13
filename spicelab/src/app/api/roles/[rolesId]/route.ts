@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 // Helper function to validate rolesId
 function validateRolesId(rolesId: string | undefined): boolean {
     return typeof rolesId === 'string' && rolesId.length > 0;
@@ -32,7 +34,7 @@ export async function DELETE(
             );
         }
 
-        const backend = process.env.BACKEND || "http://localhost:8080";
+        const backend = process.env.BACKEND || "http://spiceapi:8080";
         const atok = request.headers.get("Authorization");
 
         if (!atok) {

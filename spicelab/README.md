@@ -45,7 +45,7 @@ The backend for this project is built with ASP.NET Core and can be found at [Spi
 
 3. Run the API on port 8080:
     ```bash
-    dotnet run --urls http://localhost:8080
+    dotnet run --urls http://spiceapi:8080
     ```
    
 ### 3. Open http://localhost in your browser to access the app.
