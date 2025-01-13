@@ -9,7 +9,7 @@ export async function PUT(
         const backend = process.env.BACKEND || "http://spiceapi:8080";
         const atok = request.headers.get("Authorization");
 
-        const response = await fetch(`${backend}/api/project/${params.projectId}/edit`, {
+        const response = await fetch(`${backend}api/project/${params.projectId}/edit`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

@@ -6,7 +6,7 @@ export async function GET(request: Request) {
         const backend = process.env.BACKEND || "http://spiceapi:8080";
         const atok = request.headers.get("Authorization");
 
-        const response = await fetch(`${backend}/api/roles`, {
+        const response = await fetch(`${backend}api/roles`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

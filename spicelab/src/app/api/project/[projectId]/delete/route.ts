@@ -9,7 +9,7 @@ export async function DELETE(
         const backend = process.env.BACKEND || "http://spiceapi:8080";
         const atok = request.headers.get("Authorization");
 
-        const response = await fetch(`${backend}/api/project/${params.projectId}`, {
+        const response = await fetch(`${backend}api/project/${params.projectId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',

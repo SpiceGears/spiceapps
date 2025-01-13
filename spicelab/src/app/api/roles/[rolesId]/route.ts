@@ -44,7 +44,7 @@ export async function DELETE(
             );
         }
 
-        const response = await fetch(`${backend}/api/roles/${rolesId}`, {
+        const response = await fetch(`${backend}api/roles/${rolesId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',

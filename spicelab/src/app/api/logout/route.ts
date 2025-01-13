@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     }
 
     try {
-        const response = await fetch(`${backend}/api/auth/logout`, {
+        const response = await fetch(`${backend}api/auth/logout`, {
             method: "GET",
             headers: {
                 "Content-Type": "application/json",

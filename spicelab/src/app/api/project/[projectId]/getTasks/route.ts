@@ -10,7 +10,7 @@ export async function GET(
         const atok = request.headers.get("Authorization");
         const { projectId } = params;
 
-        const response = await fetch(`${backend}/api/project/${projectId}/getTasks`, {
+        const response = await fetch(`${backend}api/project/${projectId}/getTasks`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

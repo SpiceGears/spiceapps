@@ -132,7 +132,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    console.log(`Field: ${name}, Value: ${value}`);  // Debug input change
+    console.log(`Updated ${name}:`, value);  // Log to check the value
     setTaskForm(prev => ({
       ...prev,
       [name]: name === 'priority' || name === 'status' ? parseInt(value) : value
@@ -255,7 +255,7 @@ export default function List({ params }: { params: { projectId: string, taskId: 
       const atok = localStorage.getItem('atok');
       if (!atok) throw new Error('No authentication token found');
 
-      const response = await fetch(`/api/project/${params.projectId}/${editedTaskId}/delete`, {
+      const response = await fetch(`/api/project/${params.projectId}/${editedTaskId}/`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -333,16 +333,17 @@ export default function List({ params }: { params: { projectId: string, taskId: 
                 </div>
                 <div>
                   <select
-                      name="assignedUser"
-                      value={taskForm.assignedUsers}
-                      onChange={handleInputChange}
+                      name="assignedUsers"
+                      value={taskForm.assignedUsers[0] || ''}  // Make sure it reflects a single selected user
+                      onChange={(e) => setTaskForm(prev => ({...prev, assignedUsers: [e.target.value]}))}
                       className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                   >
-                    <option value="">Wybierz osobę</option>
+                    <option value="">Wybierz użytkownika</option>
                     {users.map(user => (
                         <option key={user.id} value={user.id}>{`${user.firstName} ${user.lastName}`}</option>
                     ))}
                   </select>
+
                 </div>
                 <div>
                   <input
@@ -405,8 +406,12 @@ export default function List({ params }: { params: { projectId: string, taskId: 
           )}
 
           {tasks.map(task => {
-            const isOverdue = new Date(task.deadlineDate) < new Date();
-            const taskBgColor = task.status === 1 ? 'bg-green-300 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800' : isOverdue ? 'bg-red-300 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800' : 'bg-white dark:bg-gray-800';
+            const isOverdue = new Date(task.deadlineDate).getTime() < new Date().getTime();
+            const taskBgColor = task.status === 1
+                ? 'bg-green-300 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800'
+                : new Date(task.deadlineDate) < new Date()
+                    ? 'bg-red-100 dark:bg-red-900 dark:hover:bg-red-800'
+                    : 'dark:bg-gray-800';
 
             return (
                 <div
