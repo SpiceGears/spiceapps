@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   spiceapi:
     image: ${DOCKER_REGISTRY-}spiceapi
@@ -11,35 +13,38 @@ services:
       DB_USER: postgres
       DB_NAME: db
       CRYPT_COST: "14"
-      ENV HOME_PAGE: "http://localhost:3000"
     ports:
       - "8080:8080"
       - "8081:8081"
       - "8085:5150"
     depends_on:
       - db
+
   db:
-    image: postgres
+    image: postgres:latest
     restart: always
-    # set shared memory limit when using docker-compose
-    shm_size: 128mb
-    # or set shared memory limit when deploy via swarm stack
-    #volumes:
-    #  - type: tmpfs
-    #    target: /dev/shm
-    #    tmpfs:
-    #      size: 134217728 # 128*2^20 bytes = 128Mb
     environment:
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ajh4pDmG7QuzLZ9tH5sJn1KlA2I6eV3W8yBvXoNrPfTqYcRiSgE0wMxO7F1dU9
+      POSTGRES_DB: db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
   spicelab:
     image: ${DOCKER_REGISTRY-}spicelab
     restart: always
     build:
       context: .
-      dockerfile: spicelab/dockerfile
+      dockerfile: spicelab/Dockerfile
     environment:
       BACKEND: http://spiceapi:8080/
     ports:
       - "80:3000"
     depends_on:
       - spiceapi
+
+volumes:
+  db-data:
+    driver: local

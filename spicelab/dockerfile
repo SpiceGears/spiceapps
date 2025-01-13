@@ -5,7 +5,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copy package files
-COPY . .
+COPY spicelab/ .
 WORKDIR /app/spicelab
 
 # Install dependencies
