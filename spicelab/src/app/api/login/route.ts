@@ -4,7 +4,7 @@
 export async function POST(request: Request) {
     const body = await request.json();
     
-    const backend = "http://localhost:8080/";
+    const backend = process.env.BACKEND ||"http://localhost:8080/";
   
     try {
       // Send POST request to another API using Fetch API
