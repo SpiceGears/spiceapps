@@ -1,0 +1,31 @@
+#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER app
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
+WORKDIR /src
+COPY ["SpiceAPI.csproj", "."]
+RUN dotnet restore "./SpiceAPI.csproj"
+COPY . .
+WORKDIR "/src/."
+RUN dotnet build "./SpiceAPI.csproj" -c $BUILD_CONFIGURATION -o /app/build
+
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./SpiceAPI.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENV DB_PASS="ajh4pDmG7QuzLZ9tH5sJn1KlA2I6eV3W8yBvXoNrPfTqYcRiSgE0wMxO7F1dU9"
+ENV DB_HOST="db"
+ENV DB_USER="postgres"
+ENV DB_NAME="db"
+ENV CRYPT_COST="14"
+ENV WORKDIR="/app/filebucket"
+ENTRYPOINT ["dotnet", "SpiceAPI.dll"]

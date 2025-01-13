@@ -1,0 +1,9 @@
+@SpiceAPI_HostAddress = http://localhost:5086
+
+GET {{SpiceAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+GET {{SpiceAPI_HostAddress}}/api/admin/getUnapprovedUsers
+Accept: application/json
+Authorization: <atoken>

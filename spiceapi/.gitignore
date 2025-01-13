@@ -1,0 +1,10 @@
+/bin/
+appsettings.json
+/obj/
+/.vs/
+
+
+bin/
+appsettings.json
+obj/
+.vs/
