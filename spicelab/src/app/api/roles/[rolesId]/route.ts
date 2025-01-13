@@ -34,7 +34,7 @@ export async function DELETE(
             );
         }
 
-        const backend = process.env.BACKEND || "http://localhost:8080";
+        const backend = process.env.BACKEND || "http://spiceapi:8080";
         const atok = request.headers.get("Authorization");
 
         if (!atok) {

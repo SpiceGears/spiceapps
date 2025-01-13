@@ -9,7 +9,7 @@ const nextConfig = {
       appDir: true, // Enable app directory routing
   },
   async rewrites() {
-	const backend = process.env.BACKEND || "http://localhost:8080";
+	const backend = process.env.BACKEND || "http://spiceapi:8080";
 	return [
 	  {
 		source: '/api/:path*',

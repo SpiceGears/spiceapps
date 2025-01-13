@@ -5,7 +5,7 @@ export async function PUT(
     const body = await request.json();
     const { projectId, taskId } = params;
 
-    const backend = process.env.BACKEND || "http://localhost:8080/";
+    const backend = process.env.BACKEND || "http://spiceapi:8080/";
 
     try {
         // Log the request body

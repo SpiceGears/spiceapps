@@ -8,7 +8,7 @@ export async function POST(
     const atok = await request.headers.get('Authorization');
     const { projectId } = params;
 
-    const backend = process.env.BACKEND || "http://localhost:8080/";
+    const backend = process.env.BACKEND || "http://spiceapi:8080/";
 
     try {
         const response = await fetch(`${backend}api/project/${projectId}/create`, {

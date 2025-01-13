@@ -6,7 +6,7 @@ export async function POST(
 ) {
     try {
         const body = await request.json();
-        const backend = process.env.BACKEND || "http://localhost:8080";
+        const backend = process.env.BACKEND || "http://spiceapi:8080";
         const atok = request.headers.get("Authorization");
 
         const response = await fetch(`${backend}/api/roles/create`, {

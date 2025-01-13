@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-    const backend = process.env.BACKEND || "http://localhost:8080";
+    const backend = process.env.BACKEND || "http://spiceapi:8080";
     const rtb = request.headers.get("Authorization");
 
     if (!rtb) {

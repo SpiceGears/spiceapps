@@ -8,7 +8,7 @@ export async function GET(
     { params }: { params: { projectId: string } }
 ) {
     try {
-        const backend = process.env.BACKEND || "http://localhost:8080";  // Remove trailing slash
+        const backend = process.env.BACKEND || "http://spiceapi:8080";  // Remove trailing slash
         const atok = request.headers.get("Authorization");
         const { projectId } = params;
 
