@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendar, faFlag, faUser, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faCalendar, faFlag, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useProjectData } from '@/hooks/projectData';
 import { useGetTasksData } from '@/hooks/getTasks';
 
 interface Task {
   id: number;
   name: string;
+  description: string;
   assignedUsers: AssignedUsers;
   deadlineDate: string;
   priority: number;
@@ -29,6 +30,7 @@ export default function List({ params }: { params: { projectId: string; taskId: 
   const [editedTaskId, setEditedTaskId] = useState<number | null>(null);
   const [taskForm, setTaskForm] = useState({
     name: '',
+    description: '',
     assignedUsers: [] as string[],
     deadlineDate: '',
     priority: 0,
@@ -109,7 +111,8 @@ export default function List({ params }: { params: { projectId: string; taskId: 
   const handleTaskClick = (task: Task) => {
     setTaskForm({
       name: task.name,
-      assignedUsers: task.assignedUsers.$values,
+      description: task.description,
+      assignedUsers: task.assignedUsers.$values || [],
       deadlineDate: task.deadlineDate || '',
       priority: task.priority,
       status: task.status,
@@ -118,7 +121,7 @@ export default function List({ params }: { params: { projectId: string; taskId: 
     setIsAddingTask(true);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setTaskForm((prev) => ({
       ...prev,
@@ -129,6 +132,7 @@ export default function List({ params }: { params: { projectId: string; taskId: 
   const resetTaskForm = () => {
     setTaskForm({
       name: '',
+      description: '',
       assignedUsers: [],
       deadlineDate: '',
       priority: 0,
@@ -143,60 +147,92 @@ export default function List({ params }: { params: { projectId: string; taskId: 
     setIsAddingTask(true);
   };
 
-  const handleSubmit = async () => {
+  async function createTask() {
     try {
       const atok = localStorage.getItem('atok');
       if (!atok) throw new Error('No authentication token found');
 
-      const endpoint = editedTaskId
-          ? `/api/project/${params.projectId}/${editedTaskId}/edit`
-          : `/api/project/${params.projectId}/create`;
-      const method = editedTaskId ? 'PUT' : 'POST';
-
-      // Validate assignedUsers as GUIDs
-      const validatedAssignedUsers = taskForm.assignedUsers.map((id) =>
-          id.match(/^[0-9a-fA-F-]{36}$/) ? id : null
-      );
-
-      if (validatedAssignedUsers.includes(null)) {
-        throw new Error('Invalid GUID in assignedUsers.');
-      }
-
-      const payload = {
-        name: taskForm.name,
-        assignedUsers: validatedAssignedUsers,
-        priority: taskForm.priority,
-        deadlineDate: taskForm.deadlineDate,
-        status: taskForm.status,
-        body: '', // Add a placeholder or optional field for `body`.
-        description: '',
-        dependencies: [],
-      };
-
-      // Validate required fields
-      if (!payload.name || !payload.deadlineDate || !payload.assignedUsers.length) {
-        throw new Error('Please fill in all required fields.');
-      }
-
-      const response = await fetch(endpoint, {
-        method,
+      const response = await fetch(`/api/project/${params.projectId}/create`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: atok,
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          name: taskForm.name,
+          description: taskForm.description,
+          assignedUsers: taskForm.assignedUsers,
+          priority: taskForm.priority,
+          deadlineDate: taskForm.deadlineDate,
+          status: taskForm.status,
+          dependencies: [],
+        }),
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to save task: ${errorText}`);
+        throw new Error('Failed to create task');
       }
 
       resetTaskForm();
     } catch (error) {
-      console.error('Error saving task:', error);
+      console.error('Error creating task:', error);
     }
-  };
+  }
+
+  async function updateTask() {
+    try {
+      const atok = localStorage.getItem('atok');
+      if (!atok) throw new Error('No authentication token found');
+
+      const response = await fetch(`/api/project/${params.projectId}/${editedTaskId}/edit`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: atok,
+        },
+        body: JSON.stringify({
+          name: taskForm.name,
+          description: taskForm.description,
+          assignedUsers: taskForm.assignedUsers,
+          priority: taskForm.priority,
+          deadlineDate: taskForm.deadlineDate,
+          dependencies: [],
+          status: taskForm.status,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update task');
+      }
+
+      resetTaskForm();
+    } catch (error) {
+      console.error('Error updating task:', error);
+    }
+  }
+
+  async function deleteTask() {
+    try {
+      const atok = localStorage.getItem('atok');
+      if (!atok) throw new Error('No authentication token found');
+
+      const response = await fetch(`/api/project/${params.projectId}/${editedTaskId}/delete`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: atok,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete task');
+      }
+
+      resetTaskForm();
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  }
 
   if (projectLoading || tasksLoading) return <div>Loading...</div>;
   if (projectError || tasksError) return <div>Error: {projectError?.message || tasksError?.message}</div>;
@@ -214,10 +250,7 @@ export default function List({ params }: { params: { projectId: string; taskId: 
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md mb-4">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold">{editedTaskId ? 'Edytuj zadanie' : 'Utwórz zadanie'}</h2>
-                <button
-                    className="text-red-500 hover:text-red-700"
-                    onClick={resetTaskForm}
-                >
+                <button className="text-red-500 hover:text-red-700" onClick={resetTaskForm}>
                   <FontAwesomeIcon icon={faTimes} />
                 </button>
               </div>
@@ -230,15 +263,27 @@ export default function List({ params }: { params: { projectId: string; taskId: 
                     onChange={handleInputChange}
                     className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
                 />
+                <textarea
+                    name="description"
+                    placeholder="Opis zadania"
+                    value={taskForm.description}
+                    onChange={handleInputChange}
+                    className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
+                />
                 <select
                     name="assignedUsers"
-                    value={taskForm.assignedUsers[0] || ''}  // Make sure it reflects a single selected user
-                    onChange={(e) => setTaskForm(prev => ({...prev, assignedUsers: [e.target.value]}))}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                    multiple
+                    value={taskForm.assignedUsers}
+                    onChange={(e) => {
+                      const selectedUsers = Array.from(e.target.selectedOptions, option => option.value);
+                      setTaskForm(prev => ({ ...prev, assignedUsers: selectedUsers }));
+                    }}
+                    className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
                 >
-                  <option value="">Wybierz użytkownika</option>
                   {users.map(user => (
-                      <option key={user.id} value={user.id}>{`${user.firstName} ${user.lastName}`}</option>
+                      <option key={user.id} value={user.id}>
+                        {`${user.firstName} ${user.lastName}`}
+                      </option>
                   ))}
                 </select>
                 <input
@@ -270,17 +315,26 @@ export default function List({ params }: { params: { projectId: string; taskId: 
                   <option value={2}>Problem</option>
                 </select>
               </div>
-              <button
-                  className="mt-4 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
-                  onClick={handleSubmit}
-              >
-                {editedTaskId ? 'Zaktualizuj zadanie' : 'Utwórz zadanie'}
-              </button>
+              <div className="flex gap-2 mt-4">
+                <button
+                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
+                    onClick={editedTaskId ? updateTask : createTask}
+                >
+                  {editedTaskId ? 'Zaktualizuj zadanie' : 'Utwórz zadanie'}
+                </button>
+                {editedTaskId && (
+                    <button
+                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
+                        onClick={deleteTask}
+                    >
+                      Usuń zadanie
+                    </button>
+                )}
+              </div>
             </div>
         )}
 
-        <div
-            className="hidden md:grid grid-cols-5 px-4 py-3 font-semibold bg-gray-200 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-600">
+        <div className="hidden md:grid grid-cols-5 px-4 py-3 font-semibold bg-gray-200 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-600">
           <div>Nazwa</div>
           <div>Przypisane do</div>
           <div>Termin</div>
@@ -291,14 +345,14 @@ export default function List({ params }: { params: { projectId: string; taskId: 
             <div
                 key={task.id}
                 onClick={() => handleTaskClick(task)}
-                className={`grid grid-cols-1 md:grid-cols-5 gap-4 px-4 py-3 border-b border-gray-300 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800`}
+                className="grid grid-cols-1 md:grid-cols-5 gap-4 px-4 py-3 border-b border-gray-300 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <div>{task.name}</div>
               <div>
                 {task.assignedUsers.$values.map((userId) => {
                   const user = users.find((u) => u.id === userId);
                   return user ? (
-                      <span key={userId} className="inline-block px-2 py-1 bg-gray-300 dark:bg-gray-600 rounded-md">
+                      <span key={userId} className="inline-block px-2 py-1 bg-gray-300 dark:bg-gray-600 rounded-md mr-1">
                   {user.firstName} {user.lastName}
                 </span>
                   ) : null;
@@ -308,16 +362,18 @@ export default function List({ params }: { params: { projectId: string; taskId: 
               <div>
                 <FontAwesomeIcon
                     icon={faFlag}
-                    className={`${
-                        task.priority === 0
-                            ? 'text-green-500'
-                            : task.priority === 1
-                                ? 'text-yellow-500'
-                                : 'text-red-500'
-                    }`}
+                    className={
+                      task.priority === 0
+                          ? 'text-green-500'
+                          : task.priority === 1
+                              ? 'text-yellow-500'
+                              : 'text-red-500'
+                    }
                 />
               </div>
-              <div>{task.status === -1 ? 'Planowane' : task.status === 0 ? 'W trakcie' : task.status === 1 ? 'Zakończone' : 'Problem'}</div>
+              <div>
+                {task.status === -1 ? 'Planowane' : task.status === 0 ? 'W trakcie' : task.status === 1 ? 'Zakończone' : 'Problem'}
+              </div>
             </div>
         ))}
       </div>
