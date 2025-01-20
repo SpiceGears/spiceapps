@@ -5,9 +5,6 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: {
-      appDir: true, // Enable app directory routing
-  },
   async rewrites() {
 	const backend = process.env.BACKEND || "http://spiceapi:8080";
 	return [
@@ -17,7 +14,6 @@ const nextConfig = {
 	  },
 	];
   },
-  output: 'standalone', // Ensure compatibility for serverless environments or containerized builds
   async headers() {
     return [
       {
