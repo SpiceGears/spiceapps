@@ -156,7 +156,7 @@ export default function List({ params }: { params: { projectId: string; taskId: 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: atok,
+          'Authorization': atok,
         },
         body: JSON.stringify({
           name: taskForm.name,
@@ -188,7 +188,7 @@ export default function List({ params }: { params: { projectId: string; taskId: 
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: atok,
+          'Authorization': atok
         },
         body: JSON.stringify({
           name: taskForm.name,
@@ -197,8 +197,16 @@ export default function List({ params }: { params: { projectId: string; taskId: 
           priority: taskForm.priority,
           deadlineDate: taskForm.deadlineDate,
           dependencies: [],
-          status: taskForm.status,
-        }),
+          status: taskForm.status
+        })
+      });
+      console.log('Update task payload:', {
+        name: taskForm.name,
+        description: taskForm.description,
+        assignedUsers: taskForm.assignedUsers,
+        priority: taskForm.priority,
+        deadlineDate: taskForm.deadlineDate,
+        status: taskForm.status
       });
 
       if (!response.ok) {
@@ -206,6 +214,9 @@ export default function List({ params }: { params: { projectId: string; taskId: 
       }
 
       resetTaskForm();
+      setEditedTaskId(null);
+      setIsAddingTask(false);
+
     } catch (error) {
       console.error('Error updating task:', error);
     }
