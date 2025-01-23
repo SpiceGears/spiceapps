@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Settings from './Settings';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
@@ -18,6 +19,7 @@ interface MenuProps {
 }
 
 export default function Menu({ isSidebarOpen, toggleSidebar }: MenuProps) {
+
   const menuItems = [
     {
       title: "Menu główne",
@@ -36,7 +38,7 @@ export default function Menu({ isSidebarOpen, toggleSidebar }: MenuProps) {
   ];
 
   return (
-      <div className="h-full">
+      <div className="fixed h-full">
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           {/* Collapse Button */}
           <button

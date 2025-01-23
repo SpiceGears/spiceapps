@@ -125,17 +125,6 @@ export default function Navbar({ toggleSidebar }: { toggleSidebar: () => void })
                         height={40}
                         className="rounded-full ring-2 ring-gray-200 dark:ring-gray-700 cursor-pointer"
                     />
-
-                    {showProfileMenu && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5">
-                            <button
-                                onClick={handleLogout}
-                                className="block w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            >
-                                Wyloguj
-                            </button>
-                        </div>
-                    )}
                 </div>
             </div>
         </div>

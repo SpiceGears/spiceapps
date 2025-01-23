@@ -118,7 +118,7 @@ export default function ProjectNav({ activeTab, onTabChange, projectId }: { acti
                 throw new Error('Failed to delete project');
             }
 
-            window.location.href = '/projects';
+            window.location.href = '/dashboard/project';
 
         } catch (error) {
             console.error('Error deleting project:', error);

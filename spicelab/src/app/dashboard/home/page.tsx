@@ -180,7 +180,7 @@ const Dashboard = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans p-4 md:p-6">
+        <div className="z-20 min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans p-4 md:p-6">
             <header className="p-4 md:p-6 flex justify-between items-center">
                 <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-200">Home</h1>
                 <button className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-sm px-4 py-2 rounded-md text-gray-800 dark:text-gray-200">
@@ -208,7 +208,7 @@ const Dashboard = () => {
                 <div className="flex flex-col md:flex-row items-center justify-center gap-4 text-sm mb-6">
                     <div className="relative">
                         <button
-                            className="bg-white text-lg dark:bg-gray-800 shadow dark:shadow-gray-700 px-4 py-2 rounded-md flex items-center text-gray-800 dark:text-gray-200"
+                            className="bg-white text-lg dark:bg-gray-800 shadow dark:shadow-gray-700 px-4 py-2 rounded-md flex items-center text-gray-800 dark:text-gray-200 z-[10000]"
                             onClick={() => setDropdownOpen(!dropdownOpen)}
                         >
                             <span className="mr-2">{selectedOption}</span>

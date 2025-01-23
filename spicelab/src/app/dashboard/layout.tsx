@@ -21,11 +21,12 @@ export default function DashboardLayout({
 
             {/* Content Area */}
             <div className="flex flex-1">
-                {/* Sidebar */}
+                {/* Sidebar with z-index adjustment */}
                 <div
-                    className={`fixed inset-y-0 left-0 transform ${
+                    className={`fixed inset-y-0 left-0 z-30 transform bg-white dark:bg-gray-800 shadow-lg transition-transform duration-300 ease-in-out md:relative md:z-0 md:translate-x-0 ${
                         isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-                    } transition-transform duration-300 ease-in-out w-64 bg-white dark:bg-gray-800 shadow-lg md:relative md:translate-x-0`}
+                    }`}
+                    style={{ width: "16rem" }}
                 >
                     <Menu isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
                 </div>
