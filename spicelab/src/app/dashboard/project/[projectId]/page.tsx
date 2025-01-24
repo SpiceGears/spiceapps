@@ -1,8 +1,9 @@
 "use client"
 
 import { useState } from 'react';
-import Main from "../../../../components/project/Main";
-import { useProjectData } from '../../../../hooks/projectData';
+import Main from "@/components/project/Main";
+import { useProjectData } from '@/hooks/projectData';
+import Loading from '@/components/Loading';
 
 export default function Project({ params }: { params: { projectId: string } }) {
     const [activeTab, setActiveTab] = useState('overview');
@@ -12,7 +13,7 @@ export default function Project({ params }: { params: { projectId: string } }) {
         setActiveTab(tab);
     };
 
-    if (loading) return <div className="h-16 bg-white shadow-sm">loading...</div>;
+    if (loading) return <Loading />;
     if (error) {
         return <div className="h-16 bg-white shadow-sm">Error</div>;
     }

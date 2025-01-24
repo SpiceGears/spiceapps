@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faBell, faMessage, faSearch } from "@fortawesome/free-solid-svg-icons";
 import { useUserData } from "@/hooks/userData";
 import { useTheme } from "next-themes";
+import Loading from "@/components/Loading";
 
 export default function Navbar({ toggleSidebar }: { toggleSidebar: () => void }) {
     const { userData, loading, error } = useUserData();
@@ -36,18 +37,12 @@ export default function Navbar({ toggleSidebar }: { toggleSidebar: () => void })
         }
     }
 
-    if (loading) return <div className="h-16 bg-white shadow-sm"></div>;
+    if (loading) return <Loading />;
     if (error) {
         generateAccess();
         return <div className="h-16 bg-white shadow-sm"></div>;
     }
     if (!userData) return <div className="h-16 bg-white shadow-sm"></div>;
-
-    const handleLogout = () => {
-        localStorage.removeItem("rtb");
-        localStorage.removeItem("atok");
-        window.location.href = "/login";
-    };
 
     return (
         <div className="flex items-center justify-between p-4 bg-gray-200 dark:bg-gray-800 w-full h-16">
@@ -65,9 +60,9 @@ export default function Navbar({ toggleSidebar }: { toggleSidebar: () => void })
                     src={
                         theme === "dark"
                             ? "/images/spicelab-dark.png"
-                            : theme === "system"
-                                ? "/images/spicelab-dark.png"
-                                : "/images/spicelab.png"
+                            : theme === "light"
+                                ? "/images/spicelab.png"
+                                : "/images/spicelab-dark.png"
                     }
                     alt="icon"
                     width={250}
@@ -93,18 +88,6 @@ export default function Navbar({ toggleSidebar }: { toggleSidebar: () => void })
 
             {/* Right-side icons and user info */}
             <div className="flex items-center gap-6 justify-end">
-                <div className="bg-white dark:bg-gray-700 rounded-full w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600">
-                    <FontAwesomeIcon
-                        icon={faMessage}
-                        className="w-6 h-6 text-[#0037A1] dark:text-blue-400"
-                    />
-                </div>
-                <div className="bg-white dark:bg-gray-700 rounded-full w-9 h-9 flex items-center justify-center cursor-pointer relative hover:bg-gray-100 dark:hover:bg-gray-600">
-                    <FontAwesomeIcon
-                        icon={faBell}
-                        className="w-6 h-6 text-[#0037A1] dark:text-blue-400"
-                    />
-                </div>
                 <div className="hidden md:flex flex-col">
           <span className="text-xs leading-3 font-medium text-gray-900 dark:text-gray-100">
             {userData?.firstName} {userData?.lastName}

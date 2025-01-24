@@ -3,6 +3,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendar, faFlag, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useProjectData } from '@/hooks/projectData';
 import { useGetTasksData } from '@/hooks/getTasks';
+import { toast } from 'react-hot-toast';
+import Loading from '@/components/Loading';
 
 interface Task {
   id: number;
@@ -68,6 +70,7 @@ export default function List({ params }: { params: { projectId: string; taskId: 
         }
       } catch (error) {
         console.error('Error fetching users:', error);
+        toast.error('Failed to fetch users');
       }
     }
     fetchUsers();
@@ -99,6 +102,7 @@ export default function List({ params }: { params: { projectId: string; taskId: 
         }
       } catch (error) {
         console.error('Error fetching tasks:', error);
+        toast.error('Failed to fetch tasks');
       }
     }
 
@@ -173,9 +177,11 @@ export default function List({ params }: { params: { projectId: string; taskId: 
         throw new Error('Failed to create task');
       }
 
+      toast.success('Task created successfully');
       resetTaskForm();
     } catch (error) {
       console.error('Error creating task:', error);
+      toast.error('Failed to create task');
     }
   }
 
@@ -213,12 +219,14 @@ export default function List({ params }: { params: { projectId: string; taskId: 
         throw new Error('Failed to update task');
       }
 
+      toast.success('Task updated successfully');
       resetTaskForm();
       setEditedTaskId(null);
       setIsAddingTask(false);
 
     } catch (error) {
       console.error('Error updating task:', error);
+        toast.error('Failed to update task');
     }
   }
 
@@ -227,7 +235,7 @@ export default function List({ params }: { params: { projectId: string; taskId: 
       const atok = localStorage.getItem('atok');
       if (!atok) throw new Error('No authentication token found');
 
-      const response = await fetch(`/api/project/${params.projectId}/${editedTaskId}/delete`, {
+      const response = await fetch(`/api/project/${params.projectId}/${editedTaskId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -239,13 +247,15 @@ export default function List({ params }: { params: { projectId: string; taskId: 
         throw new Error('Failed to delete task');
       }
 
+        toast.success('Task deleted successfully');
       resetTaskForm();
     } catch (error) {
       console.error('Error deleting task:', error);
+      toast.error('Failed to delete task');
     }
   }
 
-  if (projectLoading || tasksLoading) return <div>Loading...</div>;
+  if (projectLoading || tasksLoading) return <Loading />;
   if (projectError || tasksError) return <div>Error: {projectError?.message || tasksError?.message}</div>;
 
   return (

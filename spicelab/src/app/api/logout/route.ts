@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
-    const backend = process.env.BACKEND || "http://spiceapi:8080";
+    const backend = process.env.BACKEND || "http://spiceapi:58831/";
     const rtb = request.headers.get("Authorization");
 
     if (!rtb) {
@@ -29,9 +29,6 @@ export async function GET(request: Request) {
             console.error(`Backend response: ${response.status}`);
             return new Response(null, { status: response.status });
         }
-
-        const data = await response.json();
-        console.log('Logout successful:', data);
         return Response.json({ message: 'Logged out successfully' });
     } catch (error) {
         console.error("Route handler error:", error);

@@ -2,15 +2,16 @@
 
 import React from "react";
 import Link from "next/link";
-import Settings from './Settings';
+import { useTheme } from "next-themes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faBars,
   faHome,
-  faUsers,
   faChartLine,
   faRightFromBracket,
   faPlus,
+  faMoon,
+  faSun,
 } from "@fortawesome/free-solid-svg-icons";
 
 interface MenuProps {
@@ -19,6 +20,12 @@ interface MenuProps {
 }
 
 export default function Menu({ isSidebarOpen, toggleSidebar }: MenuProps) {
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const menuItems = [
     {
@@ -28,19 +35,14 @@ export default function Menu({ isSidebarOpen, toggleSidebar }: MenuProps) {
         { label: "Projekty", href: "/dashboard/project", icon: faChartLine },
       ],
     },
-    {
-      title: "Administracja",
-      items: [
-        { label: "Statystyki", href: "/dashboard/statistics", icon: faChartLine },
-        { label: "Użytkownicy", href: "/dashboard/users", icon: faUsers },
-      ],
-    },
   ];
 
+  if (!mounted) return null;
+
   return (
-      <div className="fixed h-full">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          {/* Collapse Button */}
+      <div className="fixed h-full flex flex-col border-r border-gray-200 dark:border-gray-700 w-64">
+        {/* Top Section */}
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 space-y-4">
           <button
               onClick={toggleSidebar}
               className="md:hidden p-2 text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 rounded-md"
@@ -48,10 +50,9 @@ export default function Menu({ isSidebarOpen, toggleSidebar }: MenuProps) {
             <FontAwesomeIcon icon={faBars} />
           </button>
 
-          {/* New Project Button */}
           <Link
               href="/dashboard/project/new"
-              className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg mt-4"
+              className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg"
           >
             <FontAwesomeIcon icon={faPlus} className="mr-2" />
             Nowy projekt
@@ -59,7 +60,7 @@ export default function Menu({ isSidebarOpen, toggleSidebar }: MenuProps) {
         </div>
 
         {/* Navigation Links */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-hidden">
           {menuItems.map((section, idx) => (
               <div key={idx} className="p-4">
                 <h3 className="text-xs font-semibold text-gray-400 dark:text-gray-500 mb-4">
@@ -81,10 +82,21 @@ export default function Menu({ isSidebarOpen, toggleSidebar }: MenuProps) {
           ))}
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+        {/* Footer Section */}
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
+          <button
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+              className="flex items-center text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 w-full"
+          >
+            <FontAwesomeIcon
+                icon={theme === "dark" ? faSun : faMoon}
+                className="w-5 h-5 mr-3"
+            />
+            {theme === "dark" ? "Tryb jasny" : "Tryb ciemny"}
+          </button>
+
           <Link
-              href="/logout"
+              href="/auth/logout"
               className="flex items-center text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
           >
             <FontAwesomeIcon icon={faRightFromBracket} className="w-5 h-5 mr-3" />

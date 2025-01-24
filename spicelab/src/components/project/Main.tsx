@@ -2,10 +2,11 @@
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash } from '@fortawesome/free-solid-svg-icons';
-import { useProjectData } from '../../hooks/projectData';
+import { useProjectData } from '@/hooks/projectData';
 import Overview from './Overview';
 import List from './List';
 import { toast } from 'react-hot-toast';
+import Loading from '@/components/Loading';
 
 export default function ProjectNav({ activeTab, onTabChange, projectId }: { activeTab: string, onTabChange: (tab: string) => void, projectId: string }) {
     const [currentTab, setCurrentTab] = useState('Przegląd');
@@ -13,7 +14,7 @@ export default function ProjectNav({ activeTab, onTabChange, projectId }: { acti
     const [isEditingName, setIsEditingName] = useState(false);
     const [editedName, setEditedName] = useState('');
 
-    if (loading) return <div className="min-h-screen bg-gray-50 dark:bg-gray-900">Loading...</div>;
+    if (loading) return <Loading />;
     if (error) return <div className="min-h-screen bg-gray-50 dark:bg-gray-900">Error: {error.message}</div>;
 
     const renderContent = () => {
@@ -58,9 +59,11 @@ export default function ProjectNav({ activeTab, onTabChange, projectId }: { acti
 
             const data = await response.json();
             console.log('Project updated:', data);
+            toast.success('Project name updated successfully');
 
         } catch (error) {
             console.error('Error updating project:', error);
+            toast.error('Failed to update project name');
         }
     }
 

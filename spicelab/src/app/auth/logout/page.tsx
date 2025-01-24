@@ -26,7 +26,7 @@ export default function LogoutPage() {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': rtb || '', // Ensure a string is passed
+                    'Authorization': rtb
                 },
             });
 

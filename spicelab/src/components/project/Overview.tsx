@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useProjectData } from '@/hooks/projectData';
+import { toast } from 'react-hot-toast';
+import Loading from '@/components/Loading';
 
 interface User {
     id: string;
@@ -58,9 +60,11 @@ export default function Overview({ params: { projectId } }) {
 
             const data = await response.json();
             console.log('Project updated:', data);
+            toast.success('Project description updated successfully');
 
         } catch (error) {
             console.error('Error updating project:', error);
+            toast.error('Failed to update project description');
         }
     }
 
@@ -94,7 +98,7 @@ export default function Overview({ params: { projectId } }) {
         }
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <Loading />;
     if (error) return <div>Error: {error}</div>;
 
     const creator = users.find(user => user.id === projectData?.creator);

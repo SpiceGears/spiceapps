@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 
 interface FormData {
     name: string;
@@ -105,11 +106,13 @@ export default function CreateProject() {
                 }
             }
 
+            toast.success('Project created successfully');
             router.push('/dashboard/home');
 
         } catch (err) {
             console.error('Project creation error:', err);
             setError(err instanceof Error ? err.message : 'Failed to create project');
+            toast.error('Failed to create project');
         } finally {
             setLoading(false);
         }

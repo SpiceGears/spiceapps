@@ -4,6 +4,7 @@ import { useUserData } from "@/hooks/userData";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFlag } from "@fortawesome/free-solid-svg-icons";
+import Loading from "@/components/Loading";
 
 interface Project {
     id: string;
@@ -153,7 +154,7 @@ const Dashboard = () => {
         }
     };
 
-    if (loading) return <div className="text-gray-600 dark:text-gray-400">Loading...</div>;
+    if (loading) return <Loading />;
     if (error) return <div className="text-red-600 dark:text-red-400">Error loading user data</div>;
     if (!userData) return <div className="text-gray-600 dark:text-gray-400">No user data available</div>;
 
