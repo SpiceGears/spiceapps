@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "./providers";
+import { GoogleAnalytics } from "@next/third-parties/google";
+import { CSPostHogProvider } from "@/app/posthog-provider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -25,11 +27,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pl" suppressHydrationWarning>
+    <GoogleAnalytics gaId="G-Y54ZE7C3VP" />
+    <CSPostHogProvider>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white dark:bg-black`}
       >
         <Providers>{children}</Providers>
       </body>
+    </CSPostHogProvider>
     </html>
   );
 }
