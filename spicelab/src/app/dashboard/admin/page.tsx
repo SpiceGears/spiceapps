@@ -505,7 +505,7 @@ const AdminPanel = () => {
 
     console.log(userData)
 
-    if (userData?.firstName != "Supremium") {
+    if (userData?.firstName !== "Supremium" && userData?.lastName !== "Kulik") {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-100">
                 <div className="bg-white p-8 rounded-lg shadow-lg text-center">
