@@ -125,7 +125,9 @@ export default function List({ params }: { params: { projectId: string; taskId: 
     setIsAddingTask(true);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setTaskForm((prev) => ({
       ...prev,
@@ -160,7 +162,7 @@ export default function List({ params }: { params: { projectId: string; taskId: 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': atok,
+          Authorization: atok,
         },
         body: JSON.stringify({
           name: taskForm.name,
@@ -185,17 +187,18 @@ export default function List({ params }: { params: { projectId: string; taskId: 
     }
   }
 
-  async function updateTask() {
+  // Function to update task details (non-status fields)
+  async function updateTaskDetails() {
     try {
       const atok = localStorage.getItem('atok');
       if (!atok) throw new Error('No authentication token found');
-  
-      // Update task details excluding status
+      if (!editedTaskId) throw new Error('No task selected for update');
+
       const editResponse = await fetch(`/api/project/${params.projectId}/${editedTaskId}/edit`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': atok,
+          Authorization: atok,
         },
         body: JSON.stringify({
           name: taskForm.name,
@@ -206,36 +209,47 @@ export default function List({ params }: { params: { projectId: string; taskId: 
           dependencies: [],
         }),
       });
-  
       if (!editResponse.ok) {
         throw new Error('Failed to update task details');
       }
-  
-      // Update task status using the dedicated /updateStatus endpoint.
-      const statusResponse = await fetch(`/api/project/${params.projectId}/${editedTaskId}/updateStatus`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': atok,
-        },
-        // Sending only the status value in the request body.
-        body: JSON.stringify(taskForm.status),
-      });
-  
+      toast.success('Task details updated successfully');
+      // Optionally, do not reset the form if you want to update status later.
+    } catch (error) {
+      console.error('Error updating task details:', error);
+      toast.error('Failed to update task details');
+    }
+  }
+
+  // Function to update task status separately
+  async function updateTaskStatus() {
+    try {
+      const atok = localStorage.getItem('atok');
+      if (!atok) throw new Error('No authentication token found');
+      if (!editedTaskId) throw new Error('No task selected for update');
+
+      const statusResponse = await fetch(
+        `/api/project/${params.projectId}/${editedTaskId}/updateStatus`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: atok,
+          },
+          body: JSON.stringify(taskForm.status),
+        }
+      );
       if (!statusResponse.ok) {
         throw new Error('Failed to update task status');
       }
-  
-      toast.success('Task updated successfully');
+      toast.success('Task status updated successfully');
       resetTaskForm();
       setEditedTaskId(null);
       setIsAddingTask(false);
     } catch (error) {
-      console.error('Error updating task:', error);
-      toast.error('Failed to update task');
+      console.error('Error updating task status:', error);
+      toast.error('Failed to update task status');
     }
   }
-  
 
   async function deleteTask() {
     try {
@@ -263,147 +277,173 @@ export default function List({ params }: { params: { projectId: string; taskId: 
   }
 
   if (projectLoading || tasksLoading) return <Loading />;
-  if (projectError || tasksError) return <div>Error: {projectError?.message || tasksError?.message}</div>;
+  if (projectError || tasksError)
+    return <div>Error: {projectError?.message || tasksError?.message}</div>;
 
   return (
-      <div className="p-4 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-        <button
-            className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md mb-4"
-            onClick={handleAddTaskClick}
-        >
-          <FontAwesomeIcon icon={faPlus} /> Utwórz zadanie
-        </button>
+    <div className="p-4 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+      <button
+        className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md mb-4"
+        onClick={handleAddTaskClick}
+      >
+        <FontAwesomeIcon icon={faPlus} /> Utwórz zadanie
+      </button>
 
-        {isAddingTask && (
-            <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md mb-4">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold">{editedTaskId ? 'Edytuj zadanie' : 'Utwórz zadanie'}</h2>
-                <button className="text-red-500 hover:text-red-700" onClick={resetTaskForm}>
-                  <FontAwesomeIcon icon={faTimes} />
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="Nazwa zadania"
-                    value={taskForm.name}
-                    onChange={handleInputChange}
-                    className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
-                />
-                <textarea
-                    name="description"
-                    placeholder="Opis zadania"
-                    value={taskForm.description}
-                    onChange={handleInputChange}
-                    className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
-                />
-                <select
-                    name="assignedUsers"
-                    multiple
-                    value={taskForm.assignedUsers}
-                    onChange={(e) => {
-                      const selectedUsers = Array.from(e.target.selectedOptions, option => option.value);
-                      setTaskForm(prev => ({ ...prev, assignedUsers: selectedUsers }));
-                    }}
-                    className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
-                >
-                  {users.map(user => (
-                      <option key={user.id} value={user.id}>
-                        {`${user.firstName} ${user.lastName}`}
-                      </option>
-                  ))}
-                </select>
-                <input
-                    type="date"
-                    name="deadlineDate"
-                    value={taskForm.deadlineDate}
-                    onChange={handleInputChange}
-                    className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
-                />
-                <select
-                    name="priority"
-                    value={taskForm.priority}
-                    onChange={handleInputChange}
-                    className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
-                >
-                  <option value={0}>Niski</option>
-                  <option value={1}>Średni</option>
-                  <option value={2}>Wysoki</option>
-                </select>
-                <select
-                    name="status"
-                    value={taskForm.status}
-                    onChange={handleInputChange}
-                    className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
-                >
-                  <option value={-1}>Planowane</option>
-                  <option value={0}>W trakcie</option>
-                  <option value={1}>Zakończone</option>
-                  <option value={2}>Problem</option>
-                </select>
-              </div>
-              <div className="flex gap-2 mt-4">
-                <button
-                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
-                    onClick={editedTaskId ? updateTask : createTask}
-                >
-                  {editedTaskId ? 'Zaktualizuj zadanie' : 'Utwórz zadanie'}
-                </button>
-                {editedTaskId && (
-                    <button
-                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
-                        onClick={deleteTask}
-                    >
-                      Usuń zadanie
-                    </button>
-                )}
-              </div>
-            </div>
-        )}
-
-        <div className="hidden md:grid grid-cols-5 px-4 py-3 font-semibold bg-gray-200 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-600">
-          <div>Nazwa</div>
-          <div>Przypisane do</div>
-          <div>Termin</div>
-          <div>Priorytet</div>
-          <div>Status</div>
-        </div>
-        {tasks.map((task) => (
-            <div
-                key={task.id}
-                onClick={() => handleTaskClick(task)}
-                className="grid grid-cols-1 md:grid-cols-5 gap-4 px-4 py-3 border-b border-gray-300 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+      {isAddingTask && (
+        <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-md mb-4">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">
+              {editedTaskId ? 'Edytuj zadanie' : 'Utwórz zadanie'}
+            </h2>
+            <button className="text-red-500 hover:text-red-700" onClick={resetTaskForm}>
+              <FontAwesomeIcon icon={faTimes} />
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              type="text"
+              name="name"
+              placeholder="Nazwa zadania"
+              value={taskForm.name}
+              onChange={handleInputChange}
+              className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
+            />
+            <textarea
+              name="description"
+              placeholder="Opis zadania"
+              value={taskForm.description}
+              onChange={handleInputChange}
+              className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
+            />
+            <select
+              name="assignedUsers"
+              multiple
+              value={taskForm.assignedUsers}
+              onChange={(e) => {
+                const selectedUsers = Array.from(e.target.selectedOptions, (option) => option.value);
+                setTaskForm((prev) => ({ ...prev, assignedUsers: selectedUsers }));
+              }}
+              className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
             >
-              <div>{task.name}</div>
-              <div>
-                {task.assignedUsers.$values.map((userId) => {
-                  const user = users.find((u) => u.id === userId);
-                  return user ? (
-                      <span key={userId} className="inline-block px-2 py-1 bg-gray-300 dark:bg-gray-600 rounded-md mr-1">
-                        {user.firstName} {user.lastName}
-                      </span>
-                  ) : null;
-                })}
-              </div>
-              <div>{new Date(task.deadlineDate).toLocaleDateString()}</div>
-              <div>
-                <FontAwesomeIcon
-                    icon={faFlag}
-                    className={
-                      task.priority === 0
-                          ? 'text-green-500'
-                          : task.priority === 1
-                              ? 'text-yellow-500'
-                              : 'text-red-500'
-                    }
-                />
-              </div>
-              <div>
-                {task.status === -1 ? 'Planowane' : task.status === 0 ? 'W trakcie' : task.status === 1 ? 'Zakończone' : 'Problem'}
-              </div>
-            </div>
-        ))}
+              {users.map((user) => (
+                <option key={user.id} value={user.id}>
+                  {`${user.firstName} ${user.lastName}`}
+                </option>
+              ))}
+            </select>
+            <input
+              type="date"
+              name="deadlineDate"
+              value={taskForm.deadlineDate}
+              onChange={handleInputChange}
+              className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
+            />
+            <select
+              name="priority"
+              value={taskForm.priority}
+              onChange={handleInputChange}
+              className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
+            >
+              <option value={0}>Niski</option>
+              <option value={1}>Średni</option>
+              <option value={2}>Wysoki</option>
+            </select>
+            <select
+              name="status"
+              value={taskForm.status}
+              onChange={handleInputChange}
+              className="w-full p-2 rounded-md border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-700"
+            >
+              <option value={-1}>Planowane</option>
+              <option value={0}>W trakcie</option>
+              <option value={1}>Zakończone</option>
+              <option value={2}>Problem</option>
+            </select>
+          </div>
+          <div className="flex gap-2 mt-4">
+            {editedTaskId ? (
+              <>
+                <button
+                  className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
+                  onClick={updateTaskDetails}
+                >
+                  Zaktualizuj zadanie
+                </button>
+                <button
+                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md"
+                  onClick={updateTaskStatus}
+                >
+                  Zaktualizuj status
+                </button>
+              </>
+            ) : (
+              <button
+                className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md"
+                onClick={createTask}
+              >
+                Utwórz zadanie
+              </button>
+            )}
+            {editedTaskId && (
+              <button
+                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
+                onClick={deleteTask}
+              >
+                Usuń zadanie
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="hidden md:grid grid-cols-5 px-4 py-3 font-semibold bg-gray-200 dark:bg-gray-700 border-b border-gray-300 dark:border-gray-600">
+        <div>Nazwa</div>
+        <div>Przypisane do</div>
+        <div>Termin</div>
+        <div>Priorytet</div>
+        <div>Status</div>
       </div>
+      {tasks.map((task) => (
+        <div
+          key={task.id}
+          onClick={() => handleTaskClick(task)}
+          className="grid grid-cols-1 md:grid-cols-5 gap-4 px-4 py-3 border-b border-gray-300 dark:border-gray-700 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          <div>{task.name}</div>
+          <div>
+            {task.assignedUsers.$values.map((userId) => {
+              const user = users.find((u) => u.id === userId);
+              return user ? (
+                <span key={userId} className="inline-block px-2 py-1 bg-gray-300 dark:bg-gray-600 rounded-md mr-1">
+                  {user.firstName} {user.lastName}
+                </span>
+              ) : null;
+            })}
+          </div>
+          <div>{new Date(task.deadlineDate).toLocaleDateString()}</div>
+          <div>
+            <FontAwesomeIcon
+              icon={faFlag}
+              className={
+                task.priority === 0
+                  ? 'text-green-500'
+                  : task.priority === 1
+                  ? 'text-yellow-500'
+                  : 'text-red-500'
+              }
+            />
+          </div>
+          <div>
+            {task.status === -1
+              ? 'Planowane'
+              : task.status === 0
+              ? 'W trakcie'
+              : task.status === 1
+              ? 'Zakończone'
+              : 'Problem'}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
