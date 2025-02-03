@@ -26,7 +26,9 @@ export default function CreateProject() {
         department: ''
     });
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const handleInputChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    ) => {
         const { name, value } = e.target;
         setFormData(prev => ({
             ...prev,
@@ -55,17 +57,16 @@ export default function CreateProject() {
 
         try {
             const atok = localStorage.getItem('atok');
-
             if (!atok) {
                 throw new Error('Authentication token not found');
             }
 
-            // if (formData.department === "all") {
-            //     setFormData(prev => ({
-            //         ...prev,
-            //         department: ""
-            //     }));
-            // }
+            // Normalize scopes: if "all" is selected, send an empty array.
+            const payload = {
+                name: formData.name,
+                description: formData.description,
+                scopes: formData.department === "all" ? [] : (formData.department ? [formData.department] : [])
+            };
 
             const response = await fetch('/api/project/create', {
                 method: 'POST',
@@ -73,11 +74,7 @@ export default function CreateProject() {
                     'Content-Type': 'application/json',
                     'Authorization': atok
                 },
-                body: JSON.stringify({
-                    name: formData.name,
-                    description: formData.description,
-                    scopes: formData.department ? [formData.department] : []
-                })
+                body: JSON.stringify(payload)
             });
 
             const responseData = await response.text();
@@ -160,9 +157,7 @@ export default function CreateProject() {
                                     name="name"
                                     value={formData.name}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md
-                                             bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                                             focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                                     placeholder="Wprowadź nazwę projektu"
                                 />
                             </div>
@@ -176,9 +171,7 @@ export default function CreateProject() {
                                     value={formData.description}
                                     onChange={handleInputChange}
                                     rows={4}
-                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md
-                                             bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                                             focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                                     placeholder="Opisz swój projekt"
                                 />
                             </div>
@@ -191,9 +184,7 @@ export default function CreateProject() {
                                     name="department"
                                     value={formData.department}
                                     onChange={handleInputChange}
-                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md
-                                             bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                                             focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
+                                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400"
                                 >
                                     <option value="">Wybierz wydział</option>
                                     <option value="all">Project drużynowy</option>

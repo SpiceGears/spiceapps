@@ -63,8 +63,8 @@ export default function Projects() {
                     </div>
                     <div
                         className="grid grid-cols-4 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-                        <div>Nazwa zadania</div>
-                        <div>Opis zadania</div>
+                        <div>Nazwa projektu</div>
+                        <div>Opis projektu</div>
                         <div>Priorytet</div>
                         <div>Status</div>
                     </div>

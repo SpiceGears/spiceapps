@@ -190,11 +190,12 @@ export default function List({ params }: { params: { projectId: string; taskId: 
       const atok = localStorage.getItem('atok');
       if (!atok) throw new Error('No authentication token found');
 
+      // Update task details excluding status
       const response = await fetch(`/api/project/${params.projectId}/${editedTaskId}/edit`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': atok
+          'Authorization': atok,
         },
         body: JSON.stringify({
           name: taskForm.name,
@@ -203,30 +204,35 @@ export default function List({ params }: { params: { projectId: string; taskId: 
           priority: taskForm.priority,
           deadlineDate: taskForm.deadlineDate,
           dependencies: [],
-          status: taskForm.status
-        })
-      });
-      console.log('Update task payload:', {
-        name: taskForm.name,
-        description: taskForm.description,
-        assignedUsers: taskForm.assignedUsers,
-        priority: taskForm.priority,
-        deadlineDate: taskForm.deadlineDate,
-        status: taskForm.status
+        }),
       });
 
       if (!response.ok) {
         throw new Error('Failed to update task');
       }
 
+      // Update task status using the dedicated endpoint.
+      // Here, the request body is a raw number.
+      const statusResponse = await fetch(`/api/project/${params.projectId}/${editedTaskId}/updateStatus`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': atok,
+        },
+        body: JSON.stringify(taskForm.status),
+      });
+
+      if (!statusResponse.ok) {
+        throw new Error('Failed to update task status');
+      }
+
       toast.success('Task updated successfully');
       resetTaskForm();
       setEditedTaskId(null);
       setIsAddingTask(false);
-
     } catch (error) {
       console.error('Error updating task:', error);
-        toast.error('Failed to update task');
+      toast.error('Failed to update task');
     }
   }
 
@@ -247,7 +253,7 @@ export default function List({ params }: { params: { projectId: string; taskId: 
         throw new Error('Failed to delete task');
       }
 
-        toast.success('Task deleted successfully');
+      toast.success('Task deleted successfully');
       resetTaskForm();
     } catch (error) {
       console.error('Error deleting task:', error);
@@ -374,8 +380,8 @@ export default function List({ params }: { params: { projectId: string; taskId: 
                   const user = users.find((u) => u.id === userId);
                   return user ? (
                       <span key={userId} className="inline-block px-2 py-1 bg-gray-300 dark:bg-gray-600 rounded-md mr-1">
-                  {user.firstName} {user.lastName}
-                </span>
+                        {user.firstName} {user.lastName}
+                      </span>
                   ) : null;
                 })}
               </div>
