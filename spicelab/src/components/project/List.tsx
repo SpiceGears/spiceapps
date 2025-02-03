@@ -189,9 +189,9 @@ export default function List({ params }: { params: { projectId: string; taskId: 
     try {
       const atok = localStorage.getItem('atok');
       if (!atok) throw new Error('No authentication token found');
-
+  
       // Update task details excluding status
-      const response = await fetch(`/api/project/${params.projectId}/${editedTaskId}/edit`, {
+      const editResponse = await fetch(`/api/project/${params.projectId}/${editedTaskId}/edit`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -206,26 +206,26 @@ export default function List({ params }: { params: { projectId: string; taskId: 
           dependencies: [],
         }),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to update task');
+  
+      if (!editResponse.ok) {
+        throw new Error('Failed to update task details');
       }
-
-      // Update task status using the dedicated endpoint.
-      // Here, the request body is a raw number.
+  
+      // Update task status using the dedicated /updateStatus endpoint.
       const statusResponse = await fetch(`/api/project/${params.projectId}/${editedTaskId}/updateStatus`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': atok,
         },
+        // Sending only the status value in the request body.
         body: JSON.stringify(taskForm.status),
       });
-
+  
       if (!statusResponse.ok) {
         throw new Error('Failed to update task status');
       }
-
+  
       toast.success('Task updated successfully');
       resetTaskForm();
       setEditedTaskId(null);
@@ -235,6 +235,7 @@ export default function List({ params }: { params: { projectId: string; taskId: 
       toast.error('Failed to update task');
     }
   }
+  
 
   async function deleteTask() {
     try {
