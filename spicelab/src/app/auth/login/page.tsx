@@ -72,7 +72,7 @@ export default function Login() {
         <div className="mt-8 space-y-6">
           <div className="rounded-md shadow-sm space-y-4">
             <div>
-              <label htmlFor="login" className="sr-only">Login</label>
+              <label htmlFor="login" className="sr-only">Email</label>
               <input
                 id="login"
                 name="login"
