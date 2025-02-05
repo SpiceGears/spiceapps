@@ -84,7 +84,7 @@ export default function Login() {
                          rounded-md focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 
                          focus:border-blue-500 dark:focus:border-blue-400 focus:z-10 sm:text-sm
                          bg-white dark:bg-gray-700"
-                placeholder="Login"
+                placeholder="Email"
               />
             </div>
             <div>
