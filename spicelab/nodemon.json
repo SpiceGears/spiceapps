@@ -1,0 +1,6 @@
+{
+  "watch": ["./spicelab/app"],
+  "ext": "js,jsx,ts,tsx,json",
+  "exec": "next dev",
+  "ignore": ["node_modules", ".next"]
+}
