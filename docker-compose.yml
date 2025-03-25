@@ -44,7 +44,22 @@ services:
     environment:
       BACKEND: http://spiceapi:8080/
     ports:
-      - "80:3000"
+      - "3000:3000"
+    depends_on:
+      - spiceapi
+    networks:
+      - app-network
+
+  spicehub:
+    image: ${DOCKER_REGISTRY-}spicehub
+    restart: always
+    build:
+      context: .
+      dockerfile: spicehub/Dockerfile
+    environment:
+      BACKEND: http://spiceapi:8080/
+    ports:
+      - "3001:3001"
     depends_on:
       - spiceapi
     networks:
