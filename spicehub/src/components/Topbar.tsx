@@ -1,4 +1,5 @@
 import { useState } from "react";
+import Searchbar from "./Searchbar";
 
 export default function Topbar() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -10,7 +11,9 @@ export default function Topbar() {
         <div className="container px-4 py-4 flex items-center justify-between">
             <div className="text-2xl font-bold text-white">SpiceHub</div>
 
-            <div></div>
+            <div>
+                <Searchbar />
+            </div>
         </div>
     </header>
   );
