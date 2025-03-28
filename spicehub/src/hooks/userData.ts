@@ -28,7 +28,6 @@ export interface UserData {
   coins: number;
   createdAt: string;
   lastLogin: string;
-  isApproved: boolean;
 }
 
 export const useUserData = () => {
