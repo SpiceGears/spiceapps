@@ -13,7 +13,7 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
     <header className="w-full left-0 top-0 fixed shadow-md bg-gray-800 z-50 flex items-center">
       <button
         onClick={toggleSidebar}
-        className="text-white ml-10 mr-2 focus:outline-none"
+        className="text-white ml-10 focus:outline-none"
       >
         <FontAwesomeIcon icon={faBars} size="lg" />
       </button>
