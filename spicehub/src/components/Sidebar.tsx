@@ -21,7 +21,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
         <div className="flex">
             <aside className={`bg-gray-800 text-white transition-all duration-300 p-4 ${isOpen ? 'w-64' : 'w-16'} mt-16`} style={{ height: "calc(100vh - 64px)" }}>
                 <nav>
-                    <ul className="space-y-4">
+                    <ul className="space-y-4 pt-5">
                         <li>
                             <Link href="/">
                                 <p className="flex items-center space-x-4 hover:bg-gray-700 p-2 rounded">
