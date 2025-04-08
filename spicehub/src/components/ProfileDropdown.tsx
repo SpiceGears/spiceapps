@@ -24,38 +24,39 @@ export default function ProfileDropdown() {
         <FontAwesomeIcon
           icon={faUserCircle}
           size="lg"
-          className="w-8 h-8 text-gray-50"
+          className="w-8 h-8 text-gray-100"
         />
-        <span className="text-gray-50">username</span>
-        {isOpen ? (
-            <FontAwesomeIcon icon={faCaretUp} className="w-4 h-4 text-gray-50" />
-            ) : (
-            <FontAwesomeIcon icon={faCaretDown} className="w-4 h-4 text-gray-50" />
-        )}
+        <span className="text-gray-100">username</span>
+        <FontAwesomeIcon 
+          icon={faCaretDown} 
+          className={`w-4 h-4 text-gray-100 transition-transform duration-200 ${isOpen ? 'transform rotate-180' : ''}`}
+        />
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-          <Link href="/profile">
-            <p className="block px-4 py-2 text-gray-700 hover:bg-gray-100 items-center space-x-2">
-              <FontAwesomeIcon icon={faUser} className="w-4 h-4" />
-              <span>Your Profile</span>
-            </p>
-          </Link>
-          <Link href="/settings">
-            <p className="block px-4 py-2 text-gray-700 hover:bg-gray-100 items-center space-x-2">
-              <FontAwesomeIcon icon={faCog} className="w-4 h-4" />
-              <span>Settings</span>
-            </p>
-          </Link>
-          <Link href="/logout">
-            <p className="block px-4 py-2 text-gray-700 hover:bg-gray-100 items-center space-x-2">
-              <FontAwesomeIcon icon={faSignOutAlt} className="w-4 h-4" />
-              <span>Sign Out</span>
-            </p>
-          </Link>
-        </div>
-      )}
+      <div 
+        className={`absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-950 rounded-md shadow-lg z-10 
+                   transition-all duration-200 ease-in-out origin-top-right
+                   ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
+      >
+        <Link href="/profile">
+          <p className="flex items-center space-x-2 px-4 py-2 text-gray-100 hover:bg-gray-100">
+            <FontAwesomeIcon icon={faUser} className="w-4 h-4" />
+            <span>Your Profile</span>
+          </p>
+        </Link>
+        <Link href="/settings">
+          <p className="flex items-center space-x-2 px-4 py-2 text-gray-100 hover:bg-gray-100">
+            <FontAwesomeIcon icon={faCog} className="w-4 h-4" />
+            <span>Settings</span>
+          </p>
+        </Link>
+        <Link href="/logout">
+          <p className="flex items-center space-x-2 px-4 py-2 text-gray-100 hover:bg-gray-100">
+            <FontAwesomeIcon icon={faSignOutAlt} className="w-4 h-4" />
+            <span>Sign Out</span>
+          </p>
+        </Link>
+      </div>
     </div>
   );
 }
