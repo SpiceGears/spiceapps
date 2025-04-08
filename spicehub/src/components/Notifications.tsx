@@ -13,15 +13,19 @@ export default function Notifications() {
                 icon={faBell} 
                 onClick={toggleNotifications}
                 size="xl"
-                className="p-2 rounded-full text-gray-50 hover:text-gray-100 focus:outline-none cursor-pointer"
+                className={`p-2 rounded-full text-gray-100 hover:text-gray-100 focus:outline-none cursor-pointer 
+                  transition-all duration-200 ${isOpen ? 'transform rotate-12' : ''}`}
             /> 
-            {isOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-md shadow-lg z-10">
-                    <div className="py-2">
-                        <p className="px-4 py-2 text-gray=700">Brak nowych powiadomień</p>
-                    </div>
+            
+            <div 
+                className={`absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-950 rounded-md shadow-lg z-10
+                         transition-all duration-200 ease-in-out origin-top-right
+                         ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
+            >
+                <div className="py-2">
+                    <p className="px-4 py-2 text-gray-100">Brak nowych powiadomień</p>
                 </div>
-            )}
+            </div>
         </div>
     );
 }
