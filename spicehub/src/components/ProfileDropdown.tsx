@@ -1,22 +1,36 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faUser,
   faUserCircle,
   faCog,
   faCaretDown,
-  faCaretUp,
   faSignOutAlt
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 
 export default function ProfileDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const toggleProfileDropdown = () => setIsOpen((prev) => !prev);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={containerRef}>
       <button
         onClick={toggleProfileDropdown}
         className="flex items-center space-x-2 focus:outline-none"
