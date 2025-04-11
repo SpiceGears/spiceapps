@@ -53,21 +53,21 @@ export default function ProfileDropdown() {
                    ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
       >
         <Link href="/profile">
-          <p className="flex items-center space-x-2 px-4 py-2 text-gray-100 hover:bg-gray-100">
+          <p className="flex items-center space-x-2 px-4 py-2 text-gray-100 hover:bg-gray-700">
             <FontAwesomeIcon icon={faUser} className="w-4 h-4" />
-            <span>Your Profile</span>
+            <span>Profil</span>
           </p>
         </Link>
         <Link href="/settings">
-          <p className="flex items-center space-x-2 px-4 py-2 text-gray-100 hover:bg-gray-100">
+          <p className="flex items-center space-x-2 px-4 py-2 text-gray-100 hover:bg-gray-700">
             <FontAwesomeIcon icon={faCog} className="w-4 h-4" />
-            <span>Settings</span>
+            <span>Ustawienia</span>
           </p>
         </Link>
         <Link href="/logout">
-          <p className="flex items-center space-x-2 px-4 py-2 text-gray-100 hover:bg-gray-100">
+          <p className="flex items-center space-x-2 px-4 py-2 text-gray-100 hover:bg-gray-700">
             <FontAwesomeIcon icon={faSignOutAlt} className="w-4 h-4" />
-            <span>Sign Out</span>
+            <span>Wyloguj się</span>
           </p>
         </Link>
       </div>
