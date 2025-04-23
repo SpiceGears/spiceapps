@@ -1,11 +1,4 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-  faCalendarAlt,
-  faRobot,
-  faGlobe,
-  faArrowUpRightFromSquare,
-  faMoon,
-} from '@fortawesome/free-solid-svg-icons';
+import { Calendar, Bot, Globe, ExternalLink, Moon } from 'lucide-react';
 
 interface SeasonCardProps {
   program?: 'FRC' | 'FGC';
@@ -26,7 +19,7 @@ const SeasonCard = ({
   gameLogoUrl,
   isOffseason = false,
 }: SeasonCardProps) => {
-  const programIcon = program === 'FRC' ? faRobot : faGlobe;
+  const ProgramIcon = program === 'FRC' ? Bot : Globe;
 
   return (
     <div className="w-full max-w-4xl bg-gray-800 rounded-2xl shadow-lg p-6 flex justify-between items-center border border-gray-700 hover:border-blue-500 transition-all duration-300 hover:shadow-xl overflow-hidden">
@@ -40,13 +33,13 @@ const SeasonCard = ({
         )}
         <div>
           <h2 className="text-xl font-bold text-gray-100 flex items-center gap-2">
-            <FontAwesomeIcon icon={programIcon} className="text-blue-600" />
+            <ProgramIcon className="text-blue-600 h-5 w-5" />
             {program} {isOffseason ? 'Offseason' : `Season ${seasonYear}`}
           </h2>
 
           {isOffseason ? (
             <p className="text-gray-200 text-sm flex items-center gap-2">
-              <FontAwesomeIcon icon={faMoon} />
+              <Moon className="h-4 w-4" />
               Brak aktywnego sezonu!
             </p>
           ) : (
@@ -55,7 +48,7 @@ const SeasonCard = ({
               {kickoffDate && (
                 <>
                   {' '}
-                  · <FontAwesomeIcon icon={faCalendarAlt} />{' '}
+                  · <Calendar className="inline h-4 w-4" />{' '}
                   {new Date(kickoffDate).toLocaleDateString()}
                 </>
               )}
@@ -71,7 +64,7 @@ const SeasonCard = ({
           rel="noopener noreferrer"
           className="text-sm text-blue-600 hover:underline flex items-center gap-1"
         >
-          Details <FontAwesomeIcon icon={faArrowUpRightFromSquare} />
+          Details <ExternalLink className="h-4 w-4" />
         </a>
       )}
     </div>

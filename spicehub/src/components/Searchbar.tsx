@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch } from "@fortawesome/free-solid-svg-icons";
+import { Input } from "@/components/ui/input";
 
 export default function Searchbar() {
     const [query, setQuery] = useState("");
@@ -11,19 +12,20 @@ export default function Searchbar() {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="flex items-center">
-            <div className="relative flex items-center text-gray-400 focus-within:text-gray-600">
-                <FontAwesomeIcon icon={faSearch} className="w-5 h-5 absolute ml-3" />
-                <input
-                    type="text"
+        <form onSubmit={handleSubmit} className="w-full max-w-sm">
+            <div className="relative">
+                <FontAwesomeIcon 
+                    icon={faSearch} 
+                    className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" 
+                />
+                <Input
+                    type="search"
                     placeholder="Szukaj..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    className="pr-3 pl-10 py-2 border border-none ring-2 ring-gray-300 text-white rounded-2xl focus:ring-gray-500 focus:ring-2 "
+                    className="pl-10 bg-gray-700 border-gray-600 text-white placeholder:text-gray-400 focus-visible:ring-gray-500"
                 />
             </div>
-            
-
         </form>
     )
 }

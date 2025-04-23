@@ -1,33 +1,53 @@
+import * as React from "react";
+import Link from "next/link";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuList,
+} from "@/components/ui/navigation-menu";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
 import Searchbar from "./Searchbar";
 import Notifications from "./Notifications";
 import ProfileDropdown from "./ProfileDropdown";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBars } from "@fortawesome/free-solid-svg-icons";
 
 interface TopbarProps {
-  toggleSidebar: () => void;
+  toggleSidebar?: () => void;
 }
 
 export default function Topbar({ toggleSidebar }: TopbarProps) {
   return (
-    <header className="w-full left-0 top-0 fixed shadow-md bg-gray-800 z-50 flex items-center">
-      <button
-        onClick={toggleSidebar}
-        className="text-white ml-10 focus:outline-none"
-      >
-        <FontAwesomeIcon icon={faBars} size="lg" />
-      </button>
-
-      <div className="container mx-auto px-4 py-4 flex items-center w-full">
-        <div className="text-2xl font-bold text-white w-1/4">SpiceHub</div>
-
-        <div className="w-2/4 flex justify-center">
-          <Searchbar />
-        </div>
-
-        <div className="w-1/4 flex items-center justify-end space-x-4">
-          <Notifications />
-          <ProfileDropdown />
+    <header className="w-full left-0 top-0 fixed shadow-md bg-gray-800 z-50 h-16">
+      <div className="container mx-auto h-full px-4">
+        <div className="flex items-center justify-between h-full">
+          {/* Left section: Logo and toggle */}
+          <div className="flex items-center space-x-3">
+            {toggleSidebar && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={toggleSidebar}
+                className="text-gray-400 hover:text-gray-100 hover:bg-gray-700"
+              >
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle sidebar</span>
+              </Button>
+            )}
+            <Link href="/dashboard" className="text-2xl font-bold text-white">
+              SpiceHub
+            </Link>
+          </div>
+          
+          {/* Center section: Search */}
+          <div className="hidden md:flex justify-center flex-grow px-4 max-w-md mx-auto">
+            <Searchbar />
+          </div>
+          
+          {/* Right section: Notifications and profile */}
+          <div className="flex items-center space-x-2">
+            <Notifications />
+            <ProfileDropdown />
+          </div>
         </div>
       </div>
     </header>

@@ -1,46 +1,34 @@
-import { useState, useRef, useEffect } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBell } from "@fortawesome/free-solid-svg-icons";
+import { Bell } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function Notifications() {
-    const [isOpen, setIsOpen] = useState(false);
-    const containerRef = useRef<HTMLDivElement>(null);
-
-    const toggleNotifications = () => setIsOpen((prev) => !prev);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        }
-        if(isOpen) {
-            document.addEventListener("mousedown", handleClickOutside);
-        }
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        }
-    }, [isOpen]);
-
-    return (
-        <div className="relative" ref={containerRef}>
-            <FontAwesomeIcon 
-                icon={faBell} 
-                onClick={toggleNotifications}
-                size="xl"
-                className={`p-2 rounded-full text-gray-100 hover:text-gray-100 focus:outline-none cursor-pointer 
-                  transition-all duration-200 ${isOpen ? 'transform rotate-12' : ''}`}
-            /> 
-            
-            <div 
-                className={`absolute right-0 mt-2 w-64 bg-gray-800 border border-gray-950 rounded-md shadow-lg z-10
-                         transition-all duration-200 ease-in-out origin-top-right
-                         ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
-            >
-                <div className="py-2">
-                    <p className="px-4 py-2 text-gray-100">Brak nowych powiadomień</p>
-                </div>
-            </div>
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          className="text-gray-100 hover:bg-gray-700 hover:text-gray-100 rounded-full transition-all duration-200 p-4"
+        >
+          <Bell size={100} className="w-8 h-8"/>
+          <span className="sr-only">Notifications</span>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-64 p-0 bg-gray-800 border-gray-700 text-gray-100"
+        align="end"
+      >
+        <div className="p-4 border-b border-gray-700">
+          <h4 className="text-sm font-medium">Notifications</h4>
         </div>
-    );
+        <div className="p-4">
+          <p className="text-sm text-gray-400">Brak nowych powiadomień</p>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
 }
