@@ -28,46 +28,32 @@ export default function SettingsPage() {
           <TabsTrigger value="profile">Profil</TabsTrigger>
           <TabsTrigger value="notifications">Powiadomienia</TabsTrigger>
           <TabsTrigger value="account">Konto</TabsTrigger>
-          <TabsTrigger value="team">Zespół</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">
           <div className="space-y-4">
             <Label htmlFor="username">Nazwa użytkownika</Label>
-            <Input id="username" placeholder="np. michal_kulik" />
+            <Input id="username"/>
 
             <Label htmlFor="bio">Opis</Label>
-            <Input id="bio" placeholder="np. Frontend developer w Spice Gears" />
-
+            <Input id="bio"/>
             <Button className="mt-4">Zapisz zmiany</Button>
           </div>
         </TabsContent>
 
         <TabsContent value="notifications">
           <div className="space-y-4">
-            <Label htmlFor="email">E-mail powiadomień</Label>
-            <Input id="email" placeholder="np. michal@spicehub.dev" />
-            <Button className="mt-4">Zapisz</Button>
           </div>
         </TabsContent>
 
         <TabsContent value="account">
           <div className="space-y-4">
+          <Label htmlFor="email">E-mail</Label>
+            <Input id="email"/>
+            <Button className="mt-4">Zapisz</Button>
             <Label htmlFor="password">Nowe hasło</Label>
             <Input id="password" type="password" placeholder="********" />
             <Button className="mt-4">Zmień hasło</Button>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="team">
-          <div className="space-y-4">
-            <Label htmlFor="team-name">Nazwa zespołu</Label>
-            <Input id="team-name" placeholder="np. Spice Gears 5883" />
-
-            <Label htmlFor="team-code">Kod zespołu</Label>
-            <Input id="team-code" placeholder="np. SG5883" />
-
-            <Button className="mt-4">Aktualizuj dane zespołu</Button>
           </div>
         </TabsContent>
       </Tabs>
