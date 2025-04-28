@@ -2,6 +2,7 @@
 
 import SeasonCard from "@/components/widgets/Season";
 import WorkshopCard from "@/components/widgets/Workshop";
+import Spicelab from "@/components/widgets/Spicelab"
 
 export default function Dashboard() {
   return (
@@ -35,6 +36,8 @@ export default function Dashboard() {
           
           {/* Season widget */}
             <SeasonCard isOffseason />
+
+            <Spicelab />
         </div>
       </div>
     </div>
