@@ -84,34 +84,36 @@ export default function Profile() {
   const formattedDate = new Date().toLocaleDateString('pl-PL', { day: '2-digit', month: '2-digit', year: '2-digit' });
 
   return (
-    <div className="bg-gray-900 text-white min-h-screen p-4 md:p-8">
+    <div className="bg-white text-gray-900 dark:bg-gray-900 dark:text-white min-h-screen p-4 md:p-8">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="md:col-span-1 flex flex-col gap-4">
-          <Avatar className="h-48 w-48 md:h-64 md:w-64 border-4 border-gray-700">
-            <AvatarFallback className="bg-gray-800 text-white text-6xl">JK</AvatarFallback>
+          <Avatar className="h-48 w-48 md:h-64 md:w-64 border-4 border-gray-200 dark:border-gray-700">
+            <AvatarFallback className="bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white text-6xl">JK</AvatarFallback>
           </Avatar>
 
           <div>
-            <h1 className="text-2xl font-semibold text-white">Jan Kowalski</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Jan Kowalski</h1>
           </div>
 
-          <Button variant="default" className="w-full">Follow</Button>
+          <Button className="w-full bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700">
+            Follow
+          </Button>
 
-          <div className="flex items-center gap-4 text-sm text-gray-400">
-            <a href="#" className="flex items-center gap-1 hover:text-gray-100">
+          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+            <a href="#" className="flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-100">
               <Users className="h-4 w-4" />
-              <span className="font-semibold text-white">0</span> Obserwujących
+              <span className="font-semibold text-gray-900 dark:text-white">0</span> Obserwujących
             </a>
-            <span>·</span>
-            <a href="#" className="hover:text-gray-100">
-              <span className="font-semibold text-white">4</span> Obserwuje
+            <span className="text-gray-500 dark:text-gray-400">·</span>
+            <a href="#" className="hover:text-gray-700 dark:hover:text-gray-100">
+              <span className="font-semibold text-gray-900 dark:text-white">4</span> Obserwuje
             </a>
           </div>
         </div>
 
         <div className="md:col-span-3 flex flex-col gap-6">
           <div>
-            <h2 className="text-xl font-semibold mb-3 text-white">Popularne projekty</h2>
+            <h2 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Popularne projekty</h2>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <ProjectCard
                 name="jakiś tam projekt"
@@ -127,7 +129,7 @@ export default function Profile() {
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold mb-3 text-white">Aktywność</h2>
+            <h2 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Aktywność</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Workshop activity graph */}
               <ActivityWidget 
@@ -150,28 +152,19 @@ export default function Profile() {
           </div>
 
           <div>
-            <h2 className="text-xl font-semibold mb-3 text-white">Aktywność wpisów</h2>
-            <div className="border-l-2 border-gray-700 pl-6 relative">
+            <h2 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">Aktywność wpisów</h2>
+            <div className="border-l-2 border-gray-200 dark:border-gray-700 pl-6 relative">
               <div className="mb-6 relative">
-                <p className="text-sm mb-1 text-white">{formattedDate}</p>
-                <p className="text-sm mb-1 text-gray-400">
-                  Stworzonych 5 wspisów w 1 projekcie
-                </p>
-                <div className="h-2 w-1/3 bg-emerald-600 rounded"></div>
+                <p className="text-sm mb-1 text-gray-900 dark:text-white">{formattedDate}</p>
+                <p className="text-sm mb-1 text-gray-600 dark:text-gray-400">Stworzonych 5 wpisów w 1 projekcie</p>
+                <div className="h-2 w-1/3 bg-emerald-600 dark:bg-emerald-500 rounded"></div>
                 <div className="mt-1">
-                  <a href="#" className="text-xs text-gray-400 hover:text-gray-100 hover:underline">
+                  <a href="#" className="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-100 hover:underline">
                     test
                   </a>
-                  <span className="text-xs text-gray-400"> 5 wspisów</span>
+                  <span className="text-xs text-gray-600 dark:text-gray-400"> 5 wpisów</span>
                 </div>
               </div>
-
-              <Button
-                variant="outline"
-                className="w-full mt-4 border-gray-700 hover:bg-gray-700 hover:text-gray-100"
-              >
-                Pokaż więcej aktywności
-              </Button>
             </div>
           </div>
         </div>

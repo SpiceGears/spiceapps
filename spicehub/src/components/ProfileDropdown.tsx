@@ -20,38 +20,38 @@ export default function ProfileDropdown() {
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          className="flex items-center space-x-2 text-gray-100 hover:bg-gray-700 hover:text-gray-100 focus-visible:ring-0 focus-visible:ring-offset-0"
+          className="flex items-center space-x-2 text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 focus-visible:ring-0 focus-visible:ring-offset-0"
         >
           <img
           src={`https://ui-avatars.com/api/?name=${userData.firstName}+${userData.lastName}&background=random&color=fff`}
           alt={`${userData.firstName} ${userData.lastName}`}
           className="w-8 h-8 rounded-full" // Adjusted size to w-8 h-8
           />
-          <ChevronDown className="h-4 w-4" />
+          <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-300" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-48 bg-gray-800 border-gray-700 text-gray-100"
+        className="w-48 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
         align="end"
       >
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-gray-700" />
-        <DropdownMenuItem asChild className="hover:bg-gray-700 cursor-pointer focus:bg-gray-700">
-          <Link href="/profile" className="flex items-center w-full">
-            <User className="mr-2 h-4 w-4" />
+        <DropdownMenuLabel className="text-gray-700 dark:text-gray-100">My Account</DropdownMenuLabel>
+        <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
+        <DropdownMenuItem asChild className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer">
+          <Link href="/profile" className="flex items-center w-full text-gray-700 dark:text-gray-100">
+            <User className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-300" />
             <span>Profil</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild className="hover:bg-gray-700 cursor-pointer focus:bg-gray-700">
-          <Link href="/settings" className="flex items-center w-full">
-            <Cog className="mr-2 h-4 w-4" />
+        <DropdownMenuItem asChild className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer">
+          <Link href="/settings" className="flex items-center w-full text-gray-700 dark:text-gray-100">
+            <Cog className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-300" />
             <span>Ustawienia</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-gray-700" />
-        <DropdownMenuItem asChild className="hover:bg-gray-700 cursor-pointer focus:bg-gray-700">
-          <Link href="/logout" className="flex items-center w-full">
-            <LogOut className="mr-2 h-4 w-4" />
+        <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
+        <DropdownMenuItem asChild className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer">
+          <Link href="/logout" className="flex items-center w-full text-gray-700 dark:text-gray-100">
+            <LogOut className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-300" />
             <span>Wyloguj się</span>
           </Link>
         </DropdownMenuItem>

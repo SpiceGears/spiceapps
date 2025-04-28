@@ -14,7 +14,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
     return (
-        <div className="min-h-screen bg-gray-900">
+        <div className="min-h-screen bg-white dark:bg-gray-900">
             <Topbar toggleSidebar={toggleSidebar} />
             <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
             

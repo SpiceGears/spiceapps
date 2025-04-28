@@ -17,7 +17,7 @@ interface TopbarProps {
 
 export default function Topbar({ toggleSidebar }: TopbarProps) {
   return (
-    <header className="w-full left-0 top-0 fixed shadow-md bg-gray-800 z-50 h-16">
+    <header className="w-full left-0 top-0 fixed shadow-md bg-white dark:bg-gray-800 z-50 h-16">
       <div className="container mx-auto h-full px-4">
         <div className="flex items-center justify-between h-full">
           {/* Left section: Logo and toggle */}
@@ -27,13 +27,13 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
                 variant="ghost" 
                 size="icon" 
                 onClick={toggleSidebar}
-                className="text-gray-400 hover:text-gray-100 hover:bg-gray-700"
+                className="text-gray-400 dark:text-gray-300 hover:text-gray-500 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-700"
               >
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle sidebar</span>
               </Button>
             )}
-            <Link href="/dashboard" className="text-2xl font-bold text-white">
+            <Link href="/dashboard" className="text-2xl font-bold text-gray-900 dark:text-white">
               SpiceHub
             </Link>
           </div>

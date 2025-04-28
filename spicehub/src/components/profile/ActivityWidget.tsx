@@ -41,14 +41,14 @@ export const ActivityWidget = ({ title, icon, year, onYearChange, data }: Activi
   const totalContributions = monthlyData.reduce((a, b) => a + b, 0);
 
   return (
-    <Card className="border-0 rounded-xl bg-[#151b29] overflow-hidden">
-      <CardHeader className="pb-2 border-b border-[#242e43]">
+    <Card className="border border-gray-200 bg-white dark:border-0 dark:bg-[#151b29] rounded-xl overflow-hidden">
+      <CardHeader className="pb-2 border-b border-gray-200 dark:border-b dark:border-[#242e43]">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             {icon}
-            <CardTitle className="text-base text-white">{title}</CardTitle>
+            <CardTitle className="text-base text-gray-900 dark:text-white">{title}</CardTitle>
             
-            <Badge variant="outline" className="ml-2 text-xs text-gray-400 border-[#242e43] bg-transparent">
+            <Badge variant="outline" className="ml-2 text-xs text-gray-600 border-gray-200 bg-transparent dark:text-gray-400 dark:border-[#242e43] dark:bg-transparent">
               {totalContributions} aktywności
             </Badge>
           </div>

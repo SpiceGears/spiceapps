@@ -16,9 +16,9 @@ export function ActivityChart({ monthlyData, maxValue, year, currentYear, curren
     <div className="flex h-[120px] relative mb-4">
       {/* Left axis with scale numbers */}
       <div className="w-8 absolute -left-2 h-full flex flex-col justify-between text-right pr-1">
-        <span className="text-xs text-gray-500">{maxValue}</span>
-        <span className="text-xs text-gray-500">{Math.round(maxValue / 2)}</span>
-        <span className="text-xs text-gray-500">0</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">{maxValue}</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">{Math.round(maxValue / 2)}</span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">0</span>
       </div>
       
       {/* Chart with bars */}
@@ -38,23 +38,23 @@ export function ActivityChart({ monthlyData, maxValue, year, currentYear, curren
             >
               <div className="relative flex justify-center w-full">
                 {count > 0 && (
-                  <span className="text-[9px] text-gray-400 absolute -top-4">
+                  <span className="text-[9px] text-gray-400 dark:text-gray-300 absolute -top-4">
                     {count}
                   </span>
                 )}
-                <div 
-                  className={`w-full ${
-                    count > 0 
+                <div
+                  className={`w-full rounded-sm group ${
+                    count > 0
                       ? isCurrentMonth
-                        ? 'bg-blue-500' 
-                        : 'bg-emerald-600'
-                      : 'bg-[#242e43]'
-                  } rounded-sm group`} 
+                        ? 'bg-blue-600 dark:bg-blue-400'
+                        : 'bg-emerald-600 dark:bg-emerald-500'
+                      : 'bg-gray-200 dark:bg-[#242e43]'
+                  }`}
                   style={{ height: `${barHeight}px` }}
                   title={`${count} aktywności w ${monthNames[i]}`}
                 />
               </div>
-              <div className="text-xs text-gray-500 mt-2">{monthNames[i]}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">{monthNames[i]}</div>
             </div>
           );
         })}
