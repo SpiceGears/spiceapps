@@ -6,20 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useTheme } from "next-themes";
+import { useState, useEffect } from "react";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const [theme, setTheme] = useState<string>("light");
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
 
   return (
-    <div className="bg-gray-900 text-white min-h-screen p-4 md:p-8">
+    <div className="bg-white dark:bg-gray-900 text-black dark:text-white min-h-screen p-4 md:p-8">
       <div className="max-w-4xl mx-auto p-6 space-y-8">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Ustawienia</h1>
           <button
             onClick={() => router.back()}
-            className="text-gray-400 hover:text-gray-100 transition-colors"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-100 transition-colors"
             aria-label="Zamknij ustawienia"
           >
             <X className="w-6 h-6" />
@@ -27,13 +31,10 @@ export default function SettingsPage() {
         </div>
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="mb-6 bg-gray-800 text-gray-400">
-            <TabsTrigger
-              value="profile" className="text-gray-400 hover:text-white data-[state=active]:bg-gray-700 data-[state=active]:text-white">Profil</TabsTrigger>
-            <TabsTrigger
-              value="account" className="text-gray-400 hover:text-white data-[state=active]:bg-gray-700 data-[state=active]:text-white">Konto</TabsTrigger>
-            <TabsTrigger
-              value="app" className="text-gray-400 hover:text-white data-[state=active]:bg-gray-700 data-[state=active]:text-white">Aplikacja</TabsTrigger>
+          <TabsList className="mb-6">
+            <TabsTrigger value="profile">Profil</TabsTrigger>
+            <TabsTrigger value="account">Konto</TabsTrigger>
+            <TabsTrigger value="app">Aplikacja</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
@@ -75,7 +76,7 @@ export default function SettingsPage() {
                 id="theme"
                 value={theme}
                 onChange={(e) => setTheme(e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded-md p-2 text-white"
+                className="w-full bg-gray-200 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md p-2 text-black dark:text-white"
               >
                 <option value="light">Jasny</option>
                 <option value="dark">Ciemny</option>
