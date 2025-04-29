@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Users, Hammer, Puzzle } from "lucide-react";
 import { useState } from "react";
@@ -76,6 +76,11 @@ const aggregateContributionsByMonth = (data: { [date: string]: number }) => {
 export default function Profile() {
   const [workshopYear, setWorkshopYear] = useState(2025);
   const [projectYear, setProjectYear] = useState(2025);
+
+  const userData = {
+    firstName: "Jan",
+    lastName: "Kowalski",
+  }
   
   // Get data for the selected years
   const workshopData = mockData.workshops[workshopYear as keyof typeof mockData.workshops] || {};
@@ -88,7 +93,12 @@ export default function Profile() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="md:col-span-1 flex flex-col gap-4">
           <Avatar className="h-48 w-48 md:h-64 md:w-64 border-4 border-gray-200 dark:border-gray-700">
-            <AvatarFallback className="bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white text-6xl">JK</AvatarFallback>
+              <AvatarFallback className="bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white text-6xl" />
+              <AvatarImage
+                src={`https://ui-avatars.com/api/?name=${userData.firstName}+${userData.lastName}&background=random&color=fff`}
+                alt={`${userData.firstName} ${userData.lastName}`}
+                className="h-full w-full object-cover"
+              />
           </Avatar>
 
           <div>
@@ -109,6 +119,12 @@ export default function Profile() {
               <span className="font-semibold text-gray-900 dark:text-white">4</span> Obserwuje
             </a>
           </div>
+
+          <hr className="border-gray-200 dark:border-gray-700 my-4" />
+          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-100">
+            <h2 className="text-lg font-semibold">Osiągnięcia</h2>
+          </div>
+          
         </div>
 
         <div className="md:col-span-3 flex flex-col gap-6">

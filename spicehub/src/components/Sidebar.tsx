@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Home, User, Settings } from "lucide-react";
+import { Home, User, Settings, TestTube } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -15,9 +15,8 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   // Define navigation items with fixed larger icons
   const navItems = [
-    { href: "/dashboard", icon: Home, label: "SpiceLab" },
-    { href: "/profile", icon: User, label: "SpiceCos" },
-    { href: "/settings", icon: Settings, label: "SpiceCos" }
+    { href: "/dashboard", icon: Home, label: "Strona główna" },
+    { href: "/dashboard", icon: TestTube, label: "SpiceLab" },
   ];
 
   // Mobile sidebar using Sheet component
@@ -69,7 +68,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
       >
         <div className="flex flex-col h-full">
           {/* Navigation menu */}
-          <nav className="flex-grow p-4">
+          <nav className="flex-grow p-4 my-5">
             <div className="space-y-4">
               {navItems.map((item, index) => (
                 <Link 

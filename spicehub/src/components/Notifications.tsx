@@ -15,7 +15,7 @@ export default function Notifications() {
           className="text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 rounded-full transition-all duration-200 p-4"
         >
           <Bell size={100} className="w-8 h-8 text-gray-700 dark:text-gray-100" />
-          <span className="sr-only">Notifications</span>
+          <span className="sr-only">Powiadomienia</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -23,7 +23,7 @@ export default function Notifications() {
         align="end"
       >
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Notifications</h4>
+          <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100">Powiadomienia</h4>
         </div>
         <div className="p-4">
           <p className="text-sm text-gray-600 dark:text-gray-400">Brak nowych powiadomień</p>

@@ -34,7 +34,7 @@ export default function ProfileDropdown() {
         className="w-48 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
         align="end"
       >
-        <DropdownMenuLabel className="text-gray-700 dark:text-gray-100">My Account</DropdownMenuLabel>
+        <DropdownMenuLabel className="text-gray-700 dark:text-gray-100">{userData.firstName} {userData.lastName}</DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
         <DropdownMenuItem asChild className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer">
           <Link href="/profile" className="flex items-center w-full text-gray-700 dark:text-gray-100">
