@@ -63,7 +63,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
       
       {/* Desktop sidebar */}
       <aside 
-       className={`hidden md:block fixed left-0 top-16 bg-white dark:bg-gray-800 text-gray-900 dark:text-white h-[calc(100vh-64px)] transition-all duration-300 ${
+       className={`hidden md:block fixed left-0 top-16 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white h-[calc(100vh-64px)] transition-all duration-300 ${
          isOpen ? "w-64" : "w-16"
        } z-40`}
       >

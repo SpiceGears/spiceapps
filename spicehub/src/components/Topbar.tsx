@@ -17,7 +17,7 @@ interface TopbarProps {
 
 export default function Topbar({ toggleSidebar }: TopbarProps) {
   return (
-    <header className="w-full left-0 top-0 fixed shadow-md bg-white dark:bg-gray-800 z-50 h-16">
+    <header className="w-full left-0 top-0 fixed shadow-md bg-gray-100 dark:bg-gray-800 z-50 h-16">
       <div className="container mx-auto h-full px-4">
         <div className="flex items-center justify-between h-full">
           {/* Left section: Logo and toggle */}
