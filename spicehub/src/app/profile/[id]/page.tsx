@@ -105,21 +105,6 @@ export default function Profile() {
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Jan Kowalski</h1>
           </div>
 
-          <Button variant="default">
-            Follow
-          </Button>
-
-          <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-            <a href="#" className="flex items-center gap-1 hover:text-gray-700 dark:hover:text-gray-100">
-              <Users className="h-4 w-4" />
-              <span className="font-semibold text-gray-900 dark:text-white">0</span> Obserwujących
-            </a>
-            <span className="text-gray-500 dark:text-gray-400">·</span>
-            <a href="#" className="hover:text-gray-700 dark:hover:text-gray-100">
-              <span className="font-semibold text-gray-900 dark:text-white">4</span> Obserwuje
-            </a>
-          </div>
-
           <hr className="border-gray-200 dark:border-gray-700 my-4" />
           <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-100">
             <h2 className="text-lg font-semibold">Osiągnięcia</h2>

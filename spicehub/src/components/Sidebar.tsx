@@ -20,47 +20,11 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   ];
 
   // Mobile sidebar using Sheet component
-  const MobileSidebar = () => (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          className="md:hidden fixed left-4 top-20 z-50 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100"
-        >
-          <Home className="h-5 w-5" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="left" className="
-       w-64 p-0 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100
-      ">
-        <div className="flex flex-col h-full p-4">
-          <div className="space-y-4 mt-8">
-            {navItems.map((item, index) => (
-              <Link 
-                key={index} 
-                href={item.href}
-                className="flex items-center space-x-3 px-3 py-2 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-              >
-                <item.icon size={20} />
-                <span>{item.label}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
+
 
   // Desktop sidebar
   return (
     <>
-      {/* Mobile sidebar for smaller screens */}
-      <div className="md:hidden">
-        <MobileSidebar />
-      </div>
-      
-      {/* Desktop sidebar */}
       <aside 
        className={`hidden md:block fixed left-0 top-16 bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white h-[calc(100vh-64px)] transition-all duration-300 ${
          isOpen ? "w-64" : "w-16"

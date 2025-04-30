@@ -82,7 +82,6 @@ export default function SettingsPage() {
                 <option value="dark">Ciemny</option>
                 <option value="system">Systemowy</option>
               </select>
-              <Button className="mt-4">Zapisz zmiany</Button>
             </div>
           </TabsContent>
         </Tabs>
