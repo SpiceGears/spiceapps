@@ -8,7 +8,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white pb-10">
       {/* Header with date */}
-      <div className="w-full bg-gray-100 dark:bg-gray-800 py-6 mb-6 shadow-md rounded-lg">
+      <div className="w-full bg-gray-100 dark:bg-gray-800 py-6 mb-6 shadow-md">
         <div className="container mx-auto px-4">
           <h1 className="text-xl font-medium text-gray-700 dark:text-gray-400">
             {new Date().toLocaleDateString('pl-PL', {

@@ -19,8 +19,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
             
             <main 
-                className={`min-h-screen transition-all duration-300 pt-16
-                    ${isSidebarOpen ? 'md:ml-64' : 'md:ml-16'}`}
+                className={`min-h-screen transition-all duration-300 pt-10
+                    ${isSidebarOpen ? 'md:ml-58' : 'md:ml-10'}`}
             >
                 <div className="p-6">
                     {children}

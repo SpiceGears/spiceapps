@@ -1,11 +1,5 @@
 import Link from "next/link";
-import { Home, User, Settings, TestTube } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Home, Terminal, TestTube } from "lucide-react";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -13,16 +7,17 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
+  const userData = {
+    isAdmin: true,
+  }
   // Define navigation items with fixed larger icons
   const navItems = [
     { href: "/dashboard", icon: Home, label: "Strona główna" },
     { href: "/dashboard", icon: TestTube, label: "SpiceLab" },
+    ...(userData.isAdmin ? [{ href: "/admin", icon: Terminal, label: "Admin" }] : []),
+    
   ];
 
-  // Mobile sidebar using Sheet component
-
-
-  // Desktop sidebar
   return (
     <>
       <aside 
