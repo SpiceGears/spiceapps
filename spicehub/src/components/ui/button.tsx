@@ -23,6 +23,8 @@ const buttonVariants = cva(
           "text-primary underline-offset-4 hover:underline dark:text-primary",
         disabled:
           "bg-gray-500 text-gray-300 shadow-none cursor-not-allowed dark:bg-gray-600 dark:text-gray-400",
+        add:
+          "bg-gray-800 border border-gray-600 rounded-md w-9 h-8 flex items-center justify-center p-0 hover:bg-gray-700",
       },
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

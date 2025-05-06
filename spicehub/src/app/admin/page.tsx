@@ -21,6 +21,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { RolePicker, Role } from "@/components/admin/RolePicker";
+
+interface User {
+  id: number;
+  name: string;
+  roles: string[];
+  email: string;
+}
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState<"members" | "roles">("members");
@@ -28,24 +36,30 @@ export default function Admin() {
   const [isAddingRole, setIsAddingRole] = useState(false);
   const [isDeletingRole, setIsDeletingRole] = useState(false);
   const [isEditingUser, setIsEditingUser] = useState(false);
-  const [currentRole, setCurrentRole] = useState<
-    { name: string; memberCount: number } | null
-  >(null);
-  const [currentUser, setCurrentUser] = useState<
-    { id: Number; name: string; role: string; email: string; } | null
-  >(null)
+  const [currentRole, setCurrentRole] = useState<Role | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [assignedRoles, setAssignedRoles] = useState<string[]>([]);
 
-  const roles = [
+  const roles: Role[] = [
     { name: "Administrator", memberCount: 5 },
     { name: "Moderator", memberCount: 3 },
     { name: "Użytkownik", memberCount: 12 },
   ];
 
-  const users = [
-    { id: 1, name: "Jan Kowalski", role: "Administrator", email: "jan.kowalski@example.com" },
-    { id: 2, name: "Anna Nowak", role: "Moderator", email: "anna.nowak@example.com" },
-    { id: 3, name: "Piotr Wiśniewski", role: "Użytkownik", email: "piotr.wisniewski@example.com" }
-  ]
+  const users: User[] = [
+    {
+      id: 1,
+      name: "Jan Kowalski",
+      roles: ["Administrator"],
+      email: "jan.kowalski@example.com",
+    },
+    {
+      id: 2,
+      name: "Anna Nowak",
+      roles: ["Moderator"],
+      email: "anna.nowak@example.com",
+    }
+  ];
 
   return (
     <div className="flex h-full w-full justify-center">
@@ -94,7 +108,7 @@ export default function Admin() {
                         <AvatarFallback>{user.name[0]}</AvatarFallback>
                         <AvatarImage
                           src={`https://ui-avatars.com/api/?name=${user.name
-                            .replace(" ", "+")
+                            .replace(" ", "")
                             .trim()}&background=random&color=fff`}
                         />
                       </Avatar>
@@ -103,13 +117,14 @@ export default function Admin() {
                         <p className="text-sm text-gray-500">Użytkownik</p>
                       </div>
                     </div>
-                    <Button variant="default" size="sm"
+                    <Button
                       onClick={() => {
                         setCurrentUser(user);
+                        setAssignedRoles(user.roles);
                         setIsEditingUser(true);
                       }}
                     >
-                      Zarządzaj
+                      Edytuj
                     </Button>
                     <Dialog
                       open={isEditingUser}
@@ -139,37 +154,55 @@ export default function Admin() {
                               className="w-full"
                             />
                           </div>
-                            <div className="space-y-2">
+                          <div className="space-y-2">
                             <Label htmlFor="user-roles">Role</Label>
-                            <select
-                              id="user-roles"
-                              multiple
-                              defaultValue={currentUser?.role ? currentUser.role.split(",") : []}
-                              className="w-full border rounded px-2 py-1 bg-white dark:bg-gray-800"
-                            >
-                              {roles.map((role) => (
-                              <option key={role.name} value={role.name}>
-                                {role.name}
-                              </option>
-                              ))}
-                            </select>
-                            </div>
-                        </div>
-                        <DialogFooter className="sm:justify-between">
-                          <Button variant="outline" onClick={() => setIsEditingUser(false)}>
-                            Anuluj
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              // tu powinna znaleźć się logika zapisu zmian użytkownika
-                              setIsEditingUser(false);
-                              setCurrentUser(null);
-                            }}
-                          >
-                            Zapisz zmiany
-                          </Button>
-                        </DialogFooter>
+                            <div className="flex items-center gap-2">
+                              {/* current role badge */}
+                              <div className="flex flex-wrap gap-2 mb-2">
+                                {assignedRoles.map((r) => (
+                                  <span
+                                    key={r}
+                                    className="inline-flex items-center px-2 py-0.5 text-sm font-medium bg-gray-200 dark:bg-gray-700 rounded"
+                                  >
+                                    {r}
+                                    <button
+                                      onClick={() =>
+                                        setAssignedRoles((prev) => prev.filter((x) => x !== r))
+                                      }
+                                      className="ml-1 text-gray-500 hover:text-gray-700"
+                                    >
+                                      ×
+                                    </button>
+                                  </span>
+                                ))}
+                              </div>
 
+                              <RolePicker
+                                roles={roles}
+                                onSelect={(role) => {
+                                  setAssignedRoles((prev) => {
+                                    if (prev.includes(role.name)) return prev;
+                                    return [...prev, role.name];
+                                  });
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <DialogFooter className="sm:justify-between">
+                            <Button variant="outline" onClick={() => setIsEditingUser(false)}>
+                              Anuluj
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                // tu powinna znaleźć się logika zapisu zmian użytkownika
+                                setIsEditingUser(false);
+                                setCurrentUser(null);
+                              }}
+                            >
+                              Zapisz zmiany
+                            </Button>
+                          </DialogFooter>
+                        </div>
                       </DialogContent>
                     </Dialog>
                   </div>
