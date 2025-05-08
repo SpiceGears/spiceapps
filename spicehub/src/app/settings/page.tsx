@@ -35,6 +35,7 @@ export default function SettingsPage() {
             <TabsTrigger value="profile">Profil</TabsTrigger>
             <TabsTrigger value="account">Konto</TabsTrigger>
             <TabsTrigger value="app">Aplikacja</TabsTrigger>
+            <TabsTrigger value="spicelab">Spicelab</TabsTrigger>
           </TabsList>
 
           <TabsContent value="profile">
@@ -82,6 +83,12 @@ export default function SettingsPage() {
                 <option value="dark">Ciemny</option>
                 <option value="system">Systemowy</option>
               </select>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="spicelab">
+            <div className="space-y-4">
+
             </div>
           </TabsContent>
         </Tabs>

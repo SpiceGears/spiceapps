@@ -13,7 +13,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   // Define navigation items with fixed larger icons
   const navItems = [
     { href: "/dashboard", icon: Home, label: "Strona główna" },
-    { href: "/dashboard", icon: TestTube, label: "SpiceLab" },
+    { href: "/spicelab", icon: TestTube, label: "SpiceLab" },
     ...(userData.isAdmin ? [{ href: "/admin", icon: Terminal, label: "Admin" }] : []),
     
   ];
