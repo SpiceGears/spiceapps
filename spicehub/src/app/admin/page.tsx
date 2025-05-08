@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { MoreHorizontal, Shield, Edit, Trash2, UserPlus } from "lucide-react";
+import { MoreHorizontal, Shield, Edit, Trash2} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -257,10 +257,6 @@ export default function Admin() {
                         >
                           <Edit className="mr-2 h-4 w-4" />
                           <span>Edytuj rolę</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <UserPlus className="mr-2 h-4 w-4" />
-                          <span>Dodaj użytkownika</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem variant="destructive"
                           onClick={() => {
