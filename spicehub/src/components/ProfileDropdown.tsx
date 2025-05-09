@@ -51,7 +51,7 @@ export default function ProfileDropdown() {
         <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
         <DropdownMenuItem asChild className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer">
           <Link href="/logout" className="flex items-center w-full text-gray-700 dark:text-gray-100">
-            <LogOut className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-300" />
+            <LogOut className="mr-2 h-4 w-4 text-red-700 dark:text-red-500" />
             <span>Wyloguj się</span>
           </Link>
         </DropdownMenuItem>
