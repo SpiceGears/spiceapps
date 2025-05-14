@@ -37,7 +37,13 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
               href="/dashboard"
               className="text-2xl font-bold text-gray-900 dark:text-white"
             >
-              {pathname === "/dashboard" ? "SpiceHub" : "SpiceLab"}
+                {pathname === "/dashboard"
+                ? "SpiceHub"
+                : pathname.startsWith("/profile")
+                ? "SpiceProfiles"
+                : pathname.startsWith("/admin")
+                ? "SpiceAdmin"
+                : "SpiceLab"}
             </Link>
           </div>
 
