@@ -69,7 +69,7 @@ export default function HomePage() {
             </DropdownMenu>
             <Card
             className="
-              w-40 h-10
+              w-40 h-12
               rounded-md shadow-sm border
               bg-white border-gray-200
               dark:bg-gray-800 dark:border-gray-700
@@ -84,84 +84,104 @@ export default function HomePage() {
             </Card>
         </div>
       </div>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-      <Card className="max-w-3xl mx-auto bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-100">
-        {/* Header with avatar, title and back button */}
-        <CardHeader className="flex items-center justify-between pb-0 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center space-x-3">
-            <Avatar>
-              <AvatarFallback className="bg-purple-500 text-white">
-                MK
-              </AvatarFallback>
-            </Avatar>
-        <CardTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">
-              Moje zadania
-            </CardTitle>
-          </div>
-        </CardHeader>
-
-        {/* Tabs */}
-        <CardContent className="pt-2 text-gray-700 dark:text-gray-100">
-          <Tabs defaultValue="upcoming" className="space-y-4">
-            <TabsList>
-              <TabsTrigger value="upcoming">Nadchodzące</TabsTrigger>
-              <TabsTrigger value="overdue">Zaległe</TabsTrigger>
-              <TabsTrigger value="done">Ukończone</TabsTrigger>
-            </TabsList>
-
-            {/* Upcoming */}
-            <TabsContent value="upcoming" className="p-0">
-              <Table className="bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-100 border border-gray-200 dark:border-gray-700">
+      {/* Widgets Row */}
+      <div className="flex flex-wrap gap-6 max-w-6xl mx-auto mb-8 my-10">
+        {/* User Tasks Widget */}
+        <Card className="flex-1 min-w-[320px] max-w-[calc(50%-0.75rem)] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-100">
+          <CardHeader className="flex items-center justify-between pb-0 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-3">
+              <Avatar>
+                <AvatarFallback className="bg-purple-500 text-white">MK</AvatarFallback>
+              </Avatar>
+              <CardTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">Moje zadania</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-2 text-gray-700 dark:text-gray-100">
+            <Tabs defaultValue="upcoming" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="upcoming">Aktualne</TabsTrigger>
+                <TabsTrigger value="overdue">Zaległe</TabsTrigger>
+                <TabsTrigger value="done">Ukończone</TabsTrigger>
+              </TabsList>
+              <TabsContent value="upcoming" className="p-0">
+                <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+                  <Table className="bg-transparent text-gray-700 dark:text-gray-100">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nazwa zadania</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Priorytet</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>test</TableCell>
+                        <TableCell>Skończone</TableCell>
+                        <TableCell><Flag className="h-4 w-4 text-orange-500" /></TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>test</TableCell>
+                        <TableCell>Problem</TableCell>
+                        <TableCell><Flag className="h-4 w-4 text-orange-500" /></TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>testtest</TableCell>
+                        <TableCell>W trakcie</TableCell>
+                        <TableCell><Flag className="h-4 w-4 text-orange-500" /></TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+              </TabsContent>
+              <TabsContent value="overdue" className="p-0">
+                <div className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">Brak zaległych zadań.</div>
+              </TabsContent>
+              <TabsContent value="done" className="p-0">
+                <div className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">Brak ukończonych zadań.</div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+        {/* Projects Widget */}
+        <Card className="flex-1 min-w-[320px] max-w-[calc(50%-0.75rem)] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-100">
+          <CardHeader className="flex items-center justify-between pb-0 border-b border-gray-200 dark:border-gray-700">
+            <CardTitle>Projekty</CardTitle>
+            <Link href="#" className="text-sm text-gray-600 hover:underline dark:text-gray-400">Ostatnie</Link>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+              <Table className="bg-transparent text-gray-700 dark:text-gray-100">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nazwa zadania</TableHead>
+                    <TableHead>Nazwa projektu</TableHead>
+                    <TableHead>Opis projektu</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Priorytet</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow>
-                    <TableCell>test</TableCell>
-                    <TableCell>Skończone</TableCell>
-                    <TableCell>
-                      <Flag className="h-4 w-4 text-orange-500" />
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>test</TableCell>
-                    <TableCell>Problem</TableCell>
-                    <TableCell>
-                      <Flag className="h-4 w-4 text-orange-500" />
-                    </TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>testtest</TableCell>
-                    <TableCell>W trakcie</TableCell>
-                    <TableCell>
-                      <Flag className="h-4 w-4 text-orange-500" />
-                    </TableCell>
-                  </TableRow>
+                  {[
+                    { name: "test", description: "test" },
+                    { name: "test", description: "test" },
+                    { name: "test", description: "test" },
+                    { name: "testniewiemktory", description: "hahaha" },
+                    { name: "4thegwra", description: "4hergwas" },
+                    { name: "tewqgvqwaet", description: "weqgvrqwff" },
+                    { name: "RQTGWETFGGHVQ", description: "TWagvWERAH" },
+                  ].map((proj, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>{proj.name}</TableCell>
+                      <TableCell>{proj.description}</TableCell>
+                      <TableCell></TableCell>
+                      <TableCell></TableCell>
+                    </TableRow>
+                  ))}
                 </TableBody>
               </Table>
-            </TabsContent>
-
-            {/* Overdue */}
-            <TabsContent value="overdue" className="p-0">
-              <div className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                Brak zaległych zadań.
-              </div>
-            </TabsContent>
-
-            {/* Done */}
-            <TabsContent value="done" className="p-0">
-              <div className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                Brak ukończonych zadań.
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
