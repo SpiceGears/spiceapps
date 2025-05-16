@@ -40,10 +40,6 @@ export default function HomePage() {
     { name: "test", description: "test" },
     { name: "test", description: "test" },
     { name: "test", description: "test" },
-    { name: "testniewiemktory", description: "hahaha" },
-    { name: "4thegwra", description: "4hergwas" },
-    { name: "tewqgvqwaet", description: "weqgvrqwff" },
-    { name: "RQTGWETFGGHVQ", description: "TWagvWERAH" },
   ]
   const [selected, setSelected] = useState(options[0]);
   const [open, setOpen] = useState(false);
@@ -53,44 +49,46 @@ export default function HomePage() {
       <Welcome />
       <div className="space-y-8">
         <div className="flex justify-center items-center">
-          <DropdownMenu open={open} onOpenChange={setOpen}>
-            <DropdownMenuTrigger asChild>
+            <div className="flex items-center">
+            <DropdownMenu open={open} onOpenChange={setOpen}>
+              <DropdownMenuTrigger asChild>
               <Button
                 variant="full"
-                className="w-40 h-12 rounded-md shadow-sm border bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium flex items-center justify-between px-4"
+                className="w-44 h-12 rounded-md shadow-sm border bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium flex items-center justify-between px-4"
               >
                 {selected.label}
                 <ChevronDown
-                  className={`ml-2 h-4 w-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+                className={`ml-2 h-4 w-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
                 />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className='w-44'>
               {options.map((option) => (
                 <DropdownMenuItem
-                  key={option.value}
-                  onSelect={() => setSelected(option)}
+                key={option.value}
+                onSelect={() => setSelected(option)}
                 >
-                  {option.label}
+                {option.label}
                 </DropdownMenuItem>
               ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Card
-            className="
-              w-40 h-12
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Card
+              className="
+              w-44 h-12
               rounded-md shadow-sm border
               bg-white border-gray-200
               dark:bg-gray-800 dark:border-gray-700
               text-gray-700 dark:text-gray-300 font-medium flex items-center justify-center ml-4
-            "
-          >
-            <CardContent className="h-full flex items-center justify-center p-0">
+              "
+            >
+              <CardContent className="h-full flex items-center justify-center p-0">
               <span className="text-sm font-medium">
                 Wykonano 0 zadań
               </span>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+            </div>
         </div>
       </div>
       {/* Widgets Row */}
@@ -104,6 +102,7 @@ export default function HomePage() {
               </Avatar>
               <CardTitle className="text-lg font-medium text-gray-900 dark:text-gray-100">Moje zadania</CardTitle>
             </div>
+            <Link href="#" className="text-sm text-gray-600 hover:underline dark:text-gray-400">Ostatnie</Link>
           </CardHeader>
           <CardContent className="pt-2 text-gray-700 dark:text-gray-100">
             <Tabs defaultValue="upcoming" className="space-y-4">

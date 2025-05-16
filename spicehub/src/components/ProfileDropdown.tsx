@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { UserCircle, User, Cog, LogOut, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,23 +12,26 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 export default function ProfileDropdown() {
+  const [open, setOpen] = useState(false);
   const userData = {
     firstName: "Jan",
     lastName: "Kowalski",
   }
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
           className="flex items-center space-x-2 text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 focus-visible:ring-0 focus-visible:ring-offset-0"
         >
           <img
-          src={`https://ui-avatars.com/api/?name=${userData.firstName}+${userData.lastName}&background=random&color=fff`}
-          alt={`${userData.firstName} ${userData.lastName}`}
-          className="w-8 h-8 rounded-full" // Adjusted size to w-8 h-8
+            src={`https://ui-avatars.com/api/?name=${userData.firstName}+${userData.lastName}&background=random&color=fff`}
+            alt={`${userData.firstName} ${userData.lastName}`}
+            className="w-8 h-8 rounded-full" // Adjusted size to w-8 h-8
           />
-          <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-300" />
+          <ChevronDown
+            className={`ml-2 h-4 w-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
