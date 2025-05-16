@@ -36,38 +36,47 @@ export default function HomePage() {
     { label: "Lifetime", value: "lifetime" },
     { label: "Mój sezon", value: "sezon" },
   ];
+  const projects = [
+    { name: "test", description: "test" },
+    { name: "test", description: "test" },
+    { name: "test", description: "test" },
+    { name: "testniewiemktory", description: "hahaha" },
+    { name: "4thegwra", description: "4hergwas" },
+    { name: "tewqgvqwaet", description: "weqgvrqwff" },
+    { name: "RQTGWETFGGHVQ", description: "TWagvWERAH" },
+  ]
   const [selected, setSelected] = useState(options[0]);
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-900 p-8 text-gray-100">
+    <div className="min-h-screen p-8 text-gray-100 bg-gray-50 dark:bg-gray-900 dark:text-gray-100">
       <Welcome />
       <div className="space-y-8">
         <div className="flex justify-center items-center">
-            <DropdownMenu open={open} onOpenChange={setOpen}>
+          <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger asChild>
               <Button
-              variant="full"
-              className="w-40 h-12 rounded-md shadow-sm border bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium flex items-center justify-between px-4"
+                variant="full"
+                className="w-40 h-12 rounded-md shadow-sm border bg-white border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium flex items-center justify-between px-4"
               >
-              {selected.label}
-              <ChevronDown
-                className={`ml-2 h-4 w-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-              />
+                {selected.label}
+                <ChevronDown
+                  className={`ml-2 h-4 w-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+                />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               {options.map((option) => (
-              <DropdownMenuItem
-                key={option.value}
-                onSelect={() => setSelected(option)}
-              >
-                {option.label}
-              </DropdownMenuItem>
+                <DropdownMenuItem
+                  key={option.value}
+                  onSelect={() => setSelected(option)}
+                >
+                  {option.label}
+                </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
-            </DropdownMenu>
-            <Card
+          </DropdownMenu>
+          <Card
             className="
               w-40 h-12
               rounded-md shadow-sm border
@@ -75,19 +84,19 @@ export default function HomePage() {
               dark:bg-gray-800 dark:border-gray-700
               text-gray-700 dark:text-gray-300 font-medium flex items-center justify-center ml-4
             "
-            >
+          >
             <CardContent className="h-full flex items-center justify-center p-0">
               <span className="text-sm font-medium">
-              Wykonano 0 zadań
+                Wykonano 0 zadań
               </span>
             </CardContent>
-            </Card>
+          </Card>
         </div>
       </div>
       {/* Widgets Row */}
-      <div className="flex flex-wrap gap-6 max-w-6xl mx-auto mb-8 my-10">
+      <div className="flex flex-wrap gap-8 max-w-7xl mx-auto mb-12 my-12">
         {/* User Tasks Widget */}
-        <Card className="flex-1 min-w-[320px] max-w-[calc(50%-0.75rem)] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-100">
+        <Card className="flex-1 min-w-[420px] max-w-[calc(50%-1rem)] h-[520px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-100">
           <CardHeader className="flex items-center justify-between pb-0 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center space-x-3">
               <Avatar>
@@ -104,29 +113,24 @@ export default function HomePage() {
                 <TabsTrigger value="done">Ukończone</TabsTrigger>
               </TabsList>
               <TabsContent value="upcoming" className="p-0">
-                <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-                  <Table className="bg-transparent text-gray-700 dark:text-gray-100">
+                <div className="overflow-x-auto">
+                  <Table className="min-w-full bg-transparent text-gray-700 dark:text-gray-100">
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Nazwa zadania</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Priorytet</TableHead>
+                        <TableHead className="font-semibold">Nazwa zadania</TableHead>
+                        <TableHead className="font-semibold">Status</TableHead>
+                        <TableHead className="font-semibold">Priorytet</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       <TableRow>
-                        <TableCell>test</TableCell>
+                        <TableCell>cos2</TableCell>
                         <TableCell>Skończone</TableCell>
                         <TableCell><Flag className="h-4 w-4 text-orange-500" /></TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell>test</TableCell>
+                        <TableCell>cos1</TableCell>
                         <TableCell>Problem</TableCell>
-                        <TableCell><Flag className="h-4 w-4 text-orange-500" /></TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>testtest</TableCell>
-                        <TableCell>W trakcie</TableCell>
                         <TableCell><Flag className="h-4 w-4 text-orange-500" /></TableCell>
                       </TableRow>
                     </TableBody>
@@ -143,38 +147,30 @@ export default function HomePage() {
           </CardContent>
         </Card>
         {/* Projects Widget */}
-        <Card className="flex-1 min-w-[320px] max-w-[calc(50%-0.75rem)] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-100">
+        <Card className="flex-1 min-w-[420px] max-w-[calc(50%-1rem)] h-[520px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-100">
           <CardHeader className="flex items-center justify-between pb-0 border-b border-gray-200 dark:border-gray-700">
             <CardTitle>Projekty</CardTitle>
             <Link href="#" className="text-sm text-gray-600 hover:underline dark:text-gray-400">Ostatnie</Link>
           </CardHeader>
           <CardContent className="pt-4">
-            <div className="rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-              <Table className="bg-transparent text-gray-700 dark:text-gray-100">
+            <div className="overflow-x-auto">
+              <Table className="min-w-full bg-transparent text-gray-700 dark:text-gray-100">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nazwa projektu</TableHead>
-                    <TableHead>Opis projektu</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Priorytet</TableHead>
+                    <TableHead className="font-semibold">Nazwa projektu</TableHead>
+                    <TableHead className="font-semibold">Opis projektu</TableHead>
+                    <TableHead className="font-semibold">Status</TableHead>
+                    <TableHead className="font-semibold">Priorytet</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {[
-                    { name: "test", description: "test" },
-                    { name: "test", description: "test" },
-                    { name: "test", description: "test" },
-                    { name: "testniewiemktory", description: "hahaha" },
-                    { name: "4thegwra", description: "4hergwas" },
-                    { name: "tewqgvqwaet", description: "weqgvrqwff" },
-                    { name: "RQTGWETFGGHVQ", description: "TWagvWERAH" },
-                  ].map((proj, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell>{proj.name}</TableCell>
-                      <TableCell>{proj.description}</TableCell>
-                      <TableCell></TableCell>
-                      <TableCell></TableCell>
-                    </TableRow>
+                  {projects.map((proj, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>{proj.name}</TableCell>
+                    <TableCell>{proj.description}</TableCell>
+                    <TableCell></TableCell>
+                    <TableCell></TableCell>
+                  </TableRow>
                   ))}
                 </TableBody>
               </Table>

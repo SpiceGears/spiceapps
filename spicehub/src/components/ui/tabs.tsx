@@ -48,7 +48,7 @@ function TabsList({ className, children, ...props }: React.ComponentProps<typeof
         {children}
       </TabsPrimitive.List>
       <span
-        className="absolute bottom-0 h-[2px] bg-white transition-all duration-300"
+        className="absolute bottom-0 h-[2px] bg-gray-900 dark:bg-white transition-all duration-300"
         style={{ left: underline.left, width: underline.width }}
       />
     </div>
@@ -61,7 +61,7 @@ function TabsTrigger({ className, children, ...props }: React.ComponentProps<typ
       data-slot="tabs-trigger"
       className={cn(
         "relative appearance-none bg-transparent border-none outline-none px-4 py-2 text-sm font-medium text-gray-400 dark:text-gray-400 transition-colors duration-200 cursor-pointer",
-        "data-[state=active]:text-white data-[state=active]:font-semibold inline-flex items-center justify-center gap-1.5 h-9",
+        "data-[state=active]:text-gray-900 dark:data-[state=active]:text-white data-[state=active]:font-semibold inline-flex items-center justify-center gap-1.5 h-9",
         className
       )}
       {...props}
