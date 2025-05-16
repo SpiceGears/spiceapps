@@ -1,0 +1,41 @@
+{
+  "name": "spicelab",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "nodemon --exec next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@fortawesome/fontawesome-svg-core": "^6.7.1",
+    "@fortawesome/free-solid-svg-icons": "^6.7.1",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "@mui/material": "^6.1.4",
+    "@next/third-parties": "^15.1.6",
+    "@sentry/nextjs": "^8.48.0",
+    "formik": "^2.4.6",
+    "next": "^14.2.15",
+    "next-themes": "^0.4.4",
+    "posthog-js": "^1.210.2",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-hot-toast": "^2.5.1",
+    "yup": "^1.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.14",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/react-fontawesome": "^1.6.8",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.15",
+    "nodemon": "^3.1.9",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}

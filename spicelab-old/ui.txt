@@ -1,0 +1,21 @@
+topbar:
+(od lewej do prawej)
+- przycisk do wysuwania sidebaru
+- fajnie byłoby ogarnąć jakieś logo spicelaba
+- search bar to wyszukiwania różnych rzeczy
+- przycisk z powiadomieniami
+- przycisk ustawienia z ikoną 
+
+
+sidebar:(od góry do dołu)
+
+- sidebar ma być po lewej stronie ekranu
+- przycisk do dodania nowego projektu czy coś po prostu przycisk z plusem
+- przycisk home który będzie przenosił do strony głównej
+- przycisk moje zadania do których użytkownik jest aktualnie przypisany
+- zakładka projekty obok tego na prawo plusik aby dodać nowy
+- zakładka team i tam raczej byłaby lista wydziałów i tam w późniejszej interakcji byłaby lista członków
+- i na samym dole sidebara trochę w takim stylu discordowym zakładka z użytkownikiem gdzie będą ustawienia nazwa użytkownika profilowe i spice coiny w przyszłości też poziom ale bez tego póki co
+
+main content projektu:
+- 
