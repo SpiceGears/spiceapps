@@ -17,8 +17,8 @@ export default function Sidebar({ isOpen }: SidebarProps) {
   const navItems = [
     { href: "/dashboard", icon: Home, label: "SpiceHub" },
     { href: "/spicelab", icon: TestTube, label: "SpiceLab" },
-    ...(userData.isAdmin ? [{ href: "/admin", icon: Terminal, label: "Admin" }] : []),
     ...(pathname.startsWith("/spicelab") ? [{ href: "/spicelab/projects", icon: Folder, label: "Projekty" }] : []),
+    ...(userData.isAdmin ? [{ href: "/admin", icon: Terminal, label: "Admin" }] : []),
   ];
 
   return (
@@ -37,7 +37,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
                     variant="default"
                     className="w-full mb-5 flex items-center justify-center gap-2"
                   >
-                    <Plus className="h-5 w-5 text-current mt-0.5 ml-2" />
+                    <Plus className="h-5 w-5 text-current mt-0.5" />
                     <span className="text-current">{isOpen ? "Nowy Projekt" : ""}</span>
                   </Button>
                 </Link>
