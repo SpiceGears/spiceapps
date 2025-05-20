@@ -43,14 +43,16 @@ function TabsList({ className, children, ...props }: React.ComponentProps<typeof
   }, [children]);
 
   return (
-    <div className={cn("relative flex border-b border-gray-700 dark:border-gray-700 bg-transparent px-0", className)} ref={listRef}>
-      <TabsPrimitive.List data-slot="tabs-list" className="flex w-full" {...props}>
-        {children}
-      </TabsPrimitive.List>
-      <span
-        className="absolute bottom-0 h-[2px] bg-gray-900 dark:bg-white transition-all duration-300"
-        style={{ left: underline.left, width: underline.width }}
-      />
+    <div className={cn("relative bg-transparent px-0", className)}>
+      <div ref={listRef} className="relative inline-flex w-auto border-b border-gray-700 dark:border-gray-700">
+        <TabsPrimitive.List data-slot="tabs-list" className="flex w-auto" {...props}>
+          {children}
+        </TabsPrimitive.List>
+        <span
+          className="absolute bottom-0 h-[2px] bg-gray-900 dark:bg-white transition-all duration-300"
+          style={{ left: underline.left, width: underline.width }}
+        />
+      </div>
     </div>
   );
 }

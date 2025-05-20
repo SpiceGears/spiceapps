@@ -1,5 +1,6 @@
 // components/widgets/Workshop.tsx
-import { Clock, ChevronRight, Folder, ListTodo, AlertCircle} from 'lucide-react';
+import { Clock, ChevronRight, Folder, ListTodo, AlertCircle } from 'lucide-react';
+import Link from 'next/link';
 
 function WorkshopCard() {
 
@@ -9,7 +10,7 @@ function WorkshopCard() {
       <div className="border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 flex justify-between items-center">
         <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100">Spicelab</h2>
       </div>
-      
+
       {/* Body with stats */}
       <div className="p-4">
         <div className="flex items-center justify-between text-gray-900 dark:text-gray-100">
@@ -22,7 +23,7 @@ function WorkshopCard() {
               <div className="font-medium text-gray-900 dark:text-gray-100">1</div>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <div className="bg-gray-200 dark:bg-gray-700 p-2 rounded-full">
               <AlertCircle className="w-4 h-4" />
@@ -32,11 +33,12 @@ function WorkshopCard() {
               <div className="font-medium text-gray-900 dark:text-gray-100">1</div>
             </div>
           </div>
-          
-          <button className="bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1 transition-colors">
-            Przejdź to SpiceLaba
-            <ChevronRight className="w-3 h-3" />
-          </button>
+          <Link href="/spicelab">
+            <button className="bg-blue-600 dark:bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-1 transition-colors">
+              Przejdź to SpiceLaba
+              <ChevronRight className="w-3 h-3" />
+            </button>
+          </Link>
         </div>
       </div>
     </div>
