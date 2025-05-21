@@ -28,11 +28,7 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 import {
   Popover,
@@ -43,6 +39,8 @@ import { Calendar as CalendarUI } from "@/components/ui/calendar"
 import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { CopyLinkButton } from "@/components/CopyButton"
+import { StatusUpdate } from "@/components/project/timeline/StatusUpdate"
+import { ProjectCreated } from "@/components/project/timeline/ProjectCreated"
 
 type Project = {
   id: string
@@ -91,55 +89,87 @@ export default function ProjectPage({
   )
 
   return (
-    <div className="flex flex-col px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-      <div className="flex items-center gap-3 mb-2">
-        <Folder className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-        <span className="text-lg font-medium text-gray-900 dark:text-gray-100">
-          {project?.name ?? "Nieznany projekt"}
-        </span>
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="ml-1 text-gray-500 dark:text-gray-400"
-            >
-              <ChevronDown className="w-5 h-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-            <DropdownMenuItem onClick={() => setIsEditingProject(true)}>
-              <Pen className="w-4 h-4 mr-2" />
-              Zmień szczegóły projektu
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Palette className="w-4 h-4 mr-2" />
-              Zmień kolor projektu
-            </DropdownMenuItem>
-            <DropdownMenuItem>Opcja 3</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <CopyLinkButton text="Skopiuj link do projektu" />
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+    <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-3 mb-2">
+          <Folder className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+          <span className="text-lg font-medium text-gray-900 dark:text-gray-100">
+            {project?.name ?? "Nieznany projekt"}
+          </span>
+          <DropdownMenu modal={false}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="ml-1 text-gray-500 dark:text-gray-400"
+              >
+                <ChevronDown className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+              <DropdownMenuItem onClick={() => setIsEditingProject(true)}>
+                <Pen className="w-4 h-4 mr-2" />
+                Zmień szczegóły projektu
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Palette className="w-4 h-4 mr-2" />
+                Zmień kolor projektu
+              </DropdownMenuItem>
+              <DropdownMenuItem>Opcja 3</DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <CopyLinkButton text="Skopiuj link do projektu" />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <Tabs defaultValue="przeglad">
+          <TabsList>
+            <TabsTrigger value="przeglad">Przegląd</TabsTrigger>
+            <TabsTrigger value="lista">Lista</TabsTrigger>
+            <TabsTrigger value="tablica">Tablica</TabsTrigger>
+            <TabsTrigger value="os-czasu">Oś czasu</TabsTrigger>
+            <TabsTrigger value="panel">Panel</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
-      <Tabs defaultValue="przeglad">
-        <TabsList>
-          <TabsTrigger value="przeglad">Przegląd</TabsTrigger>
-          <TabsTrigger value="lista">Lista</TabsTrigger>
-          <TabsTrigger value="tablica">Tablica</TabsTrigger>
-          <TabsTrigger value="os-czasu">Oś czasu</TabsTrigger>
-          <TabsTrigger value="panel">Panel</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      {/* Main content and sidebar container - flex-1 makes it fill available space */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Main content area */}
+        <div className="flex-1 p-6 overflow-auto">
+          {/* Your main content goes here */}
+          <div className="h-full]">
+            {/* Placeholder to demonstrate non-scrolling sidebar */}
+            Content goes here
+          </div>
+        </div>
+
+        {/* Sidebar - fixed height, doesn't scroll independently */}
+        <div className="w-100 border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col">
+          <div className="text-center py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="font-medium text-gray-700 dark:text-gray-300">
+              Aktywność w projekcie
+            </h3>
+          </div>
+          <div className="p-4 flex-1">
+            <StatusUpdate
+              title="Zaktualizowano status projektu"
+              author="Janusz Kowalski"
+              date={format(new Date(), "PPP")}
+            />
+            <ProjectCreated
+              title="Utworzono projekt"
+              author="Janusz Kowalski"
+              date={format(new Date(), "PPP")}
+            />
+          </div>
+        </div>
+      </div>
 
       {isEditingProject && project && (
-        <Dialog
-          open={isEditingProject}
-          onOpenChange={setIsEditingProject}
-        >
+        <Dialog open={isEditingProject} onOpenChange={setIsEditingProject}>
           <DialogContent className="max-w-xl p-6">
             <DialogHeader className="relative mb-4">
               <DialogTitle>Edytuj szczegóły projektu</DialogTitle>
@@ -194,7 +224,7 @@ export default function ProjectPage({
                     </span>
                   </div>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <Label htmlFor="due-date">Termin</Label>
                   <Popover>
                     <PopoverTrigger asChild>
