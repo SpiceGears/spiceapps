@@ -9,7 +9,7 @@ import {
   Calendar as CalendarIcon,
 } from "lucide-react"
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -57,7 +57,7 @@ const projects: Project[] = [
   {
     id: "123",
     name: "Project Alpha",
-    description: "First project",
+    description: "Pierwszy projekt",
     owner: { name: "Janusz Kowalski", avatarUrl: undefined },
   },
   {
@@ -90,83 +90,135 @@ export default function ProjectPage({
 
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
-      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-3 mb-2">
-          <Folder className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-          <span className="text-lg font-medium text-gray-900 dark:text-gray-100">
-            {project?.name ?? "Nieznany projekt"}
-          </span>
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="ml-1 text-gray-500 dark:text-gray-400"
-              >
-                <ChevronDown className="w-5 h-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-              <DropdownMenuItem onClick={() => setIsEditingProject(true)}>
-                <Pen className="w-4 h-4 mr-2" />
-                Zmień szczegóły projektu
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Palette className="w-4 h-4 mr-2" />
-                Zmień kolor projektu
-              </DropdownMenuItem>
-              <DropdownMenuItem>Opcja 3</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                <CopyLinkButton text="Skopiuj link do projektu" />
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      <Tabs defaultValue="przeglad" className="flex flex-col min-h-screen">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-3 mb-2">
+            <Folder className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+            <span className="text-lg font-medium text-gray-900 dark:text-gray-100">
+              {project?.name ?? "Nieznany projekt"}
+            </span>
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="ml-1 text-gray-500 dark:text-gray-400"
+                >
+                  <ChevronDown className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                <DropdownMenuItem onClick={() => setIsEditingProject(true)}>
+                  <Pen className="w-4 h-4 mr-2" />
+                  Zmień szczegóły projektu
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Palette className="w-4 h-4 mr-2" />
+                  Zmień kolor projektu
+                </DropdownMenuItem>
+                <DropdownMenuItem>Opcja 3</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>
+                  <CopyLinkButton text="Skopiuj link do projektu" />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
 
-        <Tabs defaultValue="przeglad">
           <TabsList>
             <TabsTrigger value="przeglad">Przegląd</TabsTrigger>
             <TabsTrigger value="lista">Lista</TabsTrigger>
-            <TabsTrigger value="tablica">Tablica</TabsTrigger>
-            <TabsTrigger value="os-czasu">Oś czasu</TabsTrigger>
-            <TabsTrigger value="panel">Panel</TabsTrigger>
+            <TabsTrigger value="panel">Dashboard</TabsTrigger>
           </TabsList>
-        </Tabs>
-      </div>
-
-      {/* Main content and sidebar container - flex-1 makes it fill available space */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Main content area */}
-        <div className="flex-1 p-6 overflow-auto">
-          {/* Your main content goes here */}
-          <div className="h-full]">
-            {/* Placeholder to demonstrate non-scrolling sidebar */}
-            Content goes here
-          </div>
         </div>
 
-        {/* Sidebar - fixed height, doesn't scroll independently */}
-        <div className="w-100 border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col">
-          <div className="text-center py-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="font-medium text-gray-700 dark:text-gray-300">
-              Aktywność w projekcie
-            </h3>
+        <div className="flex flex-1 overflow-hidden">
+          <div className="flex-1 overflow-auto">
+            <div className="flex flex-col items-center justify-center h-full w-full">
+              <TabsContent value="przeglad" className="p-6 h-full w-full">
+                <div className="space-y-4 text-left flex flex-col items-center">
+                  <div className="w-full max-w-2xl">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                      Opis projektu
+                    </h2>
+                    <p className="text-gray-700 dark:text-gray-300 mt-5 text-lg">
+                      {project?.description ?? "Brak opisu"}
+                    </p>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-8">
+                      Pliki
+                    </h2>
+                    <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 mt-4">
+                      <p className="text-gray-700 dark:text-gray-300 mt-5 text-lg">
+                        Tutaj możesz dodać pliki do projektu.
+                        <br />
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          (Przeciągnij i upuść pliki lub kliknij, aby dodać)</span>
+                      </p>
+                      <div className="mt-4">
+                        <Button variant="outline" className="w-full">
+                          Dodaj pliki
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="lista" className="p-6 h-full w-full">
+                <div className="space-y-4 text-left flex flex-col items-center">
+                  <div className="w-full max-w-2xl">
+                    <h2 className="text-xl font-bold">Lista</h2>
+                    <p>Zawartość listy</p>
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="tablica" className="p-6 h-full w-full">
+                <div className="space-y-4 text-left flex flex-col items-center">
+                  <div className="w-full max-w-2xl">
+                    <h2 className="text-xl font-bold">Tablica</h2>
+                    <p>Zawartość tablicy</p>
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="os-czasu" className="p-6 h-full w-full">
+                <div className="space-y-4 text-left flex flex-col items-center">
+                  <div className="w-full max-w-2xl">
+                    <h2 className="text-xl font-bold">Oś czasu</h2>
+                    <p>Zawartość osi czasu</p>
+                  </div>
+                </div>
+              </TabsContent>
+              <TabsContent value="panel" className="p-6 h-full w-full">
+                <div className="space-y-4 text-left flex flex-col items-center">
+                  <div className="w-full max-w-2xl">
+                    <h2 className="text-xl font-bold">Panel</h2>
+                    <p>Zawartość panelu</p>
+                  </div>
+                </div>
+              </TabsContent>
+            </div>
           </div>
-          <div className="p-4 flex-1">
-            <StatusUpdate
-              title="Zaktualizowano status projektu"
-              author="Janusz Kowalski"
-              date={format(new Date(), "PPP")}
-            />
-            <ProjectCreated
-              title="Utworzono projekt"
-              author="Janusz Kowalski"
-              date={format(new Date(), "PPP")}
-            />
+
+          <div className="w-100 border-l border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex flex-col">
+            <div className="text-center py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="font-medium text-gray-700 dark:text-gray-300">
+                Aktywność w projekcie
+              </h3>
+            </div>
+            <div className="p-4 flex-1">
+              <StatusUpdate
+                title="Zaktualizowano status projektu"
+                author="Janusz Kowalski"
+                date={format(new Date(), "PPP")}
+              />
+              <ProjectCreated
+                title="Utworzono projekt"
+                author="Janusz Kowalski"
+                date={format(new Date(), "PPP")}
+              />
+            </div>
           </div>
         </div>
-      </div>
+      </Tabs>
 
       {isEditingProject && project && (
         <Dialog open={isEditingProject} onOpenChange={setIsEditingProject}>
