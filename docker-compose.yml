@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   spiceapi:
     image: ${DOCKER_REGISTRY-}spiceapi
@@ -34,22 +32,6 @@ services:
     networks:
       - app-network
 
-
-  spicelab:
-    image: ${DOCKER_REGISTRY-}spicelab
-    restart: always
-    build:
-      context: .
-      dockerfile: spicelab/Dockerfile
-    environment:
-      BACKEND: http://spiceapi:8080/
-    ports:
-      - "3000:3000"
-    depends_on:
-      - spiceapi
-    networks:
-      - app-network
-
   spicehub:
     image: ${DOCKER_REGISTRY-}spicehub
     restart: always
@@ -59,7 +41,7 @@ services:
     environment:
       BACKEND: http://spiceapi:8080/
     ports:
-      - "3001:3001"
+      - "3000:3000"
     depends_on:
       - spiceapi
     networks:
