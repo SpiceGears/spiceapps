@@ -32,7 +32,7 @@ type Task = {
 interface TaskListProps {
   tasks: Task[]
   onToggleCompletion: (taskId: string) => void
-  onUpdateStatus: (taskId: string, newStatus: Task["status"]) => void // Fixed type
+  onUpdateStatus: (taskId: string, newStatus: Task["status"]) => void
 }
 
 export function TaskList({
@@ -111,7 +111,7 @@ export function TaskList({
 
   return (
     <div className="p-6 h-full w-full">
-      <div className="flex flex-col w-full max-w-6xl mx-auto">
+      <div className="flex flex-col h-full max-w-full mx-auto">
         {/* Toolbar */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
           <div className="flex-1">
@@ -163,12 +163,12 @@ export function TaskList({
         {/* Drag and Drop Instructions */}
         <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
           <p className="text-sm text-yellow-700 dark:text-yellow-300">
-            💡 Przeciągnij zadania między sekcjami, aby zmienić ich sekcję
+            💡 Przeciągnij zadania między kolumnami, aby zmienić ich status
           </p>
         </div>
 
-        {/* Task Sections */}
-        <div className="border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
+        {/* Horizontal Task Sections */}
+        <div className="flex gap-6 h-full overflow-x-auto pb-4">
           <TaskSection
             title="Do zrobienia"
             tasks={tasksByStatus.todo}
@@ -205,16 +205,18 @@ export function TaskList({
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           />
+          
+          {/* Add Column Button */}
+          <div className="flex-shrink-0 w-80">
+            <Button
+              variant="outline"
+              className="w-full h-16 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Dodaj kolumnę
+            </Button>
+          </div>
         </div>
-
-        {/* Add Section Button */}
-        <Button
-          variant="outline"
-          className="mt-4 self-start text-gray-500 dark:text-gray-400"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Dodaj sekcję
-        </Button>
       </div>
     </div>
   )

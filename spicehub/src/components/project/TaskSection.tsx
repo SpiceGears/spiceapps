@@ -1,15 +1,11 @@
 // components/project/TaskSection.tsx
 "use client"
 
-import { ChevronRight, Plus } from "lucide-react"
+import { ChevronDown, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@/components/ui/collapsible"
 import { Badge } from "@/components/ui/badge"
 import { TaskCard } from "./TaskCard"
+import { useState } from "react"
 
 type Task = {
   id: string
@@ -55,11 +51,23 @@ export function TaskSection({
   onDragLeave,
   onDrop,
 }: TaskSectionProps) {
+  const [isCollapsed, setIsCollapsed] = useState(false)
+
   return (
-    <Collapsible defaultOpen className="w-full">
-      <CollapsibleTrigger className="flex items-center justify-between py-3 px-4 w-full hover:bg-gray-50 dark:hover:bg-gray-800/50 text-left">
+    <div className="flex-shrink-0 w-80 h-full flex flex-col border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/30">
+      {/* Section Header */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-t-lg">
         <div className="flex items-center gap-2">
-          <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform duration-200" />
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+          >
+            <ChevronDown
+              className={`h-4 w-4 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${
+                isCollapsed ? "-rotate-90" : ""
+              }`}
+            />
+          </button>
           {icon}
           <span className="font-medium text-gray-700 dark:text-gray-300">
             {title}
@@ -68,10 +76,12 @@ export function TaskSection({
             {tasks.length}
           </Badge>
         </div>
-      </CollapsibleTrigger>
-      <CollapsibleContent>
+      </div>
+
+      {/* Tasks Container */}
+      {!isCollapsed && (
         <div
-          className="space-y-3 px-4 pb-4 min-h-[100px] transition-all duration-200"
+          className="flex-1 p-4 space-y-3 overflow-y-auto min-h-[400px] transition-all duration-200"
           onDragOver={onDragOver}
           onDragEnter={onDragEnter}
           onDragLeave={onDragLeave}
@@ -87,15 +97,26 @@ export function TaskSection({
               onDragStart={onDragStart}
             />
           ))}
+          
+          {/* Add Task Button */}
           <Button
             variant="ghost"
-            className="w-full text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
+            className="w-full text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 mt-3"
           >
             <Plus className="h-4 w-4 mr-2" />
-            Dodaj zadanie...
+            Dodaj zadanie
           </Button>
         </div>
-      </CollapsibleContent>
-    </Collapsible>
+      )}
+
+      {/* Collapsed state */}
+      {isCollapsed && (
+        <div className="flex-1 flex items-center justify-center p-4">
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {tasks.length} zadań
+          </span>
+        </div>
+      )}
+    </div>
   )
 }
