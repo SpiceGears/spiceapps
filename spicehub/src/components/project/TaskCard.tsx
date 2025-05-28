@@ -8,6 +8,7 @@ import {
   User,
   X,
   GripVertical,
+  Trash2Icon,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -17,14 +18,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { format, isBefore, addDays } from "date-fns";
+import TaskEditDialog from "./TaskEditDialog";
 
 type Task = {
   id: string;
@@ -106,13 +105,11 @@ export function TaskCard({
   onUpdateStatus,
 }: TaskCardProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [isEditingTask, setIsEditingTask] = useState(false);
 
   const handleDragStart = (e: React.DragEvent) => {
     setIsDragging(true);
     onDragStart(e, task.id);
-
-    // Add visual feedback
-    e.dataTransfer.effectAllowed = "move";
   };
 
   const handleDragEnd = () => {
@@ -127,11 +124,10 @@ export function TaskCard({
 
   return (
     <div
-      className={`group relative border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 min-h-[140px] ${
-        isDragging
+      className={`group relative border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 min-h-[140px] ${isDragging
           ? "opacity-30 scale-95 shadow-2xl ring-2 ring-blue-400 ring-opacity-50"
           : ""
-      }`}
+        }`}
     >
       {/* Drag Handle */}
       <div
@@ -154,7 +150,7 @@ export function TaskCard({
         <Checkbox
           checked={task.completed}
           onCheckedChange={() => onToggleCompletion(task.id)}
-          className="mt-1 flex-shrink-0"
+          className={`mt-1 w-5 h-5 rounded-full flex-shrink-0 ${task.completed ? "bg-green-500" : "bg-gray-200 dark:bg-gray-700"}`}
         />
 
         <div className="flex-1 min-w-0 space-y-3">
@@ -162,11 +158,10 @@ export function TaskCard({
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <h4
-                className={`font-medium text-base leading-tight ${
-                  task.completed
+                className={`font-medium text-base leading-tight ${task.completed
                     ? "line-through text-gray-500 dark:text-gray-400"
                     : "text-gray-900 dark:text-gray-100"
-                }`}
+                  }`}
               >
                 {task.title}
               </h4>
@@ -187,7 +182,7 @@ export function TaskCard({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsEditingTask(true)}>
                   <Pen className="h-4 w-4 mr-2" />
                   Edytuj
                 </DropdownMenuItem>
@@ -195,34 +190,10 @@ export function TaskCard({
                   <User className="h-4 w-4 mr-2" />
                   Przypisz
                 </DropdownMenuItem>
-                {onUpdateStatus && (
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                      Zmień status
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent>
-                      <DropdownMenuItem
-                        onClick={() => handleStatusChange("todo")}
-                      >
-                        Do zrobienia
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleStatusChange("in-progress")}
-                      >
-                        W trakcie
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleStatusChange("completed")}
-                      >
-                        Ukończone
-                      </DropdownMenuItem>
-                    </DropdownMenuSubContent>
-                  </DropdownMenuSub>
-                )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
-                  <X className="h-4 w-4 mr-2" />
-                  Usuń
+                <DropdownMenuItem>
+                  <Trash2Icon className="h-4 w-4 mr-2 text-red-600" />
+                  <span className="text-red-600">Usuń</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -237,8 +208,8 @@ export function TaskCard({
               {task.priority === "high"
                 ? "Wysoki"
                 : task.priority === "medium"
-                ? "Średni"
-                : "Niski"}
+                  ? "Średni"
+                  : "Niski"}
             </Badge>
           </div>
 
@@ -269,6 +240,16 @@ export function TaskCard({
           </div>
         </div>
       </div>
+      <TaskEditDialog
+        isOpen={isEditingTask}
+        onClose={() => setIsEditingTask(false)}
+        task={task}
+        onSave={(updatedTask) => {
+          // Handle task update logic here
+          console.log("Updated Task:", updatedTask);
+          setIsEditingTask(false);
+        }}
+      />
     </div>
   );
 }

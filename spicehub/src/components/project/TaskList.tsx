@@ -165,15 +165,16 @@ export function TaskList({
           </div>
         </div>
 
-        {/* Drag and Drop Instructions */}
-        <div className="mb-4 p-3 bg-red-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-          <p className="text-sm text-yellow-700 dark:text-yellow-300">
-            💡 Przeciągnij zadania między kolumnami, aby zmienić ich położenie.
-          </p>
+        {/* Create Task Button */}
+        <div className="mb-6 flex">
+          <Button variant="default" className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Dodaj zadanie
+          </Button>
         </div>
 
         {/* Horizontal Task Sections */}
-        <div className="flex gap-6 h-full overflow-x-auto pb-4">
+        <div className="flex gap-6 h-250 overflow-x-auto pb-4">
           <TaskSection
             title="Do zrobienia"
             tasks={tasksBySection.todo}
@@ -210,7 +211,30 @@ export function TaskList({
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
           />
-          
+          <TaskSection
+            title="Ukończone"
+            tasks={tasksBySection.completed}
+            sectionId="completed"
+            icon={<CheckCircle className="h-4 w-4 text-green-500" />}
+            onToggleCompletion={onToggleCompletion}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          />          <TaskSection
+            title="Ukończone"
+            tasks={tasksBySection.completed}
+            sectionId="completed"
+            icon={<CheckCircle className="h-4 w-4 text-green-500" />}
+            onToggleCompletion={onToggleCompletion}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          />
+
           {/* Add Column Button */}
           <div className="flex-shrink-0 w-80">
             <Button

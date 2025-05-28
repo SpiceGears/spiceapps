@@ -106,8 +106,56 @@ const mockTasks: Task[] = [
     createdDate: "2025-05-15",
     section: "in-progress",
   },
-  {
+    {
     id: "4",
+    title: "Implementacja modułu autoryzacji",
+    description: "Rozwój systemu logowania i zarządzania uprawnieniami",
+    status: "in-progress",
+    completed: false,
+    priority: "high",
+    assignee: { name: "Piotr Wiśniewski", avatarUrl: undefined },
+    dueDate: "2025-06-05",
+    createdDate: "2025-05-15",
+    section: "in-progress",
+  },
+    {
+    id: "5",
+    title: "Implementacja modułu autoryzacji",
+    description: "Rozwój systemu logowania i zarządzania uprawnieniami",
+    status: "in-progress",
+    completed: false,
+    priority: "high",
+    assignee: { name: "Piotr Wiśniewski", avatarUrl: undefined },
+    dueDate: "2025-06-05",
+    createdDate: "2025-05-15",
+    section: "in-progress",
+  },
+    {
+    id: "6",
+    title: "Implementacja modułu autoryzacji",
+    description: "Rozwój systemu logowania i zarządzania uprawnieniami",
+    status: "in-progress",
+    completed: false,
+    priority: "high",
+    assignee: { name: "Piotr Wiśniewski", avatarUrl: undefined },
+    dueDate: "2025-06-05",
+    createdDate: "2025-05-15",
+    section: "in-progress",
+  },
+    {
+    id: "7",
+    title: "Implementacja modułu autoryzacji",
+    description: "Rozwój systemu logowania i zarządzania uprawnieniami",
+    status: "in-progress",
+    completed: false,
+    priority: "high",
+    assignee: { name: "Piotr Wiśniewski", avatarUrl: undefined },
+    dueDate: "2025-06-05",
+    createdDate: "2025-05-15",
+    section: "in-progress",
+  },
+  {
+    id: "8",
     title: "Design interfejsu użytkownika",
     description: "Projektowanie mockupów i prototypów UI/UX",
     status: "todo",
@@ -118,6 +166,7 @@ const mockTasks: Task[] = [
     createdDate: "2025-05-10",
     section: "completed",
   },
+  
 ]
 
 const dashboardData = {
@@ -218,17 +267,6 @@ export default function ProjectPage({
 
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
-      <style jsx>{`
-        .drag-over {
-          background-color: rgb(239 246 255) !important;
-          border: 2px dashed rgb(59 130 246) !important;
-          border-radius: 0.5rem;
-        }
-        .dark .drag-over {
-          background-color: rgb(30 58 138 / 0.2) !important;
-          border-color: rgb(59 130 246) !important;
-        }
-      `}</style>
 
       <Tabs defaultValue="przeglad" className="flex flex-col min-h-screen">
         {/* Project Header */}
@@ -301,6 +339,11 @@ export default function ProjectPage({
         project={project}
         isOpen={isEditingProject}
         onClose={() => setIsEditingProject(false)}
+        onSave={(updatedProject) => {
+          // Handle project update logic here
+          console.log("Updated project:", updatedProject)
+          setIsEditingProject(false)
+        }}
       />
     </div>
   )

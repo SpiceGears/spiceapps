@@ -39,6 +39,7 @@ interface ProjectEditDialogProps {
   project?: Project
   isOpen: boolean
   onClose: () => void
+  onSave: (project: Project) => void
 }
 
 export function ProjectEditDialog({

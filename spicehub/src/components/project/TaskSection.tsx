@@ -1,9 +1,15 @@
 // components/project/TaskSection.tsx
 "use client";
-
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { MoreHorizontal, Edit, Copy, Archive, Trash2 } from "lucide-react";
 import { TaskCard } from "./TaskCard";
 
 type Task = {
@@ -64,6 +70,27 @@ export function TaskSection({
             {tasks.length}
           </Badge>
         </div>
+
+        {/* Added Dropdown Menu */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:focus:ring-gray-600">
+              <MoreHorizontal className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              <span className="sr-only">Open menu</span>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem>
+              <Edit className="mr-2 h-4 w-4" />
+              <span>Edit</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem className="text-red-700 dark:text-red-500">
+              <Trash2 className="mr-2 h-4 w-4" />
+              <span>Delete</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Tasks Container */}
@@ -82,15 +109,6 @@ export function TaskSection({
             onDragStart={onDragStart}
           />
         ))}
-
-        {/* Add Task Button */}
-        <Button
-          variant="ghost"
-          className="w-full text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 mt-3"
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Dodaj zadanie
-        </Button>
       </div>
     </div>
   );
