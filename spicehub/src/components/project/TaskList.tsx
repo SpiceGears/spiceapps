@@ -14,6 +14,13 @@ import {
 } from "@/components/ui/select"
 import { TaskSection } from "./TaskSection"
 
+type Assignee = {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  email?: string;
+};
+
 type Task = {
   id: string
   title: string
@@ -21,10 +28,7 @@ type Task = {
   status: "todo" | "in-progress" | "completed"
   completed: boolean
   priority: "low" | "medium" | "high"
-  assignee: {
-    name: string
-    avatarUrl?: string
-  }
+  assignees: Assignee[];
   dueDate?: string
   createdDate: string
   section: string
@@ -55,7 +59,8 @@ export function TaskList({
     const matchesPriority =
       selectedPriority === "all" || task.priority === selectedPriority
     const matchesAssignee =
-      selectedAssignee === "all" || task.assignee.name === selectedAssignee
+      selectedAssignee === "all" ||
+      task.assignees.some((assignee) => assignee.name === selectedAssignee)
 
     return matchesSearch && matchesPriority && matchesAssignee
   })

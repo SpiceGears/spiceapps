@@ -29,7 +29,12 @@ type Project = {
   }
   dueDate?: string
 }
-
+type Assignee = {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  email?: string;
+};
 type Task = {
   id: string
   title: string
@@ -37,10 +42,7 @@ type Task = {
   status: "todo" | "in-progress" | "completed"
   completed: boolean
   priority: "low" | "medium" | "high"
-  assignee: {
-    name: string
-    avatarUrl?: string
-  }
+  assignees: Assignee[];
   dueDate?: string
   createdDate: string
   section: string // Add section field to track which section the task is in
@@ -77,7 +79,7 @@ const mockTasks: Task[] = [
     status: "completed",
     completed: false,
     priority: "high",
-    assignee: { name: "Janusz Kowalski", avatarUrl: undefined },
+    assignees: [{ id: "1", name: "Janusz Kowalski", avatarUrl: undefined }],
     dueDate: "2025-05-30",
     createdDate: "2025-05-20",
     section: "todo",
@@ -89,7 +91,7 @@ const mockTasks: Task[] = [
     status: "in-progress",
     completed: true,
     priority: "medium",
-    assignee: { name: "Anna Nowak", avatarUrl: undefined },
+    assignees: [{ id: "2", name: "Anna Nowak", avatarUrl: undefined }],
     dueDate: "2025-06-10",
     createdDate: "2025-05-22",
     section: "in-progress",
@@ -101,7 +103,7 @@ const mockTasks: Task[] = [
     status: "in-progress",
     completed: false,
     priority: "high",
-    assignee: { name: "Piotr Wiśniewski", avatarUrl: undefined },
+    assignees: [{ id: "3", name: "Piotr Wiśniewski", avatarUrl: undefined }],
     dueDate: "2025-06-05",
     createdDate: "2025-05-15",
     section: "in-progress",
@@ -113,7 +115,7 @@ const mockTasks: Task[] = [
     status: "in-progress",
     completed: false,
     priority: "high",
-    assignee: { name: "Piotr Wiśniewski", avatarUrl: undefined },
+    assignees: [{ id: "3", name: "Piotr Wiśniewski", avatarUrl: undefined }],
     dueDate: "2025-06-05",
     createdDate: "2025-05-15",
     section: "in-progress",
@@ -125,7 +127,7 @@ const mockTasks: Task[] = [
     status: "in-progress",
     completed: false,
     priority: "high",
-    assignee: { name: "Piotr Wiśniewski", avatarUrl: undefined },
+    assignees: [{ id: "1", name: "Piotr Wiśniewski", avatarUrl: undefined }],
     dueDate: "2025-06-05",
     createdDate: "2025-05-15",
     section: "in-progress",
@@ -137,7 +139,7 @@ const mockTasks: Task[] = [
     status: "in-progress",
     completed: false,
     priority: "high",
-    assignee: { name: "Piotr Wiśniewski", avatarUrl: undefined },
+    assignees: [{ id: "3", name: "Piotr Wiśniewski", avatarUrl: undefined }],
     dueDate: "2025-06-05",
     createdDate: "2025-05-15",
     section: "in-progress",
@@ -149,7 +151,7 @@ const mockTasks: Task[] = [
     status: "in-progress",
     completed: false,
     priority: "high",
-    assignee: { name: "Piotr Wiśniewski", avatarUrl: undefined },
+    assignees: [{ id: "3", name: "Piotr Wiśniewski", avatarUrl: undefined }],
     dueDate: "2025-06-05",
     createdDate: "2025-05-15",
     section: "in-progress",
@@ -161,7 +163,7 @@ const mockTasks: Task[] = [
     status: "todo",
     completed: true,
     priority: "medium",
-    assignee: { name: "Maria Kowalczyk", avatarUrl: undefined },
+    assignees: [{ id: "4", name: "Maria Kowalczyk", avatarUrl: undefined }],
     dueDate: "2025-05-25",
     createdDate: "2025-05-10",
     section: "completed",

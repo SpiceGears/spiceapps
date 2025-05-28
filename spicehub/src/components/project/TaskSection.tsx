@@ -12,6 +12,13 @@ import { Badge } from "@/components/ui/badge";
 import { MoreHorizontal, Edit, Copy, Archive, Trash2 } from "lucide-react";
 import { TaskCard } from "./TaskCard";
 
+type Assignee = {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  email?: string;
+};
+
 type Task = {
   id: string;
   title: string;
@@ -19,10 +26,7 @@ type Task = {
   status: "todo" | "in-progress" | "completed";
   completed: boolean;
   priority: "low" | "medium" | "high";
-  assignee: {
-    name: string;
-    avatarUrl?: string;
-  };
+  assignees: Assignee[];
   dueDate?: string;
   createdDate: string;
   section: string;

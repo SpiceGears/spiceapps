@@ -25,6 +25,13 @@ import { Badge } from "@/components/ui/badge";
 import { format, isBefore, addDays } from "date-fns";
 import TaskEditDialog from "./TaskEditDialog";
 
+type Assignee = {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  email?: string;
+};
+
 type Task = {
   id: string;
   title: string;
@@ -32,10 +39,7 @@ type Task = {
   status: "todo" | "in-progress" | "completed";
   completed: boolean;
   priority: "low" | "medium" | "high";
-  assignee: {
-    name: string;
-    avatarUrl?: string;
-  };
+  assignees: Assignee[];
   dueDate?: string;
   createdDate: string;
   section: string;
@@ -215,19 +219,33 @@ export function TaskCard({
 
           {/* Footer with assignee and due date */}
           <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 min-w-0">
-              <Avatar className="h-7 w-7 flex-shrink-0">
-                <AvatarFallback className="text-xs bg-gray-600 text-white">
-                  {task.assignee.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </AvatarFallback>
-              </Avatar>
-              <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                {task.assignee.name}
-              </span>
-            </div>
+            {task.assignees.length > 0 && (
+              <div className="flex items-center gap-2 min-w-0">
+                {task.assignees.map((assignee) => (
+                  <div key={assignee.id} className="flex items-center gap-1">
+                    <Avatar className="h-7 w-7 flex-shrink-0">
+                      {assignee.avatarUrl ? (
+                        <img
+                          src={assignee.avatarUrl}
+                          alt={assignee.name}
+                          className="object-cover w-full h-full rounded-full"
+                        />
+                      ) : (
+                        <AvatarFallback className="text-xs bg-gray-600 text-white">
+                          {assignee.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                      {assignee.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
 
             {task.dueDate && (
               <div className="flex items-center gap-1 flex-shrink-0">

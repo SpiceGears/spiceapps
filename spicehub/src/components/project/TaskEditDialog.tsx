@@ -28,8 +28,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
-import { CalendarIcon, User } from "lucide-react";
+import { CalendarIcon, User, X, Plus } from "lucide-react";
+
+type Assignee = {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  email?: string;
+};
 
 type Task = {
   id: string;
@@ -38,10 +46,7 @@ type Task = {
   status: "todo" | "in-progress" | "completed";
   completed: boolean;
   priority: "low" | "medium" | "high";
-  assignee: {
-    name: string;
-    avatarUrl?: string;
-  };
+  assignees: Assignee[];
   dueDate?: string;
   createdDate: string;
   section: string;
@@ -52,7 +57,17 @@ type TaskEditDialogProps = {
   isOpen: boolean;
   onClose: () => void;
   onSave: (task: Task) => void;
+  availableUsers?: Assignee[]; // List of all available users to assign
 };
+
+const assignees = [
+    {
+    id: "test",
+    name: "test",
+    avatarUrl: "test",
+    email: "test",
+  },
+];
 
 const priorityColors = {
   low: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
@@ -73,11 +88,38 @@ const priorityLabels = {
   high: "Wysoki",
 };
 
+// Mock data for available users - replace with your actual data source
+const defaultAvailableUsers: Assignee[] = [
+  {
+    id: "1",
+    name: "Jan Kowalski",
+    email: "jan.kowalski@example.com",
+    avatarUrl: "/avatars/jan.jpg",
+  },
+  {
+    id: "2",
+    name: "Anna Nowak",
+    email: "anna.nowak@example.com",
+    avatarUrl: "/avatars/anna.jpg",
+  },
+  {
+    id: "3",
+    name: "Piotr Wiśniewski",
+    email: "piotr.wisniewski@example.com",
+  },
+  {
+    id: "4",
+    name: "Maria Wójcik",
+    email: "maria.wojcik@example.com",
+  },
+];
+
 export default function TaskEditDialog({
   task,
   isOpen,
   onClose,
   onSave,
+  availableUsers = defaultAvailableUsers,
 }: TaskEditDialogProps) {
   const [formData, setFormData] = useState({
     title: "",
@@ -87,6 +129,8 @@ export default function TaskEditDialog({
     section: "",
   });
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>([]);
+  const [isAssigneePopoverOpen, setIsAssigneePopoverOpen] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -98,6 +142,7 @@ export default function TaskEditDialog({
         section: task.section,
       });
       setSelectedDate(task.dueDate ? new Date(task.dueDate) : undefined);
+      setSelectedAssignees(task.assignees || []);
     }
   }, [task]);
 
@@ -115,10 +160,31 @@ export default function TaskEditDialog({
       section: formData.section,
       completed: formData.status === "completed",
       dueDate: selectedDate ? selectedDate.toISOString() : undefined,
+      assignees: selectedAssignees,
     };
 
     onSave(updatedTask);
     onClose();
+  };
+
+  const handleAssigneeToggle = (user: Assignee, checked: boolean) => {
+    if (checked) {
+      setSelectedAssignees((prev) => [...prev, user]);
+    } else {
+      setSelectedAssignees((prev) =>
+        prev.filter((assignee) => assignee.id !== user.id)
+      );
+    }
+  };
+
+  const removeAssignee = (userId: string) => {
+    setSelectedAssignees((prev) =>
+      prev.filter((assignee) => assignee.id !== userId)
+    );
+  };
+
+  const isUserAssigned = (userId: string) => {
+    return selectedAssignees.some((assignee) => assignee.id === userId);
   };
 
   return (
@@ -216,23 +282,110 @@ export default function TaskEditDialog({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Przypisane do</Label>
-              <div className="flex items-center gap-3 p-3 border rounded-md bg-gray-50 dark:bg-gray-800">
-                <Avatar className="w-8 h-8">
-                  {task.assignee.avatarUrl ? (
-                    <AvatarImage
-                      src={task.assignee.avatarUrl}
-                      alt={task.assignee.name}
-                    />
-                  ) : (
-                    <AvatarFallback>
-                      <User className="w-4 h-4" />
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <span className="text-sm font-medium">
-                  {task.assignee.name}
-                </span>
+              <Label>Przypisane osoby</Label>
+              <div className="space-y-3">
+                {/* Selected assignees */}
+                <div className="flex flex-wrap gap-2">
+                  {selectedAssignees.map((assignee) => (
+                    <div
+                      key={assignee.id}
+                      className="flex items-center gap-2 p-2 border rounded-md bg-gray-50 dark:bg-gray-800"
+                    >
+                      <Avatar className="w-6 h-6">
+                        {assignee.avatarUrl ? (
+                          <AvatarImage
+                            src={assignee.avatarUrl}
+                            alt={assignee.name}
+                          />
+                        ) : (
+                          <AvatarFallback className="text-xs">
+                            {assignee.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .toUpperCase()}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <span className="text-sm font-medium">
+                        {assignee.name}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-4 w-4 p-0 hover:bg-red-100 dark:hover:bg-red-900"
+                        onClick={() => removeAssignee(assignee.id)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add assignee button */}
+                <Popover
+                  open={isAssigneePopoverOpen}
+                  onOpenChange={setIsAssigneePopoverOpen}
+                >
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full justify-start"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Dodaj osobę
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80 p-0" align="start">
+                    <div className="p-4">
+                      <h4 className="font-medium mb-3">Wybierz osoby</h4>
+                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                        {availableUsers.map((user) => (
+                          <div
+                            key={user.id}
+                            className="flex items-center space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
+                          >
+                            <Checkbox
+                              id={`user-${user.id}`}
+                              checked={isUserAssigned(user.id)}
+                              onCheckedChange={(checked) =>
+                                handleAssigneeToggle(user, checked as boolean)
+                              }
+                            />
+                            <Avatar className="w-8 h-8">
+                              {user.avatarUrl ? (
+                                <AvatarImage
+                                  src={user.avatarUrl}
+                                  alt={user.name}
+                                />
+                              ) : (
+                                <AvatarFallback>
+                                  {user.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")
+                                    .toUpperCase()}
+                                </AvatarFallback>
+                              )}
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">
+                                {user.name}
+                              </p>
+                              {user.email && (
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                  {user.email}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
 
