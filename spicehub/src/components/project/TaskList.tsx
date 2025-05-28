@@ -27,18 +27,21 @@ type Task = {
   }
   dueDate?: string
   createdDate: string
+  section: string
 }
 
 interface TaskListProps {
   tasks: Task[]
   onToggleCompletion: (taskId: string) => void
   onUpdateStatus: (taskId: string, newStatus: Task["status"]) => void
+  onMoveToSection: (taskId: string, newSection: string) => void
 }
 
 export function TaskList({
   tasks,
   onToggleCompletion,
   onUpdateStatus,
+  onMoveToSection,
 }: TaskListProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedPriority, setSelectedPriority] = useState<string>("all")
@@ -57,12 +60,13 @@ export function TaskList({
     return matchesSearch && matchesPriority && matchesAssignee
   })
 
-  const tasksByStatus = {
-    todo: filteredTasks.filter((task) => task.status === "todo"),
+  // Group tasks by section instead of status
+  const tasksBySection = {
+    todo: filteredTasks.filter((task) => task.section === "todo"),
     "in-progress": filteredTasks.filter(
-      (task) => task.status === "in-progress"
+      (task) => task.section === "in-progress"
     ),
-    completed: filteredTasks.filter((task) => task.status === "completed"),
+    completed: filteredTasks.filter((task) => task.section === "completed"),
   }
 
   // Drag and drop handlers
@@ -78,14 +82,15 @@ export function TaskList({
 
   const handleDrop = (
     e: React.DragEvent,
-    newStatus: Task["status"],
+    newSection: string,
     dropZoneElement: HTMLElement
   ) => {
     e.preventDefault()
     const taskId = e.dataTransfer.getData("text/plain")
 
     if (taskId) {
-      onUpdateStatus(taskId, newStatus)
+      // Only move to section, don't change status
+      onMoveToSection(taskId, newSection)
     }
 
     dropZoneElement.classList.remove("drag-over")
@@ -161,9 +166,9 @@ export function TaskList({
         </div>
 
         {/* Drag and Drop Instructions */}
-        <div className="mb-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
           <p className="text-sm text-yellow-700 dark:text-yellow-300">
-            💡 Przeciągnij zadania między kolumnami, aby zmienić ich status
+            💡 Przeciągnij zadania między kolumnami, aby zmienić ich położenie.
           </p>
         </div>
 
@@ -171,8 +176,8 @@ export function TaskList({
         <div className="flex gap-6 h-full overflow-x-auto pb-4">
           <TaskSection
             title="Do zrobienia"
-            tasks={tasksByStatus.todo}
-            status="todo"
+            tasks={tasksBySection.todo}
+            sectionId="todo"
             icon={<Clock className="h-4 w-4 text-orange-500" />}
             onToggleCompletion={onToggleCompletion}
             onDragStart={handleDragStart}
@@ -183,8 +188,8 @@ export function TaskList({
           />
           <TaskSection
             title="W trakcie"
-            tasks={tasksByStatus["in-progress"]}
-            status="in-progress"
+            tasks={tasksBySection["in-progress"]}
+            sectionId="in-progress"
             icon={<Activity className="h-4 w-4 text-blue-500" />}
             onToggleCompletion={onToggleCompletion}
             onDragStart={handleDragStart}
@@ -195,8 +200,8 @@ export function TaskList({
           />
           <TaskSection
             title="Ukończone"
-            tasks={tasksByStatus.completed}
-            status="completed"
+            tasks={tasksBySection.completed}
+            sectionId="completed"
             icon={<CheckCircle className="h-4 w-4 text-green-500" />}
             onToggleCompletion={onToggleCompletion}
             onDragStart={handleDragStart}

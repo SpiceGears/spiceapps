@@ -43,6 +43,7 @@ type Task = {
   }
   dueDate?: string
   createdDate: string
+  section: string // Add section field to track which section the task is in
 }
 
 // Mock data - will be replaced with API calls
@@ -73,23 +74,25 @@ const mockTasks: Task[] = [
     title: "Analiza wymagań systemu",
     description:
       "Szczegółowa analiza wymagań funkcjonalnych i niefunkcjonalnych",
-    status: "todo",
+    status: "completed",
     completed: false,
     priority: "high",
     assignee: { name: "Janusz Kowalski", avatarUrl: undefined },
     dueDate: "2025-05-30",
     createdDate: "2025-05-20",
+    section: "todo",
   },
   {
     id: "2",
     title: "Przygotowanie dokumentacji technicznej",
     description: "Stworzenie kompletnej dokumentacji technicznej projektu",
-    status: "todo",
+    status: "in-progress",
     completed: true,
     priority: "medium",
     assignee: { name: "Anna Nowak", avatarUrl: undefined },
     dueDate: "2025-06-10",
     createdDate: "2025-05-22",
+    section: "in-progress",
   },
   {
     id: "3",
@@ -101,17 +104,19 @@ const mockTasks: Task[] = [
     assignee: { name: "Piotr Wiśniewski", avatarUrl: undefined },
     dueDate: "2025-06-05",
     createdDate: "2025-05-15",
+    section: "in-progress",
   },
   {
     id: "4",
     title: "Design interfejsu użytkownika",
     description: "Projektowanie mockupów i prototypów UI/UX",
-    status: "completed",
+    status: "todo",
     completed: true,
     priority: "medium",
     assignee: { name: "Maria Kowalczyk", avatarUrl: undefined },
     dueDate: "2025-05-25",
     createdDate: "2025-05-10",
+    section: "completed",
   },
 ]
 
@@ -203,6 +208,14 @@ export default function ProjectPage({
     )
   }
 
+  const moveTaskToSection = (taskId: string, newSection: string) => {
+    setTasks((prev) =>
+      prev.map((task) =>
+        task.id === taskId ? { ...task, section: newSection } : task
+      )
+    )
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
       <style jsx>{`
@@ -271,6 +284,7 @@ export default function ProjectPage({
                 tasks={tasks}
                 onToggleCompletion={toggleTaskCompletion}
                 onUpdateStatus={updateTaskStatus}
+                onMoveToSection={moveTaskToSection}
               />
             </TabsContent>
 
