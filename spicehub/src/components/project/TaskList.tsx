@@ -1,4 +1,4 @@
-// components/project/TaskList.tsx
+// components/project/TaskList.tsx - Updated version
 "use client"
 
 import { useState } from "react"
@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { TaskSection } from "./TaskSection"
+import { TaskCreateDialog } from "./TaskCreateDialog"
 
 type Assignee = {
   id: string;
@@ -34,11 +35,20 @@ type Task = {
   section: string
 }
 
+type Section = {
+  id: string
+  title: string
+  icon: React.ReactNode
+  color: string
+}
+
 interface TaskListProps {
   tasks: Task[]
   onToggleCompletion: (taskId: string) => void
   onUpdateStatus: (taskId: string, newStatus: Task["status"]) => void
   onMoveToSection: (taskId: string, newSection: string) => void
+  onDeleteTasks?: (taskIds: string[]) => void
+  onCreateTask?: (task: Omit<Task, "id" | "createdDate">) => void // Add this prop
 }
 
 export function TaskList({
@@ -46,10 +56,35 @@ export function TaskList({
   onToggleCompletion,
   onUpdateStatus,
   onMoveToSection,
+  onDeleteTasks,
+  onCreateTask,
 }: TaskListProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedPriority, setSelectedPriority] = useState<string>("all")
   const [selectedAssignee, setSelectedAssignee] = useState<string>("all")
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  
+  // State for managing sections
+  const [sections, setSections] = useState<Section[]>([
+    {
+      id: "todo",
+      title: "Do zrobienia",
+      icon: <Clock className="h-4 w-4 text-orange-500" />,
+      color: "orange"
+    },
+    {
+      id: "in-progress",
+      title: "W trakcie",
+      icon: <Activity className="h-4 w-4 text-blue-500" />,
+      color: "blue"
+    },
+    {
+      id: "completed",
+      title: "Ukończone",
+      icon: <CheckCircle className="h-4 w-4 text-green-500" />,
+      color: "green"
+    }
+  ])
 
   // Filter and search logic
   const filteredTasks = tasks.filter((task) => {
@@ -65,13 +100,9 @@ export function TaskList({
     return matchesSearch && matchesPriority && matchesAssignee
   })
 
-  // Group tasks by section instead of status
-  const tasksBySection = {
-    todo: filteredTasks.filter((task) => task.section === "todo"),
-    "in-progress": filteredTasks.filter(
-      (task) => task.section === "in-progress"
-    ),
-    completed: filteredTasks.filter((task) => task.section === "completed"),
+  // Group tasks by section
+  const getTasksForSection = (sectionId: string) => {
+    return filteredTasks.filter((task) => task.section === sectionId)
   }
 
   // Drag and drop handlers
@@ -94,7 +125,6 @@ export function TaskList({
     const taskId = e.dataTransfer.getData("text/plain")
 
     if (taskId) {
-      // Only move to section, don't change status
       onMoveToSection(taskId, newSection)
     }
 
@@ -116,6 +146,47 @@ export function TaskList({
 
     if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
       element.classList.remove("drag-over")
+    }
+  }
+
+  // Section management functions
+  const handleRenameSection = (sectionId: string, newTitle: string) => {
+    setSections(prev => 
+      prev.map(section => 
+        section.id === sectionId 
+          ? { ...section, title: newTitle }
+          : section
+      )
+    )
+  }
+
+  const handleDeleteSection = (sectionId: string) => {
+    setSections(prev => prev.filter(section => section.id !== sectionId))
+    
+    const tasksToDelete = tasks
+      .filter(task => task.section === sectionId)
+      .map(task => task.id)
+    
+    if (tasksToDelete.length > 0 && onDeleteTasks) {
+      onDeleteTasks(tasksToDelete)
+    }
+  }
+
+  const handleAddSection = () => {
+    const newSectionId = `section-${Date.now()}`
+    const newSection: Section = {
+      id: newSectionId,
+      title: "Nowa kolumna",
+      icon: <Activity className="h-4 w-4 text-purple-500" />,
+      color: "purple"
+    }
+    
+    setSections(prev => [...prev, newSection])
+  }
+
+  const handleCreateTask = (taskData: Omit<Task, "id" | "createdDate">) => {
+    if (onCreateTask) {
+      onCreateTask(taskData)
     }
   }
 
@@ -172,7 +243,11 @@ export function TaskList({
 
         {/* Create Task Button */}
         <div className="mb-6 flex">
-          <Button variant="default" className="flex items-center gap-2">
+          <Button 
+            variant="default" 
+            className="flex items-center gap-2"
+            onClick={() => setIsCreateDialogOpen(true)}
+          >
             <Plus className="h-4 w-4" />
             Dodaj zadanie
           </Button>
@@ -180,71 +255,30 @@ export function TaskList({
 
         {/* Horizontal Task Sections */}
         <div className="flex gap-6 h-250 overflow-x-auto pb-4">
-          <TaskSection
-            title="Do zrobienia"
-            tasks={tasksBySection.todo}
-            sectionId="todo"
-            icon={<Clock className="h-4 w-4 text-orange-500" />}
-            onToggleCompletion={onToggleCompletion}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          />
-          <TaskSection
-            title="W trakcie"
-            tasks={tasksBySection["in-progress"]}
-            sectionId="in-progress"
-            icon={<Activity className="h-4 w-4 text-blue-500" />}
-            onToggleCompletion={onToggleCompletion}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          />
-          <TaskSection
-            title="Ukończone"
-            tasks={tasksBySection.completed}
-            sectionId="completed"
-            icon={<CheckCircle className="h-4 w-4 text-green-500" />}
-            onToggleCompletion={onToggleCompletion}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          />
-          <TaskSection
-            title="Ukończone"
-            tasks={tasksBySection.completed}
-            sectionId="completed"
-            icon={<CheckCircle className="h-4 w-4 text-green-500" />}
-            onToggleCompletion={onToggleCompletion}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          />          <TaskSection
-            title="Ukończone"
-            tasks={tasksBySection.completed}
-            sectionId="completed"
-            icon={<CheckCircle className="h-4 w-4 text-green-500" />}
-            onToggleCompletion={onToggleCompletion}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          />
+          {sections.map((section) => (
+            <TaskSection
+              key={section.id}
+              title={section.title}
+              tasks={getTasksForSection(section.id)}
+              sectionId={section.id}
+              icon={section.icon}
+              onToggleCompletion={onToggleCompletion}
+              onDragStart={handleDragStart}
+              onDragOver={handleDragOver}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onRenameSection={handleRenameSection}
+              onDeleteSection={handleDeleteSection}
+            />
+          ))}
 
           {/* Add Column Button */}
           <div className="flex-shrink-0 w-80">
             <Button
               variant="outline"
               className="w-full h-16 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
+              onClick={handleAddSection}
             >
               <Plus className="h-4 w-4 mr-2" />
               Dodaj kolumnę
@@ -252,6 +286,15 @@ export function TaskList({
           </div>
         </div>
       </div>
+
+      {/* Task Create Dialog */}
+      <TaskCreateDialog
+        isOpen={isCreateDialogOpen}
+        onClose={() => setIsCreateDialogOpen(false)}
+        onSave={handleCreateTask}
+        sections={sections}
+        defaultSection="todo"
+      />
     </div>
   )
 }

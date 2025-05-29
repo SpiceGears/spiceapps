@@ -267,6 +267,20 @@ export default function ProjectPage({
     )
   }
 
+  const deleteTasksById = (taskIds: string[]) => {
+    setTasks((prev) => prev.filter((task) => !taskIds.includes(task.id)))
+  }
+
+  const createTask = (taskData: Omit<Task, "id" | "createdDate">) => {
+    const newTask: Task = {
+      ...taskData,
+      id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      createdDate: new Date().toISOString(),
+    }
+    
+    setTasks((prev) => [...prev, newTask])
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
 
@@ -325,6 +339,8 @@ export default function ProjectPage({
                 onToggleCompletion={toggleTaskCompletion}
                 onUpdateStatus={updateTaskStatus}
                 onMoveToSection={moveTaskToSection}
+                onDeleteTasks={deleteTasksById}
+                onCreateTask={createTask}
               />
             </TabsContent>
 

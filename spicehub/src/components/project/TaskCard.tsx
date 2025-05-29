@@ -9,6 +9,7 @@ import {
   X,
   GripVertical,
   Trash2Icon,
+  Users,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,13 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { format, isBefore, addDays } from "date-fns";
@@ -102,6 +109,126 @@ const getDueDateColor = (dueDate?: string) => {
   return "text-gray-700 dark:text-gray-300";
 };
 
+// Component for displaying assignee avatars
+const AssigneeAvatars = ({ assignees }: { assignees: Assignee[] }) => {
+  const maxVisible = 3;
+  const visibleAssignees = assignees.slice(0, maxVisible);
+  const remainingCount = assignees.length - maxVisible;
+
+  if (assignees.length === 0) {
+    return (
+      <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
+        <User className="h-4 w-4" />
+        <span className="text-xs">Nieprzypisane</span>
+      </div>
+    );
+  }
+
+  return (
+    <TooltipProvider>
+      <div className="flex items-center gap-1">
+        {assignees.length === 1 ? (
+          // Single assignee - show name
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2 min-w-0">
+                <Avatar className="h-6 w-6 flex-shrink-0">
+                  {visibleAssignees[0].avatarUrl ? (
+                    <AvatarImage
+                      src={visibleAssignees[0].avatarUrl}
+                      alt={visibleAssignees[0].name}
+                    />
+                  ) : (
+                    <AvatarFallback className="text-xs bg-blue-600 text-white">
+                      {visibleAssignees[0].name
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                  {visibleAssignees[0].name}
+                </span>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <div className="text-center">
+                <p className="font-medium">{visibleAssignees[0].name}</p>
+                {visibleAssignees[0].email && (
+                  <p className="text-xs text-gray-500">{visibleAssignees[0].email}</p>
+                )}
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          // Multiple assignees - show avatars only
+          <div className="flex items-center">
+            <Users className="h-4 w-4 text-gray-400 mr-1" />
+            <div className="flex -space-x-1">
+              {visibleAssignees.map((assignee, index) => (
+                <Tooltip key={assignee.id}>
+                  <TooltipTrigger asChild>
+                    <Avatar className="h-6 w-6 border-2 border-white dark:border-gray-800 hover:z-10 relative">
+                      {assignee.avatarUrl ? (
+                        <AvatarImage src={assignee.avatarUrl} alt={assignee.name} />
+                      ) : (
+                        <AvatarFallback className="text-xs bg-blue-600 text-white">
+                          {assignee.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .toUpperCase()}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="text-center">
+                      <p className="font-medium">{assignee.name}</p>
+                      {assignee.email && (
+                        <p className="text-xs text-gray-500">{assignee.email}</p>
+                      )}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+              
+              {remainingCount > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700 border-2 border-white dark:border-gray-800 flex items-center justify-center">
+                      <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                        +{remainingCount}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="space-y-1">
+                      <p className="font-medium">Pozostali przypisani:</p>
+                      {assignees.slice(maxVisible).map((assignee) => (
+                        <p key={assignee.id} className="text-sm">
+                          {assignee.name}
+                        </p>
+                      ))}
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+            
+            {/* Show total count for multiple assignees */}
+            <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+              ({assignees.length})
+            </span>
+          </div>
+        )}
+      </div>
+    </TooltipProvider>
+  );
+};
+
 export function TaskCard({
   task,
   onToggleCompletion,
@@ -128,10 +255,11 @@ export function TaskCard({
 
   return (
     <div
-      className={`group relative border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 min-h-[140px] ${isDragging
+      className={`group relative border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 min-h-[160px] ${
+        isDragging
           ? "opacity-30 scale-95 shadow-2xl ring-2 ring-blue-400 ring-opacity-50"
           : ""
-        }`}
+      }`}
     >
       {/* Drag Handle */}
       <div
@@ -154,7 +282,9 @@ export function TaskCard({
         <Checkbox
           checked={task.completed}
           onCheckedChange={() => onToggleCompletion(task.id)}
-          className={`mt-1 w-5 h-5 rounded-full flex-shrink-0 ${task.completed ? "bg-green-500" : "bg-gray-200 dark:bg-gray-700"}`}
+          className={`mt-1 w-5 h-5 rounded-full flex-shrink-0 ${
+            task.completed ? "bg-green-500" : "bg-gray-200 dark:bg-gray-700"
+          }`}
         />
 
         <div className="flex-1 min-w-0 space-y-3">
@@ -162,10 +292,11 @@ export function TaskCard({
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <h4
-                className={`font-medium text-base leading-tight ${task.completed
+                className={`font-medium text-base leading-tight ${
+                  task.completed
                     ? "line-through text-gray-500 dark:text-gray-400"
                     : "text-gray-900 dark:text-gray-100"
-                  }`}
+                }`}
               >
                 {task.title}
               </h4>
@@ -212,41 +343,20 @@ export function TaskCard({
               {task.priority === "high"
                 ? "Wysoki"
                 : task.priority === "medium"
-                  ? "Średni"
-                  : "Niski"}
+                ? "Średni"
+                : "Niski"}
             </Badge>
           </div>
 
-          {/* Footer with assignee and due date */}
-          <div className="flex items-center justify-between gap-4">
-            {task.assignees.length > 0 && (
-              <div className="flex items-center gap-2 min-w-0">
-                {task.assignees.map((assignee) => (
-                  <div key={assignee.id} className="flex items-center gap-1">
-                    <Avatar className="h-7 w-7 flex-shrink-0">
-                      {assignee.avatarUrl ? (
-                        <img
-                          src={assignee.avatarUrl}
-                          alt={assignee.name}
-                          className="object-cover w-full h-full rounded-full"
-                        />
-                      ) : (
-                        <AvatarFallback className="text-xs bg-gray-600 text-white">
-                          {assignee.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
-                      {assignee.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
+          {/* Assignees Section */}
+          <div className="space-y-2">
+            <AssigneeAvatars assignees={task.assignees} />
+          </div>
 
+          {/* Footer with due date */}
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1" /> {/* Spacer */}
+            
             {task.dueDate && (
               <div className="flex items-center gap-1 flex-shrink-0">
                 <Calendar className="h-4 w-4 text-gray-400" />
@@ -258,6 +368,7 @@ export function TaskCard({
           </div>
         </div>
       </div>
+      
       <TaskEditDialog
         isOpen={isEditingTask}
         onClose={() => setIsEditingTask(false)}
