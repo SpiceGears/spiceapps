@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import Loading from "@/components/Loading";
+import { getBackendUrl } from "../serveractions/backend-url";
 
 export default function LoginPage() {
     const email = useRef<HTMLInputElement>(null);
@@ -15,12 +16,15 @@ export default function LoginPage() {
         setLoading(true);
         setError(null);
         const payload = {
-            email: email.current?.value,
+            login: email.current?.value,
             password: password.current?.value,
         };
+
+        let backendurl = await getBackendUrl();
+        if (!backendurl) alert("env var error");
     
         try {
-            const res = await fetch('/api/login', {
+            const res = await fetch(`${backendurl}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -30,8 +34,9 @@ export default function LoginPage() {
     
             // Check for non-success responses
             if (!res.ok) {
-                const errorData = await res.json();
-                setError(errorData.message || 'Invalid login credentials');
+                const errorData = await res.text();
+                console.log(errorData);
+                setError(errorData || 'Invalid login credentials');
                 return; // exit early if login failed
             }
     

@@ -65,6 +65,17 @@ builder.Services.AddSwaggerGen(c =>
     c.OperationFilter<AddAuthorizationHeaderFilter>();
 });
 
+//cors shit so it works anywhere
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("F-off", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod(); // Needed if using cookies/tokens in requests
+    });
+});
+
 //crypto service things
 builder.Services.AddScoped<Crypto>();
 builder.Services.AddScoped<SignatureCrypto>();
@@ -75,7 +86,7 @@ builder.Services.AddScoped<FileContext>();
 builder.Configuration.AddJsonFile("appsettings.Secret.json", optional: true, reloadOnChange: true);
 
 var app = builder.Build();
-
+app.UseCors("F-off");
 
 
 
