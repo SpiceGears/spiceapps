@@ -319,10 +319,6 @@ export function TaskCard({
                   <Pen className="h-4 w-4 mr-2" />
                   Edytuj
                 </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <User className="h-4 w-4 mr-2" />
-                  Przypisz
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <Trash2Icon className="h-4 w-4 mr-2 text-red-600" />
