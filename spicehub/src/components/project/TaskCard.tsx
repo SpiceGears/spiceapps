@@ -30,6 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { format, isBefore, addDays } from "date-fns";
+import { pl } from "date-fns/locale";
 import TaskEditDialog from "./TaskEditDialog";
 
 type Assignee = {
@@ -100,9 +101,9 @@ const getStatusLabel = (status: string) => {
 
 const getDueDateColor = (dueDate?: string) => {
   if (!dueDate) return "text-gray-500 dark:text-gray-400";
-  const due = new Date(dueDate);
-  const now = new Date();
-  const tomorrow = addDays(now, 1);
+  const due = format(new Date(dueDate), "dd MMM", { locale: pl });
+  const now = format(new Date(), "dd MMM", { locale: pl });
+  const tomorrow = format(addDays(new Date(), 1), "dd MMM", { locale: pl });
 
   if (isBefore(due, now)) return "text-red-600 dark:text-red-400";
   if (isBefore(due, tomorrow)) return "text-orange-600 dark:text-orange-400";
@@ -187,9 +188,6 @@ const AssigneeAvatars = ({ assignees }: { assignees: Assignee[] }) => {
                   <TooltipContent>
                     <div className="text-center">
                       <p className="font-medium">{assignee.name}</p>
-                      {assignee.email && (
-                        <p className="text-xs text-gray-500">{assignee.email}</p>
-                      )}
                     </div>
                   </TooltipContent>
                 </Tooltip>
@@ -361,7 +359,7 @@ export function TaskCard({
               <div className="flex items-center gap-1 flex-shrink-0">
                 <Calendar className="h-4 w-4 text-gray-400" />
                 <span className={`text-sm ${getDueDateColor(task.dueDate)}`}>
-                  {format(new Date(task.dueDate), "dd MMM")}
+                  {format(new Date(task.dueDate), "dd MMM", { locale: pl })}
                 </span>
               </div>
             )}

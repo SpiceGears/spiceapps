@@ -79,7 +79,7 @@ const mockTasks: Task[] = [
     status: "completed",
     completed: false,
     priority: "high",
-    assignees: [{ id: "1", name: "Janusz Kowalski", avatarUrl: undefined }],
+    assignees: [{ id: "1", name: "Janusz Kowalski", avatarUrl: undefined }, { id: "2", name: "Anna Nowak", avatarUrl: undefined }],
     dueDate: "2025-05-30",
     createdDate: "2025-05-20",
     section: "todo",
