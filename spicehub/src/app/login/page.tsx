@@ -1,16 +1,26 @@
 "use client"
 
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Loading from "@/components/Loading";
 import { getBackendUrl } from "../serveractions/backend-url";
 
+import { getCookie, setCookie} from 'typescript-cookie';
 export default function LoginPage() {
     const email = useRef<HTMLInputElement>(null);
     const password = useRef<HTMLInputElement>(null);
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+      let rt = getCookie("refreshToken");
+      if (rt) router.push("/dashboard")
+    
+      return () => {
+      }
+    }, [])
+    
 
     async function login() {
         setLoading(true);
@@ -43,8 +53,12 @@ export default function LoginPage() {
             const data = await res.json();
     
             if (data.refresh_Token && data.access_Token) {
-                localStorage.setItem('refreshToken', data.refresh_Token);
-                localStorage.setItem('accessToken', data.access_Token);
+                //localStorage.setItem('refreshToken', data.refresh_Token);
+                //localStorage.setItem('accessToken', data.access_Token);
+                let ad = new Date();
+                ad.setDate(ad.getDate() + 2);
+                setCookie("refreshToken", data.refresh_Token, {expires: 30});
+                setCookie("accessToken", data.access_Token, {expires: ad})
                 router.push('/dashboard');
             } else {
                 setError('Invalid login credentials');
