@@ -1,4 +1,3 @@
-// components/project/TaskList.tsx - Updated version
 "use client"
 
 import { useState } from "react"
@@ -48,7 +47,7 @@ interface TaskListProps {
   onUpdateStatus: (taskId: string, newStatus: Task["status"]) => void
   onMoveToSection: (taskId: string, newSection: string) => void
   onDeleteTasks?: (taskIds: string[]) => void
-  onCreateTask?: (task: Omit<Task, "id" | "createdDate">) => void // Add this prop
+  onCreateTask?: (task: Omit<Task, "id" | "createdDate">) => void
 }
 
 export function TaskList({
@@ -258,6 +257,7 @@ export function TaskList({
           {sections.map((section) => (
             <TaskSection
               key={section.id}
+              sectionId={section.id} // Add this line
               title={section.title}
               tasks={getTasksForSection(section.id)}
               sections={sections}

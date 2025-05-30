@@ -20,7 +20,14 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { MoreHorizontal, Edit, Trash2, Check, X, AlertTriangle } from "lucide-react";
+import {
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Check,
+  X,
+  AlertTriangle,
+} from "lucide-react";
 import { TaskCard } from "./TaskCard";
 
 type Assignee = {
@@ -51,6 +58,7 @@ type Section = {
 };
 
 interface TaskSectionProps {
+  sectionId: string;
   title: string;
   tasks: Task[];
   sections: Section[];
@@ -70,6 +78,7 @@ interface TaskSectionProps {
 }
 
 export function TaskSection({
+  sectionId,
   title,
   tasks,
   sections,
@@ -110,7 +119,7 @@ export function TaskSection({
 
   const handleSaveEdit = () => {
     if (editingTitle.trim() && editingTitle !== title) {
-      onRenameSection(sections.id, editingTitle.trim());
+      onRenameSection(sectionId, editingTitle.trim());
     } else {
       setEditingTitle(title);
     }
@@ -135,7 +144,7 @@ export function TaskSection({
   };
 
   const handleConfirmDelete = () => {
-    onDeleteSection(sections.id);
+    onDeleteSection(sectionId);
     setShowDeleteDialog(false);
   };
 
@@ -150,7 +159,7 @@ export function TaskSection({
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-t-lg">
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {icon}
-            
+
             {isEditing ? (
               <div className="flex items-center gap-2 flex-1">
                 <Input
@@ -181,7 +190,7 @@ export function TaskSection({
               </div>
             ) : (
               <>
-                <span 
+                <span
                   className="font-medium text-gray-700 dark:text-gray-300 cursor-pointer hover:text-gray-900 dark:hover:text-gray-100 transition-colors truncate"
                   onClick={handleStartEditing}
                   title="Kliknij, aby edytować"
@@ -209,7 +218,7 @@ export function TaskSection({
                   <span>Zmień nazwę</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem 
+                <DropdownMenuItem
                   onClick={handleDeleteClick}
                   className="text-red-700 dark:text-red-500"
                 >
@@ -233,6 +242,7 @@ export function TaskSection({
             <TaskCard
               key={task.id}
               task={task}
+              sections={sections} // Add this line
               onToggleCompletion={onToggleCompletion}
               onDragStart={onDragStart}
             />
@@ -249,10 +259,16 @@ export function TaskSection({
               Usuń kolumnę "{title}"
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Czy na pewno chcesz usunąć tę kolumnę? 
+              Czy na pewno chcesz usunąć tę kolumnę?
               {tasks.length > 0 && (
                 <span className="block mt-2 font-medium text-red-600 dark:text-red-400">
-                  ⚠️ Wszystkie zadania w tej kolumnie ({tasks.length} {tasks.length === 1 ? 'zadanie' : tasks.length < 5 ? 'zadania' : 'zadań'}) zostaną również usunięte.
+                  ⚠️ Wszystkie zadania w tej kolumnie ({tasks.length}{" "}
+                  {tasks.length === 1
+                    ? "zadanie"
+                    : tasks.length < 5
+                    ? "zadania"
+                    : "zadań"}
+                  ) zostaną również usunięte.
                 </span>
               )}
               <span className="block mt-2 text-sm">
@@ -264,7 +280,7 @@ export function TaskSection({
             <AlertDialogCancel onClick={handleCancelDelete}>
               Anuluj
             </AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleConfirmDelete}
               className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
             >
