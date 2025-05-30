@@ -43,10 +43,17 @@ type Task = {
   section: string;
 };
 
+type Section = {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  color: string;
+};
+
 interface TaskSectionProps {
   title: string;
   tasks: Task[];
-  sectionId: string;
+  sections: Section[];
   icon: React.ReactNode;
   onToggleCompletion: (taskId: string) => void;
   onDragStart: (e: React.DragEvent, taskId: string) => void;
@@ -65,7 +72,7 @@ interface TaskSectionProps {
 export function TaskSection({
   title,
   tasks,
-  sectionId,
+  sections,
   icon,
   onToggleCompletion,
   onDragStart,
@@ -103,7 +110,7 @@ export function TaskSection({
 
   const handleSaveEdit = () => {
     if (editingTitle.trim() && editingTitle !== title) {
-      onRenameSection(sectionId, editingTitle.trim());
+      onRenameSection(sections.id, editingTitle.trim());
     } else {
       setEditingTitle(title);
     }
@@ -128,7 +135,7 @@ export function TaskSection({
   };
 
   const handleConfirmDelete = () => {
-    onDeleteSection(sectionId);
+    onDeleteSection(sections.id);
     setShowDeleteDialog(false);
   };
 

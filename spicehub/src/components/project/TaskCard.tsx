@@ -10,6 +10,7 @@ import {
   GripVertical,
   Trash2Icon,
   Users,
+  FolderOpen,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -53,8 +54,16 @@ type Task = {
   section: string;
 };
 
+type Section = {
+  id: string;
+  title: string;
+  icon?: React.ReactNode;
+  color?: string;
+};
+
 interface TaskCardProps {
   task: Task;
+  sections: Section[];
   onToggleCompletion: (taskId: string) => void;
   onDragStart: (e: React.DragEvent, taskId: string) => void;
   onUpdateStatus?: (taskId: string, newStatus: Task["status"]) => void;
@@ -229,6 +238,7 @@ const AssigneeAvatars = ({ assignees }: { assignees: Assignee[] }) => {
 
 export function TaskCard({
   task,
+  sections,
   onToggleCompletion,
   onDragStart,
   onUpdateStatus,
@@ -367,6 +377,7 @@ export function TaskCard({
         isOpen={isEditingTask}
         onClose={() => setIsEditingTask(false)}
         task={task}
+        sections={sections}
         onSave={(updatedTask) => {
           // Handle task update logic here
           console.log("Updated Task:", updatedTask);

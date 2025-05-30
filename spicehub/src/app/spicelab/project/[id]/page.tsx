@@ -45,7 +45,7 @@ type Task = {
   assignees: Assignee[];
   dueDate?: string
   createdDate: string
-  section: string // Add section field to track which section the task is in
+  section: string 
 }
 
 // Mock data - will be replaced with API calls

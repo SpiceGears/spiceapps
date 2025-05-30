@@ -260,7 +260,7 @@ export function TaskList({
               key={section.id}
               title={section.title}
               tasks={getTasksForSection(section.id)}
-              sectionId={section.id}
+              sections={sections}
               icon={section.icon}
               onToggleCompletion={onToggleCompletion}
               onDragStart={handleDragStart}

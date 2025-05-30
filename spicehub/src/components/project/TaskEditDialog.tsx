@@ -30,7 +30,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
-import { CalendarIcon, User, X, Plus } from "lucide-react";
+import { CalendarIcon, User, X, Plus, FolderOpen } from "lucide-react"; // Added FolderOpen
 
 type Assignee = {
   id: string;
@@ -49,7 +49,15 @@ type Task = {
   assignees: Assignee[];
   dueDate?: string;
   createdDate: string;
-  section: string;
+  section: string; // This should be the section ID
+};
+
+// Define Section type (similar to TaskCreateDialog)
+type Section = {
+  id: string;
+  title: string;
+  icon?: React.ReactNode;
+  color?: string;
 };
 
 type TaskEditDialogProps = {
@@ -57,11 +65,13 @@ type TaskEditDialogProps = {
   isOpen: boolean;
   onClose: () => void;
   onSave: (task: Task) => void;
-  availableUsers?: Assignee[]; // List of all available users to assign
+  availableUsers?: Assignee[];
+  sections: Section[]; // Added sections prop
 };
 
+// Mock data for assignees (already present)
 const assignees = [
-    {
+  {
     id: "test",
     name: "test",
     avatarUrl: "test",
@@ -88,7 +98,6 @@ const priorityLabels = {
   high: "Wysoki",
 };
 
-// Mock data for available users - replace with your actual data source
 const defaultAvailableUsers: Assignee[] = [
   {
     id: "1",
@@ -114,19 +123,42 @@ const defaultAvailableUsers: Assignee[] = [
   },
 ];
 
+// Mock data for sections - replace with your actual data source or pass via props
+const mockSections: Section[] = [
+  {
+    id: "s1",
+    title: "Lista zadań",
+    icon: <FolderOpen className="h-4 w-4" />,
+    color: "gray",
+  },
+  {
+    id: "s2",
+    title: "W trakcie",
+    icon: <FolderOpen className="h-4 w-4" />,
+    color: "blue",
+  },
+  {
+    id: "s3",
+    title: "Ukończone",
+    icon: <FolderOpen className="h-4 w-4" />,
+    color: "green",
+  },
+];
+
 export default function TaskEditDialog({
   task,
   isOpen,
   onClose,
   onSave,
   availableUsers = defaultAvailableUsers,
+  sections = mockSections, // Use mockSections as default
 }: TaskEditDialogProps) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     status: "todo" as Task["status"],
     priority: "medium" as Task["priority"],
-    section: "",
+    section: "", // Will hold section ID
   });
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>([]);
@@ -139,12 +171,23 @@ export default function TaskEditDialog({
         description: task.description || "",
         status: task.status,
         priority: task.priority,
-        section: task.section,
+        section: task.section, // Initialize with task's section ID
       });
       setSelectedDate(task.dueDate ? new Date(task.dueDate) : undefined);
       setSelectedAssignees(task.assignees || []);
+    } else {
+      // Optionally reset form if task becomes undefined while dialog is open (though `if (!task) return null;` handles initial undefined)
+      setFormData({
+        title: "",
+        description: "",
+        status: "todo",
+        priority: "medium",
+        section: sections.length > 0 ? sections[0].id : "", // Default to first section or empty
+      });
+      setSelectedDate(undefined);
+      setSelectedAssignees([]);
     }
-  }, [task]);
+  }, [task, sections]); // Added sections to dependency array for default section logic
 
   if (!task) return null;
 
@@ -157,7 +200,7 @@ export default function TaskEditDialog({
       description: formData.description,
       status: formData.status,
       priority: formData.priority,
-      section: formData.section,
+      section: formData.section, // formData.section now holds the ID
       completed: formData.status === "completed",
       dueDate: selectedDate ? selectedDate.toISOString() : undefined,
       assignees: selectedAssignees,
@@ -186,6 +229,8 @@ export default function TaskEditDialog({
   const isUserAssigned = (userId: string) => {
     return selectedAssignees.some((assignee) => assignee.id === userId);
   };
+
+  const currentSection = sections.find((s) => s.id === formData.section);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -284,7 +329,6 @@ export default function TaskEditDialog({
             <div className="space-y-2">
               <Label>Przypisane osoby</Label>
               <div className="space-y-3">
-                {/* Selected assignees */}
                 <div className="flex flex-wrap gap-2">
                   {selectedAssignees.map((assignee) => (
                     <div
@@ -323,7 +367,6 @@ export default function TaskEditDialog({
                   ))}
                 </div>
 
-                {/* Add assignee button */}
                 <Popover
                   open={isAssigneePopoverOpen}
                   onOpenChange={setIsAssigneePopoverOpen}
@@ -416,17 +459,38 @@ export default function TaskEditDialog({
             </div>
           </div>
 
+          {/* Updated Section Input */}
           <div className="space-y-2">
             <Label htmlFor="task-section">Sekcja</Label>
-            <Input
-              id="task-section"
+            <Select
               value={formData.section}
-              onChange={(e) =>
-                setFormData({ ...formData, section: e.target.value })
+              onValueChange={(value: string) =>
+                setFormData({ ...formData, section: value })
               }
-              placeholder="Wprowadź nazwę sekcji"
-              className="w-full"
-            />
+            >
+              <SelectTrigger id="task-section" className="w-full">
+                <SelectValue placeholder="Wybierz sekcję">
+                  {currentSection ? (
+                    <div className="flex items-center gap-2">
+                      {currentSection.icon}
+                      <span>{currentSection.title}</span>
+                    </div>
+                  ) : (
+                    "Wybierz sekcję"
+                  )}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {sections.map((section) => (
+                  <SelectItem key={section.id} value={section.id}>
+                    <div className="flex items-center gap-2">
+                      {section.icon}
+                      <span>{section.title}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
