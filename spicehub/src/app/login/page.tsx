@@ -24,7 +24,7 @@ export default function LoginPage() {
         if (!backendurl) alert("env var error");
     
         try {
-            const res = await fetch(`${backendurl}/api/auth/login`, {
+            const res = await fetch(backendurl+'/api/auth/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -42,9 +42,9 @@ export default function LoginPage() {
     
             const data = await res.json();
     
-            if (data.refreshToken && data.accessToken) {
-                localStorage.setItem('refreshToken', data.refreshToken);
-                localStorage.setItem('accessToken', data.accessToken);
+            if (data.refresh_Token && data.access_Token) {
+                localStorage.setItem('refreshToken', data.refresh_Token);
+                localStorage.setItem('accessToken', data.access_Token);
                 router.push('/dashboard');
             } else {
                 setError('Invalid login credentials');
