@@ -2,6 +2,7 @@
 "use client"
 
 import { useState, use } from "react"
+import { useRouter } from "next/navigation"
 import { Folder, ChevronDown, Pen, Palette, X } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -29,12 +30,14 @@ type Project = {
   }
   dueDate?: string
 }
+
 type Assignee = {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-  email?: string;
-};
+  id: string
+  name: string
+  avatarUrl?: string
+  email?: string
+}
+
 type Task = {
   id: string
   title: string
@@ -42,10 +45,10 @@ type Task = {
   status: "todo" | "in-progress" | "completed"
   completed: boolean
   priority: "low" | "medium" | "high"
-  assignees: Assignee[];
+  assignees: Assignee[]
   dueDate?: string
   createdDate: string
-  section: string 
+  section: string
 }
 
 // Mock data - will be replaced with API calls
@@ -79,7 +82,10 @@ const mockTasks: Task[] = [
     status: "completed",
     completed: false,
     priority: "high",
-    assignees: [{ id: "1", name: "Janusz Kowalski", avatarUrl: undefined }, { id: "2", name: "Anna Nowak", avatarUrl: undefined }],
+    assignees: [
+      { id: "1", name: "Janusz Kowalski", avatarUrl: undefined },
+      { id: "2", name: "Anna Nowak", avatarUrl: undefined },
+    ],
     dueDate: "2025-05-30",
     createdDate: "2025-05-20",
     section: "todo",
@@ -108,7 +114,7 @@ const mockTasks: Task[] = [
     createdDate: "2025-05-15",
     section: "in-progress",
   },
-    {
+  {
     id: "4",
     title: "Implementacja modułu autoryzacji",
     description: "Rozwój systemu logowania i zarządzania uprawnieniami",
@@ -120,7 +126,7 @@ const mockTasks: Task[] = [
     createdDate: "2025-05-15",
     section: "in-progress",
   },
-    {
+  {
     id: "5",
     title: "Implementacja modułu autoryzacji",
     description: "Rozwój systemu logowania i zarządzania uprawnieniami",
@@ -132,7 +138,7 @@ const mockTasks: Task[] = [
     createdDate: "2025-05-15",
     section: "in-progress",
   },
-    {
+  {
     id: "6",
     title: "Implementacja modułu autoryzacji",
     description: "Rozwój systemu logowania i zarządzania uprawnieniami",
@@ -144,7 +150,7 @@ const mockTasks: Task[] = [
     createdDate: "2025-05-15",
     section: "in-progress",
   },
-    {
+  {
     id: "7",
     title: "Implementacja modułu autoryzacji",
     description: "Rozwój systemu logowania i zarządzania uprawnieniami",
@@ -168,7 +174,6 @@ const mockTasks: Task[] = [
     createdDate: "2025-05-10",
     section: "completed",
   },
-  
 ]
 
 const dashboardData = {
@@ -236,9 +241,14 @@ export default function ProjectPage({
 }) {
   const [isEditingProject, setIsEditingProject] = useState(false)
   const [tasks, setTasks] = useState<Task[]>(mockTasks)
+  const router = useRouter()
 
   const { id } = use(params)
   const project = projects.find((p) => p.id === id)
+
+  const handleStatusUpdate = (status: string) => {
+    router.push(`/spicelab/project/${id}/statusUpdate?status=${status}`)
+  }
 
   const toggleTaskCompletion = (taskId: string) => {
     setTasks((prev) =>
@@ -277,13 +287,25 @@ export default function ProjectPage({
       id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       createdDate: new Date().toISOString(),
     }
-    
+
     setTasks((prev) => [...prev, newTask])
+  }
+
+  const getStatusDotColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-500"
+      case "in-progress":
+        return "bg-blue-500"
+      case "todo":
+        return "bg-gray-500"
+      default:
+        return "bg-gray-400"
+    }
   }
 
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
-
       <Tabs defaultValue="przeglad" className="flex flex-col min-h-screen">
         {/* Project Header */}
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -292,6 +314,8 @@ export default function ProjectPage({
             <span className="text-lg font-medium text-gray-900 dark:text-gray-100">
               {project?.name ?? "Nieznany projekt"}
             </span>
+
+            {/* Project Options Dropdown */}
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -315,6 +339,57 @@ export default function ProjectPage({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <CopyLinkButton text="Skopiuj link do projektu" />
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Set Status Dropdown */}
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="ml-2 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"
+                >
+                  <div className="w-2 h-2 bg-gray-400 rounded-full mr-2" />
+                  Ustaw status
+                  <ChevronDown className="w-4 h-4 ml-1" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+                <DropdownMenuItem
+                  onClick={() => handleStatusUpdate("in-progress")}
+                >
+                  <div className="flex items-center">
+                    <div
+                      className={`w-2 h-2 ${getStatusDotColor(
+                        "in-progress"
+                      )} rounded-full mr-2`}
+                    />
+                    W trakcie
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleStatusUpdate("todo")}>
+                  <div className="flex items-center">
+                    <div
+                      className={`w-2 h-2 ${getStatusDotColor(
+                        "todo"
+                      )} rounded-full mr-2`}
+                    />
+                    Do zrobienia
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleStatusUpdate("completed")}
+                >
+                  <div className="flex items-center">
+                    <div
+                      className={`w-2 h-2 ${getStatusDotColor(
+                        "completed"
+                      )} rounded-full mr-2`}
+                    />
+                    Ukończony
+                  </div>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
