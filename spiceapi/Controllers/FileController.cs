@@ -267,8 +267,8 @@ namespace SpiceAPI.Controllers
 
         [HttpPut("{id:guid}/changeSettings")]
         public async Task<IActionResult> EditPerms(
-    [FromHeader(Name = "Perm")] string scopes,
-    [FromHeader(Name = "Scopes")] FilePerm perm,
+    [FromHeader(Name = "Scopes")] string scopes,
+    [FromHeader(Name = "Perm")] FilePerm perm,
     [FromHeader(Name = "OwnerWriteOnly")] bool ownerWriteOnly,
     [FromHeader(Name = "Authorization")] string? Authorization,
     [FromRoute] Guid id
