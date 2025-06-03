@@ -17,7 +17,7 @@ export default function Sidebar({ isOpen }: SidebarProps) {
   const navItems = [
     { href: "/dashboard", icon: Home, label: "SpiceHub" },
     { href: "/spicelab", icon: TestTube, label: "SpiceLab" },
-    ...(pathname.startsWith("/spicelab") ? [{ href: "/spicelab/projects", icon: Folder, label: "Projekty" }] : []),
+    ...(pathname.startsWith("/spicelab") ? [{ href: "/spicelab/project", icon: Folder, label: "Projekty" }] : []),
     ...(userData.isAdmin ? [{ href: "/admin", icon: Terminal, label: "Admin" }] : []),
   ];
 
