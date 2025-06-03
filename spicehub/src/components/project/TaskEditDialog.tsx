@@ -234,7 +234,7 @@ export default function TaskEditDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl p-6">
+      <DialogContent className="max-w-2xl p-6 max-h-[80vh] overflow-y-auto">
         <DialogHeader className="relative mb-4">
           <DialogTitle>Edytuj zadanie</DialogTitle>
         </DialogHeader>
