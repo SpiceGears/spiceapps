@@ -16,7 +16,7 @@ namespace SpiceAPI.Models
         public List<string> Scopes { get; set; }
         public FilePerm Perm { get; set; }
 
-        public Guid Owner;
+        public Guid Owner { get; set; }
         public bool OwnerWriteOnly { get; set; }//overrides PublicReadWrite AND scopes
 
         public SFile() { }
