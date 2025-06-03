@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SpiceAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class files : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,14 +16,14 @@ namespace SpiceAPI.Migrations
                 name: "Files",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    Tags = table.Column<string>(type: "TEXT", nullable: false),
-                    Path = table.Column<string>(type: "TEXT", nullable: false),
-                    Scopes = table.Column<string>(type: "TEXT", nullable: false),
-                    Perm = table.Column<int>(type: "INTEGER", nullable: false),
-                    OwnerWriteOnly = table.Column<bool>(type: "INTEGER", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Tags = table.Column<List<string>>(type: "text[]", nullable: false),
+                    Path = table.Column<string>(type: "text", nullable: false),
+                    Scopes = table.Column<List<string>>(type: "text[]", nullable: false),
+                    Perm = table.Column<int>(type: "integer", nullable: false),
+                    OwnerWriteOnly = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -33,13 +34,13 @@ namespace SpiceAPI.Migrations
                 name: "Projects",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false),
-                    Priority = table.Column<int>(type: "INTEGER", nullable: false),
-                    Creator = table.Column<Guid>(type: "TEXT", nullable: false),
-                    ScopesRequired = table.Column<string>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    Priority = table.Column<int>(type: "integer", nullable: false),
+                    Creator = table.Column<Guid>(type: "uuid", nullable: false),
+                    ScopesRequired = table.Column<List<string>>(type: "text[]", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -50,8 +51,8 @@ namespace SpiceAPI.Migrations
                 name: "RefreshTokens",
                 columns: table => new
                 {
-                    Token = table.Column<string>(type: "TEXT", nullable: false),
-                    UserID = table.Column<Guid>(type: "TEXT", nullable: false)
+                    Token = table.Column<string>(type: "text", nullable: false),
+                    UserID = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -62,10 +63,10 @@ namespace SpiceAPI.Migrations
                 name: "Roles",
                 columns: table => new
                 {
-                    RoleId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Scopes = table.Column<string>(type: "TEXT", nullable: false),
-                    Department = table.Column<int>(type: "INTEGER", nullable: false)
+                    RoleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Scopes = table.Column<List<string>>(type: "text[]", nullable: false),
+                    Department = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -76,8 +77,8 @@ namespace SpiceAPI.Migrations
                 name: "RSAParams",
                 columns: table => new
                 {
-                    Key = table.Column<string>(type: "TEXT", nullable: false),
-                    Parameters = table.Column<string>(type: "TEXT", nullable: false)
+                    Key = table.Column<string>(type: "text", nullable: false),
+                    Parameters = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -88,17 +89,17 @@ namespace SpiceAPI.Migrations
                 name: "Users",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    FirstName = table.Column<string>(type: "TEXT", nullable: false),
-                    LastName = table.Column<string>(type: "TEXT", nullable: false),
-                    Email = table.Column<string>(type: "TEXT", nullable: false),
-                    Password = table.Column<string>(type: "TEXT", nullable: false),
-                    Department = table.Column<int>(type: "INTEGER", nullable: false),
-                    BirthDay = table.Column<DateOnly>(type: "TEXT", nullable: false),
-                    IsApproved = table.Column<bool>(type: "INTEGER", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    LastLogin = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Coin = table.Column<decimal>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    FirstName = table.Column<string>(type: "text", nullable: false),
+                    LastName = table.Column<string>(type: "text", nullable: false),
+                    Email = table.Column<string>(type: "text", nullable: false),
+                    Password = table.Column<string>(type: "text", nullable: false),
+                    Department = table.Column<int>(type: "integer", nullable: false),
+                    BirthDay = table.Column<DateOnly>(type: "date", nullable: false),
+                    IsApproved = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastLogin = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Coin = table.Column<decimal>(type: "numeric", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -109,9 +110,9 @@ namespace SpiceAPI.Migrations
                 name: "taskSections",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    ProjectId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -128,8 +129,8 @@ namespace SpiceAPI.Migrations
                 name: "users_roles",
                 columns: table => new
                 {
-                    RolesRoleId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    UsersId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    RolesRoleId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UsersId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -152,20 +153,20 @@ namespace SpiceAPI.Migrations
                 name: "STasks",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    SectionId = table.Column<Guid>(type: "TEXT", nullable: false),
-                    AssignedUsers = table.Column<string>(type: "TEXT", nullable: false),
-                    ScopesRequired = table.Column<string>(type: "TEXT", nullable: false),
-                    Dependencies = table.Column<string>(type: "TEXT", nullable: false),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false),
-                    Priority = table.Column<int>(type: "INTEGER", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Description = table.Column<string>(type: "TEXT", nullable: false),
-                    Percentage = table.Column<int>(type: "INTEGER", nullable: false),
-                    Created = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Creator = table.Column<Guid>(type: "TEXT", nullable: false),
-                    DeadlineDate = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Finished = table.Column<DateTime>(type: "TEXT", nullable: true)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    SectionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    AssignedUsers = table.Column<List<Guid>>(type: "uuid[]", nullable: false),
+                    ScopesRequired = table.Column<List<string>>(type: "text[]", nullable: false),
+                    Dependencies = table.Column<List<Guid>>(type: "uuid[]", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    Priority = table.Column<int>(type: "integer", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Description = table.Column<string>(type: "text", nullable: false),
+                    Percentage = table.Column<int>(type: "integer", nullable: false),
+                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Creator = table.Column<Guid>(type: "uuid", nullable: false),
+                    DeadlineDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Finished = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -182,12 +183,12 @@ namespace SpiceAPI.Migrations
                 name: "Entrys",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Contents = table.Column<string>(type: "TEXT", nullable: false),
-                    MadeBy = table.Column<Guid>(type: "TEXT", nullable: false),
-                    VoteCount = table.Column<int>(type: "INTEGER", nullable: false),
-                    STaskId = table.Column<Guid>(type: "TEXT", nullable: false)
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "text", nullable: false),
+                    Contents = table.Column<string>(type: "text", nullable: false),
+                    MadeBy = table.Column<Guid>(type: "uuid", nullable: false),
+                    VoteCount = table.Column<int>(type: "integer", nullable: false),
+                    STaskId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {

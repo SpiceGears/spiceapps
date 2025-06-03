@@ -19,7 +19,6 @@ try
     string dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "spicegears";
     string dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "spicelab";
 
-    if (dbHost == null) throw new Exception();
     string connectionString = $"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPass};";
 
     Log.Information(connectionString);
