@@ -7,12 +7,16 @@ import { getBackendUrl } from './serveractions/backend-url';
 export async function middleware(request: NextRequest) {
     const backend = getBackendUrl();
     if (!backend) return NextResponse.next();
+    console.log("Backend OK")
     const cookieStore = await cookies();
     let rt = cookieStore.get("refreshToken");
     if (!rt) return NextResponse.redirect("/login");
+
+    console.log("RT found")
     
     let at = cookieStore.get("accessToken");
     if (at) {
+        console.log("AT FOUND")
         let res = await fetch(backend + "/api/user/getInfo", 
             {
                 cache: 'no-store',
