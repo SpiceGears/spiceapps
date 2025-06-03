@@ -156,7 +156,7 @@ namespace SpiceAPI.Controllers
                 return StatusCode(403, "You do not have enough permissions");
             }
 
-            Project? proj = await db.Projects.Include(o => o.STasks).FirstOrDefaultAsync(p => p.Id == id);
+            Project? proj = await db.Projects.Include(o => o.Sections).ThenInclude(s => s.Tasks).FirstOrDefaultAsync(p => p.Id == id);
             if (proj == null) { return NotFound(); };
             db.Projects.Remove(proj);
             await db.SaveChangesAsync(true);

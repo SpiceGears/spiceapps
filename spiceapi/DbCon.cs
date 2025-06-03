@@ -59,6 +59,9 @@ namespace SpiceAPI
                 .HasForeignKey(e => e.STaskId)
                 .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<SFile>()
+                .HasKey(f => f.Id);
+
 
         }
     }
