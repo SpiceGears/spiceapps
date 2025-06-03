@@ -506,15 +506,6 @@ export default function TaskEditDialog({
             />
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              Utworzone: {format(new Date(task.createdDate), "dd.MM.yyyy")}
-            </div>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              ID: {task.id}
-            </div>
-          </div>
-
           <DialogFooter className="gap-2">
             <DialogClose asChild>
               <Button type="button" variant="outline">
