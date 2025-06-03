@@ -124,8 +124,8 @@ namespace SpiceAPI.Controllers
         public async Task<IActionResult> StreamUpload(
     [FromHeader(Name = "Name")] string name,
     [FromHeader(Name = "Description")] string description,
-    [FromHeader(Name = "Tags")] string tagsCsv,
-    [FromHeader(Name = "Scopes")] string scopesCsv,
+    [FromHeader(Name = "Tags")] string? tagsCsv,
+    [FromHeader(Name = "Scopes")] string? scopesCsv,
     [FromHeader(Name = "Perm")] FilePerm perm,
     [FromHeader(Name = "OwnerWriteOnly")] bool ownerWriteOnly,
     [FromHeader(Name = "Authorization")] string? Authorization)
@@ -134,8 +134,8 @@ namespace SpiceAPI.Controllers
             {
                 Name = name,
                 Description = description,
-                Tags = tagsCsv.Split(',').ToList(),
-                Scopes = scopesCsv.Split(',').ToList(),
+                Tags = tagsCsv != null ? tagsCsv.Split(',').ToList() : new List<String>(),
+                Scopes = scopesCsv != null ? scopesCsv.Split(',').ToList() : new List<String>(),
                 Perm = perm,
                 OwnerWriteOnly = ownerWriteOnly
             };
@@ -172,7 +172,7 @@ namespace SpiceAPI.Controllers
         public async Task<IActionResult> EditUpload(
    [FromHeader(Name = "Name")] string name,
    [FromHeader(Name = "Description")] string description,
-   [FromHeader(Name = "Tags")] string tagsCsv,
+   [FromHeader(Name = "Tags")] string? tagsCsv,
    [FromHeader(Name = "Authorization")] string? Authorization,
    [FromRoute] Guid id
            )
@@ -181,7 +181,7 @@ namespace SpiceAPI.Controllers
             {
                 Name = name,
                 Description = description,
-                Tags = tagsCsv.Split(',').ToList(),
+                Tags = tagsCsv != null ? tagsCsv.Split(',').ToList() : new List<String>(),
             };
             if (Authorization == null) { return Unauthorized("Provide access token"); }
             bool isValid = tc.VerifyToken(Authorization);
@@ -223,7 +223,7 @@ namespace SpiceAPI.Controllers
         public async Task<IActionResult> EditMeta(
    [FromHeader(Name = "Name")] string name,
    [FromHeader(Name = "Description")] string description,
-   [FromHeader(Name = "Tags")] string tagsCsv,
+   [FromHeader(Name = "Tags")] string? tagsCsv,
    [FromHeader(Name = "Authorization")] string? Authorization,
    [FromRoute] Guid id
            )
@@ -232,7 +232,7 @@ namespace SpiceAPI.Controllers
             {
                 Name = name,
                 Description = description,
-                Tags = tagsCsv.Split(',').ToList(),
+                Tags = tagsCsv != null ? tagsCsv.Split(',').ToList() : new List<String>(),
             };
             if (Authorization == null) { return Unauthorized("Provide access token"); }
             bool isValid = tc.VerifyToken(Authorization);
@@ -267,7 +267,7 @@ namespace SpiceAPI.Controllers
 
         [HttpPut("{id:guid}/changeSettings")]
         public async Task<IActionResult> EditPerms(
-    [FromHeader(Name = "Scopes")] string scopes,
+    [FromHeader(Name = "Scopes")] string? scopes,
     [FromHeader(Name = "Perm")] FilePerm perm,
     [FromHeader(Name = "OwnerWriteOnly")] bool ownerWriteOnly,
     [FromHeader(Name = "Authorization")] string? Authorization,
@@ -276,7 +276,7 @@ namespace SpiceAPI.Controllers
         {
             var headers = new FileHeaders
             {
-                Scopes = scopes.Split(',').ToList(),
+                Scopes = scopes != null ? scopes.Split(',').ToList() : new List<String>(),
                 Perm = perm,
                 OwnerWriteOnly = ownerWriteOnly
             };
