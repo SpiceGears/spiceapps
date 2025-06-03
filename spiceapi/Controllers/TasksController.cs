@@ -24,12 +24,13 @@ namespace SpiceAPI.Controllers
                 return StatusCode(403, "You do not have enough permissions");
             }
 
-            Project? proj = await db.Projects.Include(o => o.STasks).FirstOrDefaultAsync(p => p.Id == id);
+            Project? proj = await db.Projects.Include(o => o.Sections).ThenInclude(s => s.Tasks).FirstOrDefaultAsync(p => p.Id == id);
             if (proj == null) { return NotFound(); }
             if (!user.CheckForClaims(proj.ScopesRequired.ToArray(), db)) { return StatusCode(403, "You do not have enough permissions"); }
 
-            var stasks = proj.STasks;
-            return Ok(stasks);
+            var tasks = proj.Sections.SelectMany(s => s.Tasks).ToList();
+
+            return Ok(tasks);
         }
 
         [HttpGet("{id:guid}/{tid:guid}")]
@@ -47,11 +48,11 @@ namespace SpiceAPI.Controllers
                 return StatusCode(403, "You do not have enough permissions");
             }
 
-            Project? proj = await db.Projects.Include(o => o.STasks).FirstOrDefaultAsync(p => p.Id == id);
+            Project? proj = await db.Projects.Include(o => o.Sections).ThenInclude(s => s.Tasks).FirstOrDefaultAsync(p => p.Id == id);
             if (proj == null) { return NotFound("Project not found"); }
             if (!user.CheckForClaims(proj.ScopesRequired.ToArray(), db)) { return StatusCode(403, "You do not have enough permissions"); }
 
-            STask? task = proj.STasks.Where(t => t.Id == tid).FirstOrDefault();
+            STask? task = proj.Sections.SelectMany(s => s.Tasks).Where(t => t.Id == tid).FirstOrDefault();
             if (task == null) { return NotFound("Task not found"); }
             return Ok(task);
         }
@@ -69,8 +70,8 @@ namespace SpiceAPI.Controllers
             public DateTime DeadlineDate { get; set; }
         }
 
-        [HttpPost("{id:guid}/create")]
-        public async Task<IActionResult> CreateTask([FromRoute] Guid id, [FromHeader] string? Authorization, [FromBody] TaskAddEditHeader body)
+        [HttpPost("{id:guid}/{sid:guid}/create")]
+        public async Task<IActionResult> CreateTask([FromRoute] Guid id, [FromRoute] Guid sid, [FromHeader] string? Authorization, [FromBody] TaskAddEditHeader body)
         {
             if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
             bool isValid = tc.VerifyToken(Authorization);
@@ -84,11 +85,14 @@ namespace SpiceAPI.Controllers
                 return StatusCode(403, "You do not have enough permissions");
             }
 
-            Project? proj = await db.Projects.Include(o => o.STasks).FirstOrDefaultAsync(p => p.Id == id);
+            Project? proj = await db.Projects.Include(o => o.Sections).ThenInclude(s => s.Tasks).FirstOrDefaultAsync(p => p.Id == id);
             if (proj == null) { return NotFound("Project not found"); }
             if (!user.CheckForClaims(proj.ScopesRequired.ToArray(), db)) { return StatusCode(403, "You do not have enough permissions"); }
 
             if (!user.CheckForClaims("tasks.add", db)) { return StatusCode(403, "You do not have enough permissions"); }
+
+            TaskSection? sect = proj.Sections.FirstOrDefault(s => s.Id == sid);
+            if (sect == null) { return NotFound("Section not found"); }
 
             STask task = new STask();
             task.Id = Guid.NewGuid();
@@ -105,15 +109,15 @@ namespace SpiceAPI.Controllers
             task.Creator = user.Id;
 
             
-            task.ProjectId = proj.Id; //set relationship
-            task.Project = proj;
+            task.SectionId = sect.Id; //set relationship
+            task.Section = sect;
 
             await db.STasks.AddAsync(task);
             await db.SaveChangesAsync();
             return Ok(task);
         }
 
-        [HttpPut("{id:guid}/{tid:guid}/edit")]
+        [HttpPut("{id:guid}/{sid:guid}/{tid:guid}/edit")]
         public async Task<IActionResult> EditTask([FromRoute] Guid id, [FromRoute] Guid tid, [FromHeader] string? Authorization, [FromBody] TaskAddEditHeader body)
         {
             if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
@@ -128,7 +132,7 @@ namespace SpiceAPI.Controllers
                 return StatusCode(403, "You do not have enough permissions");
             }
 
-            Project? proj = await db.Projects.Include(o => o.STasks).FirstOrDefaultAsync(p => p.Id == id);
+            Project? proj = await db.Projects.Include(o => o.Sections).ThenInclude(s => s.Tasks).FirstOrDefaultAsync(p => p.Id == id);
             if (proj == null) { return NotFound("Project not found"); }
             if (!user.CheckForClaims(proj.ScopesRequired.ToArray(), db)) { return StatusCode(403, "You do not have enough permissions"); }
 
@@ -171,7 +175,7 @@ namespace SpiceAPI.Controllers
                 return StatusCode(403, "You do not have enough permissions");
             }
 
-            Project? proj = await db.Projects.Include(o => o.STasks).FirstOrDefaultAsync(p => p.Id == id);
+            Project? proj = await db.Projects.Include(o => o.Sections).ThenInclude(s => s.Tasks).FirstOrDefaultAsync(p => p.Id == id);
             if (proj == null) { return NotFound("Project not found"); }
             if (!user.CheckForClaims(proj.ScopesRequired.ToArray(), db)) { return StatusCode(403, "You do not have enough permissions"); }
 
@@ -197,7 +201,7 @@ namespace SpiceAPI.Controllers
                 return StatusCode(403, "You do not have enough permissions");
             }
 
-            Project? proj = await db.Projects.Include(o => o.STasks).FirstOrDefaultAsync(p => p.Id == id);
+            Project? proj = await db.Projects.Include(o => o.Sections).ThenInclude(s => s.Tasks).FirstOrDefaultAsync(p => p.Id == id);
             if (proj == null) { return NotFound("Project not found"); }
             if (!user.CheckForClaims(proj.ScopesRequired.ToArray(), db)) { return StatusCode(403, "You do not have enough permissions"); }
 
@@ -209,7 +213,7 @@ namespace SpiceAPI.Controllers
             return Ok(task);
         }
 
-        [HttpDelete("{id:guid}/{tid:guid}")]
+        [HttpDelete("{id:guid}/{sid:guid}/{tid:guid}")]
         public async Task<IActionResult> DeleteTask([FromRoute] Guid id, [FromRoute] Guid tid, [FromHeader] string? Authorization) 
         {
             if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
@@ -224,7 +228,7 @@ namespace SpiceAPI.Controllers
                 return StatusCode(403, "You do not have enough permissions");
             }
 
-            Project? proj = await db.Projects.Include(o => o.STasks).FirstOrDefaultAsync(p => p.Id == id);
+            Project? proj = await db.Projects.Include(o => o.Sections).ThenInclude(s => s.Tasks).FirstOrDefaultAsync(p => p.Id == id);
             if (proj == null) { return NotFound("Project not found"); }
             if (!user.CheckForClaims(proj.ScopesRequired.ToArray(), db)) { return StatusCode(403, "You do not have enough permissions"); }
 

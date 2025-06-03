@@ -20,8 +20,10 @@ namespace SpiceAPI
         public DbSet<Role> Roles { get; set; }
 
         public DbSet<Project> Projects { get; set; }
+        public DbSet<TaskSection> taskSections { get; set; }
         public DbSet<STask> STasks { get; set; }
         public DbSet<Entry> Entrys { get; set; }
+
         public DbSet<SFile> Files { get; set; }
 
 
@@ -34,9 +36,21 @@ namespace SpiceAPI
             .WithMany(r => r.Users).UsingEntity(j => j.ToTable("users_roles"));
 
             modelBuilder.Entity<Project>()
-                .HasMany(p => p.STasks)
+                .HasMany(p => p.Sections)
                 .WithOne(t => t.Project)
                 .HasForeignKey(e => e.ProjectId)
+                .IsRequired().OnDelete(DeleteBehavior.Cascade);
+
+            //modelBuilder.Entity<Project>()
+            //    .HasMany(s => s.Sections)
+            //    .WithOne(e => e.Project)
+            //    .HasForeignKey(fk => fk.ProjectId)
+            //    .IsRequired().OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<TaskSection>()
+                .HasMany(t => t.Tasks)
+                .WithOne(s => s.Section)
+                .HasForeignKey(fk => fk.SectionId)
                 .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<STask>()
@@ -44,6 +58,8 @@ namespace SpiceAPI
                 .WithOne(t => t.STask)
                 .HasForeignKey(e => e.STaskId)
                 .IsRequired().OnDelete(DeleteBehavior.Cascade);
+
+
         }
     }
 

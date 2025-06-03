@@ -161,8 +161,6 @@ else {
 
 
 
-
-
 app.UseHttpsRedirection();
 
 

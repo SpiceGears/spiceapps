@@ -11,10 +11,16 @@ services:
       DB_USER: postgres
       DB_NAME: db
       CRYPT_COST: "14"
+      ENABLE_FILES: "yes"
+      FILE_DIR: "/var/spicehub"
     ports:
       - "8080:8080"
       - "8081:8081"
       - "8085:5150"
+    volumes:
+      - type: bind
+        source: ./spicehub_storage
+        target: /var/spicehub/
     depends_on:
       - db
     networks:
