@@ -1,14 +1,11 @@
 using SpiceAPI.Auth;
 using SpiceAPI.Helpers;
 using Microsoft.EntityFrameworkCore;
-using MongoDB.Driver.Core.Configuration;
 using SpiceAPI.Models;
 using Serilog;
 using SpiceAPI;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Newtonsoft.Json;
-using SpiceAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,7 +77,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<Crypto>();
 builder.Services.AddScoped<SignatureCrypto>();
 builder.Services.AddScoped<Token>();
-builder.Services.AddScoped<FileContext>();
+//builder.Services.AddScoped<FileContext>();
 
 // Load additional configuration from appsettings.Secret.json
 builder.Configuration.AddJsonFile("appsettings.Secret.json", optional: true, reloadOnChange: true);
@@ -95,7 +92,7 @@ app.UseCors("F-off");
 
 
 
-if (app.Environment.IsDevelopment())
+//if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
