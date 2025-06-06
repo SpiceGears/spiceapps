@@ -286,36 +286,6 @@ export default function UpdateStatusPage({
                                 </DropdownMenu>
                             </div>
                         </div>
-
-                        {/* Owner */}
-                        <div className="flex items-center gap-4">
-                            <label className="text-sm font-medium text-gray-900 dark:text-gray-300 w-20">
-                                Właściciel
-                            </label>
-                            <Select
-                                value={owner.id}
-                                onValueChange={(value) =>
-                                    setOwner(
-                                        mockUsers.find((u) => u.id === value) || mockUsers[0]
-                                    )
-                                }
-                            >
-                                <SelectTrigger className="w-48 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600">
-                                    {mockUsers.map((user) => (
-                                        <SelectItem
-                                            key={user.id}
-                                            value={user.id}
-                                            className="text-gray-900 dark:text-white"
-                                        >
-                                            {user.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
                     </div>
 
                     {/* Add Attachment */}
