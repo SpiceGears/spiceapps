@@ -8,16 +8,16 @@ export async function middleware(request: NextRequest) {
     let backend = await getBackendUrl();
     if (!backend) { console.log("backend url not set, skipping");return NextResponse.next();}
     backend = "http://spiceapi:8080"
-    console.log("Backend OK")
+    //console.log("Backend OK")
     const cookieStore = await cookies();
     let rt = cookieStore.get("refreshToken");
     if (!rt) return NextResponse.redirect((new URL('/login', request.url)));
 
-    console.log("RT found")
+    //console.log("RT found")
     
     let at = cookieStore.get("accessToken");
     if (at) {
-        console.log("AT FOUND")
+        //console.log("AT FOUND")
         let res = await fetch(backend + "/api/user/getInfo", 
             {
                 cache: 'no-store',

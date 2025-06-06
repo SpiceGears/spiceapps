@@ -18,16 +18,16 @@ import { Department, UserInfo } from "@/models/User";
 export default function ProfileDropdown() {
   const [open, setOpen] = useState(false);
   let [userData, setUserData] = useState<UserInfo>({
-    FirstName: "Jan",
-    LastName: "Kowalski",
-    Id: "00000000-0000-0000-0000-000000000000",
-    Email: "test@spicelab.net",
-    Roles: [],
-    Department: Department.NaDr,
-    Birthday: new Date(),
-    Coins: 0,
-    CreatedAt: new Date(),
-    LastLogin: new Date()
+    firstName: "Jan",
+    lastName: "Kowalski",
+    id: "00000000-0000-0000-0000-000000000000",
+    email: "test@spicelab.net",
+    roles: [],
+    department: Department.NaDr,
+    birthday: new Date(),
+    coins: 0,
+    createdAt: new Date(),
+    lastLogin: new Date()
   })
 
   useEffect(() => {
@@ -50,10 +50,11 @@ export default function ProfileDropdown() {
         {
           const json = await res.json();
           const userinfo: UserInfo = json;
+          console.log(userinfo);
           setUserData(userinfo)
         }
       }
-    fetchData(at);
+    fetchData(at).then();
     return () => {
     }
   }, [])
@@ -70,8 +71,8 @@ export default function ProfileDropdown() {
           className="flex items-center space-x-2 text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 focus-visible:ring-0 focus-visible:ring-offset-0"
         >
           <img
-            src={`https://ui-avatars.com/api/?name=${userData.FirstName}+${userData.LastName}&background=random&color=fff`}
-            alt={`${userData.FirstName} ${userData.LastName}`}
+            src={`https://ui-avatars.com/api/?name=${userData.firstName}+${userData.lastName}&background=random&color=fff`}
+            alt={`${userData.firstName} ${userData.lastName}`}
             className="w-8 h-8 rounded-full" // Adjusted size to w-8 h-8
           />
           <ChevronDown
@@ -83,10 +84,10 @@ export default function ProfileDropdown() {
         className="w-48 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
         align="end"
       >
-        <DropdownMenuLabel className="text-gray-700 dark:text-gray-100">{userData.FirstName} {userData.LastName} <Badge variant="programmer">Programista</Badge></DropdownMenuLabel>
+        <DropdownMenuLabel className="text-gray-700 dark:text-gray-100">{userData.firstName} {userData.lastName} <Badge variant="programmer">Programista</Badge></DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
         <DropdownMenuItem asChild className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer">
-          <Link href="/profile" className="flex items-center w-full text-gray-700 dark:text-gray-100">
+          <Link href={"/profile/" + userData.id} className="flex items-center w-full text-gray-700 dark:text-gray-100">
             <User className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-300" />
             <span>Profil</span>
           </Link>

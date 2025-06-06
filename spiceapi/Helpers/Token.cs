@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Serilog;
 using SpiceAPI.Models;
 using System.Buffers.Text;
@@ -75,7 +76,7 @@ namespace SpiceAPI.Auth
                     )
                 );
             if (ut == null) return null;
-            return await db.Users.FindAsync(ut.Sub);
+            return await db.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Id == ut.Sub);
 
         }
 

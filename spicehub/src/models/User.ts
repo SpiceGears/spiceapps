@@ -1,15 +1,15 @@
 export interface UserInfo 
 {
-    Id: string,
-    FirstName: string
-    LastName: string
-    Email: string
-    Roles: Role[]
-    Department: Department
-    Birthday: Date
-    Coins: Number
-    CreatedAt: Date
-    LastLogin: Date
+    id: string,
+    firstName: string
+    lastName: string
+    email: string
+    roles: Role[]
+    department: Department
+    birthday: Date
+    coins: Number
+    createdAt: Date
+    lastLogin: Date
 }
 
 export interface Role 
