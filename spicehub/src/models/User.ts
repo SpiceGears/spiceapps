@@ -14,10 +14,10 @@ export interface UserInfo
 
 export interface Role 
 {
-    RoleID: string,
-    Name: string,
-    Scopes: string[]
-    Department: Department
+    roleID: string,
+    name: string,
+    scopes: string[]
+    department: Department
 }
 
 export enum Department 
