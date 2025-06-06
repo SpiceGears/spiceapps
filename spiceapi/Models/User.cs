@@ -146,12 +146,12 @@ namespace SpiceAPI.Models
     public enum Department 
     {
         NaDr = 0, //not a department specific role
-        Programmers,
-        Mechanics,
-        SocialMedia,
-        Marketing,
-        Executive,
-        Mentor,
+        Programmers = 2,
+        Mechanics = 1,
+        SocialMedia = 3,
+        Marketing = 4,
+        Executive = 6,
+        Mentor = 10,
         
     }
 }

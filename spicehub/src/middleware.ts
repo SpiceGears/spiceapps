@@ -1,16 +1,17 @@
 import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
-import { getBackendUrl } from './serveractions/backend-url';
+import { getBackendUrl } from './app/serveractions/backend-url';
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
-    const backend = getBackendUrl();
-    if (!backend) return NextResponse.next();
+    let backend = await getBackendUrl();
+    if (!backend) { console.log("backend url not set, skipping");return NextResponse.next();}
+    backend = "http://spiceapi:8080"
     console.log("Backend OK")
     const cookieStore = await cookies();
     let rt = cookieStore.get("refreshToken");
-    if (!rt) return NextResponse.redirect("/login");
+    if (!rt) return NextResponse.redirect((new URL('/login', request.url)));
 
     console.log("RT found")
     
@@ -30,7 +31,7 @@ export async function middleware(request: NextRequest) {
     }
     let res = await fetch(backend+"/api/auth/generateAccess", 
         {
-            method: "GET",
+            method: "POST",
             cache: 'no-store',
             headers: 
             {
@@ -38,11 +39,24 @@ export async function middleware(request: NextRequest) {
             }
         })
 
-    if (res.status == 404) return NextResponse.redirect("/login");
+    if (res.status == 404) return NextResponse.redirect((new URL('/login', request.url)));
     else if (res.ok) 
     {
         let resp = NextResponse.next()
         resp.cookies.set("accessToken", await res.text());
+        return resp;
     }
-    return NextResponse.redirect(new URL('/maintanance?error=impossible'))
+    return NextResponse.redirect(new URL('/maintanance?error=impossible', request.url))
 }
+
+export const config = {
+  matcher: [
+    /*
+     * Match all routes except:
+     * - /login (public login page)
+     * - /api (optional: skip API routes)
+     * - _next (Next.js internals like static files)
+     */
+    '/((?!login|api|maintanance|_next|favicon.ico).*)',
+  ],
+};

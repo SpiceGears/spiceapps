@@ -45,7 +45,7 @@ services:
       context: .
       dockerfile: spicehub/Dockerfile
     environment:
-      BACKEND: http://localhost:8080
+      BACKEND: http://127.0.0.1:8080
     ports:
       - "80:3000"
     depends_on:
