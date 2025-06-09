@@ -35,6 +35,11 @@ namespace SpiceAPI
             modelBuilder.Entity<User>().HasMany(u => u.Roles)
             .WithMany(r => r.Users).UsingEntity(j => j.ToTable("users_roles"));
 
+            modelBuilder.Entity<SFile>()
+                .HasMany(p => p.Projects)
+                .WithMany(f => f.Files).UsingEntity(j => j.ToTable("files_projects"));
+
+
             modelBuilder.Entity<Project>()
                 .HasMany(p => p.Sections)
                 .WithOne(t => t.Project)

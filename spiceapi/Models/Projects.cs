@@ -17,6 +17,9 @@ namespace SpiceAPI.Models
         public List<string> ScopesRequired { get; set; } = new List<string>();
 
         public List<TaskSection> Sections { get; set; } = new List<TaskSection>(); //nav param 2
+
+        [JsonIgnore]
+        public List<SFile> Files { get; set; } = new List<SFile>();
     }
 
     public class STask 

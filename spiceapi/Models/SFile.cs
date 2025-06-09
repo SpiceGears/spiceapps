@@ -19,6 +19,8 @@ namespace SpiceAPI.Models
         public Guid Owner { get; set; }
         public bool OwnerWriteOnly { get; set; }//overrides PublicReadWrite AND scopes
 
+        public List<Project> Projects { get; set; }
+
         public SFile() { }
         public SFile(Guid id,string name, string description, List<string> tags, 
             string path, List<string> scopes, 
