@@ -127,6 +127,7 @@ namespace SpiceAPI.Controllers
     [FromHeader(Name = "Tags")] string? tagsCsv,
     [FromHeader(Name = "Scopes")] string? scopesCsv,
     [FromHeader(Name = "Perm")] FilePerm perm,
+    [FromHeader] string? FolderPath,
     [FromHeader(Name = "OwnerWriteOnly")] bool ownerWriteOnly,
     [FromHeader(Name = "Authorization")] string? Authorization)
         {
@@ -149,7 +150,12 @@ namespace SpiceAPI.Controllers
 
             Guid id = Guid.NewGuid();
 
-            var filePath = Path.Combine(StoragePath, $"{id}");
+            var path = string.IsNullOrWhiteSpace(FolderPath) ? "" : FolderPath.TrimStart('/', '\\');
+            if (path.Contains("../") || path.Contains("..\\")) return StatusCode(403, "Invalid characters");
+
+            path = Path.Combine(StoragePath, path);
+
+            var filePath = Path.Combine(path, $"{id}");
 
             using var stream = new FileStream(filePath, FileMode.Create);
             await Request.Body.CopyToAsync(stream);
@@ -358,6 +364,53 @@ namespace SpiceAPI.Controllers
                 return File(cont, contentType, file.Name);
             }
             else return StatusCode(403, "You are not authorized to read this file");
+        }
+
+
+        [HttpGet("folders")]
+        public async Task<IActionResult> GetFolders(
+            [FromHeader] string? Authorization,
+            [FromHeader] string? FolderPath)
+        {
+            if (Authorization == null) return Unauthorized("Provide access token to view directories");
+            bool isValid = tc.VerifyToken(Authorization);
+            if (!isValid) { return StatusCode(403, "Invalid Token"); }
+
+            User? user = await tc.RetrieveUser(Authorization);
+            if (user == null) return NotFound("NULL USER");
+
+            var path = string.IsNullOrWhiteSpace(FolderPath) ? "" : FolderPath.TrimStart('/', '\\');
+            if (path.Contains("../") || path.Contains("..\\")) return StatusCode(403, "Invalid characters");
+
+            path = Path.Combine(StoragePath, path);
+            string[] dirs = Directory.GetDirectories(path);
+
+            return Ok(dirs);
+        }
+
+        [HttpGet("folders/getFiles")]
+        public async Task<IActionResult> GetFileInDir(
+            [FromHeader] string? Authorization,
+            [FromHeader] string? FolderPath)
+        {
+            if (Authorization == null) return Unauthorized("Provide access token to view directories");
+            bool isValid = tc.VerifyToken(Authorization);
+            if (!isValid) { return StatusCode(403, "Invalid Token"); }
+
+            User? user = await tc.RetrieveUser(Authorization);
+            if (user == null) return NotFound("NULL USER");
+
+            var path = string.IsNullOrWhiteSpace(FolderPath) ? "" : FolderPath.TrimStart('/', '\\');
+            if (path.Contains("../") || path.Contains("..\\")) return StatusCode(403, "Invalid characters");
+
+            path = Path.Combine(StoragePath, path);
+            string[] dirs = Directory.GetFiles(path);
+
+            Guid[] ids = dirs.Select(Guid.Parse).ToArray();
+
+            var files = await db.Files.Where(f => ids.Contains(f.Id)).ToListAsync();
+
+            return Ok(files);
         }
 
         [NonAction]
