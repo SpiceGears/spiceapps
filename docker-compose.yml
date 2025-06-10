@@ -52,6 +52,10 @@ services:
       - spiceapi
     networks:
       - app-network
+    volumes:
+      - ./spicehub:/app
+      - /app/node_modules
+      - /app/.next
 
 
 volumes:

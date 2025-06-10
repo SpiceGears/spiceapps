@@ -1,0 +1,23 @@
+# Log files
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build output
+.next/
+out/
+build/
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Docker files
+.dockerignore
+Dockerfile*
+docker-compose*
+
+# Environment variables
+.env.local
