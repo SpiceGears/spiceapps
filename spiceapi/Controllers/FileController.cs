@@ -151,7 +151,7 @@ namespace SpiceAPI.Controllers
             Guid id = Guid.NewGuid();
 
             var path = string.IsNullOrWhiteSpace(FolderPath) ? "" : FolderPath.TrimStart('/', '\\');
-            if (path.Contains("../") || path.Contains("..\\")) return StatusCode(403, "Invalid characters");
+            if (path.Contains("../") || path.Contains("..\\") || path.Contains("..")) return StatusCode(403, "Invalid characters");
 
             path = Path.Combine(StoragePath, path);
 
@@ -380,7 +380,7 @@ namespace SpiceAPI.Controllers
             if (user == null) return NotFound("NULL USER");
 
             var path = string.IsNullOrWhiteSpace(FolderPath) ? "" : FolderPath.TrimStart('/', '\\');
-            if (path.Contains("../") || path.Contains("..\\")) return StatusCode(403, "Invalid characters");
+            if (path.Contains("../") || path.Contains("..\\") || path.Contains("..")) return StatusCode(403, "Invalid characters");
 
             path = Path.Combine(StoragePath, path);
             string[] dirs = Directory.GetDirectories(path);
