@@ -14,11 +14,14 @@ import { Label } from "@/components/ui/label";
 import { getBackendUrl } from "@/app/serveractions/backend-url";
 import { getCookie } from "typescript-cookie";
 import { Department } from "@/models/User";
+import { Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function NewProject() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedSubteams, setSelectedSubteams] = useState<Department[]>([]);
+  const router = useRouter();
 
   const handleSubteamChange = (dept: Department) => {
     setSelectedSubteams((prev) =>
@@ -26,41 +29,47 @@ export default function NewProject() {
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-    // 1) Await your server‐action so `backend` is a string, not a Promise
-    const backend = await getBackendUrl();
+  // 1) await your server‐action
+  const backend = await getBackendUrl();
 
-    const at = getCookie("accessToken");
-    if (!at) {
-      console.error("Cookie error, no Access Token found");
-      return;
-    }
+  // 2) pull the token
+  const at = getCookie("accessToken");
+  if (!at) {
+    console.error("No access token");
+    return;
+  }
 
-    const res = await fetch(`${backend}/api/project/create`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: at,
-      },
-      body: JSON.stringify({
-        name,
-        description,
-        scopes: selectedSubteams,
-        status: 0,
-        priority: 0,
-      }),
-    });
+  // 3) convert numeric enum values back to their string names
+  const scopesAsStrings = selectedSubteams.map((val) => Department[val]);
 
-    if (res.ok) {
-      console.log(await res.json());
-    } else {
-      console.error("Create failed:", res.status, await res.text());
-    }
+  const payload = {
+    name,      
+    description,        
+    scopes: scopesAsStrings, 
+    status: 0,
+    priority: 0,
   };
 
-  // Filter out the reverse‐mapping keys so we only get [ "HR", 1 ], [ "SALES", 2 ], …
+  const res = await fetch(`${backend}/api/project/create`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: at,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (res.ok) {
+    console.log(await res.json());
+    router.push("/spicelab/project");
+  } else {
+    console.error("Create failed:", res.status, await res.text());
+  }
+};
+
   const enumEntries = Object.entries(Department).filter(
     ([, val]) => typeof val === "number"
   ) as [keyof typeof Department, Department][];
@@ -149,6 +158,7 @@ export default function NewProject() {
           </div>
         </div>
         <Button type="submit" className="w-full">
+          <Plus className="w-4 h-4 mr-2" />
           Utwórz projekt
         </Button>
       </form>

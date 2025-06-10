@@ -1,10 +1,15 @@
 // app/project/[id]/page.tsx
 "use client"
 
-import { useState, use } from "react"
+import { useState, useEffect, useMemo, use } from "react"
 import { useRouter } from "next/navigation"
-import { Folder, ChevronDown, Pen, Palette, X } from "lucide-react"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Folder, ChevronDown, Pen, Palette } from "lucide-react"
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -19,232 +24,70 @@ import { TaskList } from "@/components/project/TaskList"
 import { Dashboard } from "@/components/project/Dashboard"
 import { ActivitySidebar } from "@/components/project/ActivitySidebar"
 import { ProjectEditDialog } from "@/components/project/ProjectEditDialog"
-
-type Project = {
-  id: string
-  name: string
-  description?: string
-  owner: {
-    name: string
-    avatarUrl?: string
-  }
-  dueDate?: string
-}
-
-type Assignee = {
-  id: string
-  name: string
-  avatarUrl?: string
-  email?: string
-}
-
-type Task = {
-  id: string
-  title: string
-  description?: string
-  status: "todo" | "in-progress" | "completed"
-  completed: boolean
-  priority: "low" | "medium" | "high"
-  assignees: Assignee[]
-  dueDate?: string
-  createdDate: string
-  section: string
-}
-
-// Mock data - will be replaced with API calls
-const projects: Project[] = [
-  {
-    id: "123",
-    name: "Project Alpha",
-    description: "Pierwszy projekt",
-    owner: { name: "Janusz Kowalski", avatarUrl: undefined },
-  },
-  {
-    id: "2",
-    name: "Project Beta",
-    description: "Second project",
-    owner: { name: "Jane Doe", avatarUrl: undefined },
-  },
-  {
-    id: "3",
-    name: "Project Gamma",
-    description: "Third project",
-    owner: { name: "John Smith", avatarUrl: undefined },
-  },
-]
-
-const mockTasks: Task[] = [
-  {
-    id: "1",
-    title: "Analiza wymagań systemu",
-    description:
-      "Szczegółowa analiza wymagań funkcjonalnych i niefunkcjonalnych",
-    status: "completed",
-    completed: false,
-    priority: "high",
-    assignees: [
-      { id: "1", name: "Janusz Kowalski", avatarUrl: undefined },
-      { id: "2", name: "Anna Nowak", avatarUrl: undefined },
-    ],
-    dueDate: "2025-05-30",
-    createdDate: "2025-05-20",
-    section: "todo",
-  },
-  {
-    id: "2",
-    title: "Przygotowanie dokumentacji technicznej",
-    description: "Stworzenie kompletnej dokumentacji technicznej projektu",
-    status: "in-progress",
-    completed: true,
-    priority: "medium",
-    assignees: [{ id: "2", name: "Anna Nowak", avatarUrl: undefined }],
-    dueDate: "2025-06-10",
-    createdDate: "2025-05-22",
-    section: "in-progress",
-  },
-  {
-    id: "3",
-    title: "Implementacja modułu autoryzacji",
-    description: "Rozwój systemu logowania i zarządzania uprawnieniami",
-    status: "in-progress",
-    completed: false,
-    priority: "high",
-    assignees: [{ id: "3", name: "Piotr Wiśniewski", avatarUrl: undefined }],
-    dueDate: "2025-06-05",
-    createdDate: "2025-05-15",
-    section: "in-progress",
-  },
-  {
-    id: "4",
-    title: "Implementacja modułu autoryzacji",
-    description: "Rozwój systemu logowania i zarządzania uprawnieniami",
-    status: "in-progress",
-    completed: false,
-    priority: "high",
-    assignees: [{ id: "3", name: "Piotr Wiśniewski", avatarUrl: undefined }],
-    dueDate: "2025-06-05",
-    createdDate: "2025-05-15",
-    section: "in-progress",
-  },
-  {
-    id: "5",
-    title: "Implementacja modułu autoryzacji",
-    description: "Rozwój systemu logowania i zarządzania uprawnieniami",
-    status: "in-progress",
-    completed: false,
-    priority: "high",
-    assignees: [{ id: "1", name: "Piotr Wiśniewski", avatarUrl: undefined }],
-    dueDate: "2025-06-05",
-    createdDate: "2025-05-15",
-    section: "in-progress",
-  },
-  {
-    id: "6",
-    title: "Implementacja modułu autoryzacji",
-    description: "Rozwój systemu logowania i zarządzania uprawnieniami",
-    status: "in-progress",
-    completed: false,
-    priority: "high",
-    assignees: [{ id: "3", name: "Piotr Wiśniewski", avatarUrl: undefined }],
-    dueDate: "2025-06-05",
-    createdDate: "2025-05-15",
-    section: "in-progress",
-  },
-  {
-    id: "7",
-    title: "Implementacja modułu autoryzacji",
-    description: "Rozwój systemu logowania i zarządzania uprawnieniami",
-    status: "in-progress",
-    completed: false,
-    priority: "high",
-    assignees: [{ id: "3", name: "Piotr Wiśniewski", avatarUrl: undefined }],
-    dueDate: "2025-06-05",
-    createdDate: "2025-05-15",
-    section: "in-progress",
-  },
-  {
-    id: "8",
-    title: "Design interfejsu użytkownika",
-    description: "Projektowanie mockupów i prototypów UI/UX",
-    status: "todo",
-    completed: true,
-    priority: "medium",
-    assignees: [{ id: "4", name: "Maria Kowalczyk", avatarUrl: undefined }],
-    dueDate: "2025-05-25",
-    createdDate: "2025-05-10",
-    section: "completed",
-  },
-]
-
-const dashboardData = {
-  stats: {
-    totalTasks: 24,
-    completedTasks: 18,
-    overdueTasks: 3,
-    teamMembers: 5,
-  },
-  upcomingDeadlines: [
-    {
-      id: 1,
-      task: "Finalizacja projektu",
-      assignee: "Janusz Kowalski",
-      dueDate: "2025-05-30",
-      priority: "high",
-    },
-    {
-      id: 2,
-      task: "Przegląd kodu",
-      assignee: "Anna Nowak",
-      dueDate: "2025-06-02",
-      priority: "medium",
-    },
-    {
-      id: 3,
-      task: "Testy jednostkowe",
-      assignee: "Piotr Wiśniewski",
-      dueDate: "2025-06-05",
-      priority: "low",
-    },
-  ],
-  teamMembers: [
-    {
-      id: 1,
-      name: "Janusz Kowalski",
-      role: "Project Manager",
-      tasksCompleted: 8,
-      totalTasks: 10,
-      avatar: undefined,
-    },
-    {
-      id: 2,
-      name: "Anna Nowak",
-      role: "Developer",
-      tasksCompleted: 6,
-      totalTasks: 8,
-      avatar: undefined,
-    },
-    {
-      id: 3,
-      name: "Piotr Wiśniewski",
-      role: "Designer",
-      tasksCompleted: 4,
-      totalTasks: 6,
-      avatar: undefined,
-    },
-  ],
-}
+import { Task, TaskStatus } from "@/models/Task"
+import { Project } from "@/models/Project"
+import { getCookie } from "typescript-cookie"
+import { getBackendUrl } from "@/app/serveractions/backend-url"
 
 export default function ProjectPage({
-  params,
+params,
 }: {
   params: Promise<{ id: string }>
 }) {
-  const [isEditingProject, setIsEditingProject] = useState(false)
-  const [tasks, setTasks] = useState<Task[]>(mockTasks)
+  const { id } = use(params)
   const router = useRouter()
 
-  const { id } = use(params)
-  const project = projects.find((p) => p.id === id)
+  const [project, setProject] = useState<Project>()
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [isEditingProject, setIsEditingProject] = useState(false)
+
+  // derive some dashboard data
+  const dashboardData = useMemo(() => {
+    return {
+      total: tasks.length,
+      completed: tasks.filter((t) => t.status === TaskStatus.Finished).length,
+      onTrack: tasks.filter((t) => t.status === TaskStatus.OnTrack).length,
+    }
+  }, [tasks])
+
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      const backendUrl = await getBackendUrl()
+      if (!backendUrl) {
+        console.error("Missing NEXT_PUBLIC_BACKEND_URL")
+        return
+      }
+
+      const at = getCookie("accessToken")
+      if (!at) {
+        console.error("No access token found")
+        return
+      }
+
+      try {
+        const [projRes, tasksRes] = await Promise.all([
+          fetch(`${backendUrl}/api/project/${id}`, {
+            headers: { Authorization: at },
+          }),
+          fetch(`${backendUrl}/api/project/${id}/getTasks`, {
+            headers: { Authorization: at },
+          }),
+        ])
+        if (!projRes.ok)
+          throw new Error("Failed to fetch project data")
+        if (!tasksRes.ok) throw new Error("Failed to fetch tasks")
+
+        const projectData: Project = await projRes.json()
+        const tasksData: Task[] = await tasksRes.json()
+        setProject(projectData)
+        setTasks(tasksData)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+
+    fetchProjectData()
+  }, [id])
 
   const handleStatusUpdate = (status: string) => {
     router.push(`/spicelab/project/${id}/statusUpdate?status=${status}`)
@@ -252,42 +95,54 @@ export default function ProjectPage({
 
   const toggleTaskCompletion = (taskId: string) => {
     setTasks((prev) =>
-      prev.map((task) => {
-        if (task.id === taskId) {
-          return { ...task, completed: !task.completed }
-        }
-        return task
-      })
+      prev.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              status:
+                t.status === TaskStatus.Finished
+                  ? TaskStatus.OnTrack
+                  : TaskStatus.Finished,
+              finished:
+                t.status === TaskStatus.Finished ? undefined : new Date(),
+              percentage: t.status === TaskStatus.Finished ? 0 : 100,
+            }
+          : t
+      )
     )
   }
 
-  const updateTaskStatus = (taskId: string, newStatus: Task["status"]) => {
+  const updateTaskStatus = (
+    taskId: string,
+    newStatus: Task["status"]
+  ) => {
     setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task
+      prev.map((t) =>
+        t.id === taskId ? { ...t, status: newStatus } : t
       )
     )
   }
 
   const moveTaskToSection = (taskId: string, newSection: string) => {
     setTasks((prev) =>
-      prev.map((task) =>
-        task.id === taskId ? { ...task, section: newSection } : task
+      prev.map((t) =>
+        t.id === taskId ? { ...t, section: newSection } : t
       )
     )
   }
 
-  const deleteTasksById = (taskIds: string[]) => {
-    setTasks((prev) => prev.filter((task) => !taskIds.includes(task.id)))
+  const deleteTasksById = (ids: string[]) => {
+    setTasks((prev) => prev.filter((t) => !ids.includes(t.id)))
   }
 
-  const createTask = (taskData: Omit<Task, "id" | "createdDate">) => {
+  const createTask = (data: Omit<Task, "id" | "createdDate">) => {
     const newTask: Task = {
-      ...taskData,
-      id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      createdDate: new Date().toISOString(),
+      ...data,
+      id: `task-${Date.now()}-${Math.random()
+        .toString(36)
+        .substr(2, 9)}`,
+      created: new Date(),
     }
-
     setTasks((prev) => [...prev, newTask])
   }
 
@@ -306,8 +161,8 @@ export default function ProjectPage({
 
   return (
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
-      <Tabs defaultValue="przeglad" className="flex flex-col min-h-screen">
-        {/* Project Header */}
+      <Tabs defaultValue="przeglad" className="flex flex-col flex-1">
+        {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3 mb-2">
             <Folder className="w-6 h-6 text-gray-500 dark:text-gray-400" />
@@ -315,7 +170,7 @@ export default function ProjectPage({
               {project?.name ?? "Nieznany projekt"}
             </span>
 
-            {/* Project Options Dropdown */}
+            {/* Project Options */}
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -326,8 +181,10 @@ export default function ProjectPage({
                   <ChevronDown className="w-5 h-5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                <DropdownMenuItem onClick={() => setIsEditingProject(true)}>
+              <DropdownMenuContent className="bg-white dark:bg-gray-800">
+                <DropdownMenuItem
+                  onClick={() => setIsEditingProject(true)}
+                >
                   <Pen className="w-4 h-4 mr-2" />
                   Zmień szczegóły projektu
                 </DropdownMenuItem>
@@ -335,7 +192,6 @@ export default function ProjectPage({
                   <Palette className="w-4 h-4 mr-2" />
                   Zmień kolor projektu
                 </DropdownMenuItem>
-                <DropdownMenuItem>Opcja 3</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <CopyLinkButton text="Skopiuj link do projektu" />
@@ -343,7 +199,7 @@ export default function ProjectPage({
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Set Status Dropdown */}
+            {/* Set Status */}
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -356,41 +212,26 @@ export default function ProjectPage({
                   <ChevronDown className="w-4 h-4 ml-1" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                <DropdownMenuItem
-                  onClick={() => handleStatusUpdate("in-progress")}
-                >
-                  <div className="flex items-center">
-                    <div
-                      className={`w-2 h-2 ${getStatusDotColor(
-                        "in-progress"
-                      )} rounded-full mr-2`}
-                    />
-                    W trakcie
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleStatusUpdate("todo")}>
-                  <div className="flex items-center">
-                    <div
-                      className={`w-2 h-2 ${getStatusDotColor(
-                        "todo"
-                      )} rounded-full mr-2`}
-                    />
-                    Do zrobienia
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => handleStatusUpdate("completed")}
-                >
-                  <div className="flex items-center">
-                    <div
-                      className={`w-2 h-2 ${getStatusDotColor(
-                        "completed"
-                      )} rounded-full mr-2`}
-                    />
-                    Ukończony
-                  </div>
-                </DropdownMenuItem>
+              <DropdownMenuContent className="bg-white dark:bg-gray-800">
+                {[
+                  ["in-progress", "W trakcie"],
+                  ["todo", "Do zrobienia"],
+                  ["completed", "Ukończony"],
+                ].map(([stat, label]) => (
+                  <DropdownMenuItem
+                    key={stat}
+                    onClick={() => handleStatusUpdate(stat)}
+                  >
+                    <div className="flex items-center">
+                      <div
+                        className={`w-2 h-2 ${getStatusDotColor(
+                          stat
+                        )} rounded-full mr-2`}
+                      />
+                      {label}
+                    </div>
+                  </DropdownMenuItem>
+                ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -409,18 +250,18 @@ export default function ProjectPage({
             </TabsContent>
 
             <TabsContent value="lista" className="h-full">
-              <TaskList
+              {/* <TaskList
                 tasks={tasks}
                 onToggleCompletion={toggleTaskCompletion}
                 onUpdateStatus={updateTaskStatus}
                 onMoveToSection={moveTaskToSection}
                 onDeleteTasks={deleteTasksById}
                 onCreateTask={createTask}
-              />
+              /> */}
             </TabsContent>
 
             <TabsContent value="panel" className="h-full">
-              <Dashboard data={dashboardData} />
+              {/* <Dashboard data={dashboardData} /> */}
             </TabsContent>
           </div>
 
@@ -432,9 +273,8 @@ export default function ProjectPage({
         project={project}
         isOpen={isEditingProject}
         onClose={() => setIsEditingProject(false)}
-        onSave={(updatedProject) => {
-          // Handle project update logic here
-          console.log("Updated project:", updatedProject)
+        onSave={(updated) => {
+          console.log("Saved:", updated)
           setIsEditingProject(false)
         }}
       />

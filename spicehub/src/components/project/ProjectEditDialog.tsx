@@ -23,17 +23,8 @@ import {
 import { Calendar } from "@/components/ui/calendar"
 import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
-
-type Project = {
-  id: string
-  name: string
-  description?: string
-  owner: {
-    name: string
-    avatarUrl?: string
-  }
-  dueDate?: string
-}
+import { Project } from "@/models/Project"
+import { useUserData } from "@/hooks/userData"
 
 interface ProjectEditDialogProps {
   project?: Project
@@ -47,9 +38,9 @@ export function ProjectEditDialog({
   isOpen,
   onClose,
 }: ProjectEditDialogProps) {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    project?.dueDate ? new Date(project.dueDate) : undefined
-  )
+  // const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+  //   project?.dueDate ? new Date(project.dueDate) : undefined
+  // )
 
   if (!project) return null
 
@@ -89,28 +80,28 @@ export function ProjectEditDialog({
               </label>
               <div className="flex items-center gap-2">
                 <Avatar className="w-8 h-8">
-                  {project.owner.avatarUrl ? (
+                  {/* {project.owner.avatarUrl ? (
                     <AvatarImage
-                      src={project.owner.avatarUrl}
-                      alt={project.owner.name}
+                      src={undefined}
+                      alt={project.creator}
                     />
-                  ) : (
+                  ) : ( */}
                     <AvatarFallback>
-                      {project.owner.name
+                      {project.creator
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}
                     </AvatarFallback>
-                  )}
+                  {/* )} */}
                 </Avatar>
                 <span className="text-sm text-gray-900 dark:text-gray-100">
-                  {project.owner.name}
+                  {project.creator}
                 </span>
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="due-date">Termin</Label>
-              <Popover>
+              {/* <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     id="due-date"
@@ -131,7 +122,7 @@ export function ProjectEditDialog({
                     initialFocus
                   />
                 </PopoverContent>
-              </Popover>
+              </Popover> */}
             </div>
           </div>
 

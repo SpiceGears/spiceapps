@@ -2,17 +2,7 @@
 "use client"
 
 import { Upload } from "lucide-react"
-
-type Project = {
-  id: string
-  name: string
-  description?: string
-  owner: {
-    name: string
-    avatarUrl?: string
-  }
-  dueDate?: string
-}
+import { Project } from "@/models/Project"
 
 interface ProjectOverviewProps {
   project?: Project
