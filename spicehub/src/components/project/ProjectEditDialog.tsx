@@ -25,6 +25,7 @@ import { Label } from "@/components/ui/label"
 import { format } from "date-fns"
 import { Project } from "@/models/Project"
 import { useUserData } from "@/hooks/userData"
+import { useUserById } from "@/hooks/userById"
 
 interface ProjectEditDialogProps {
   project?: Project
@@ -33,14 +34,18 @@ interface ProjectEditDialogProps {
   onSave: (project: Project) => void
 }
 
+const getInitials = (name: string) => {
+  const parts = name.split(' ')
+  if (parts.length < 2) return parts[0]?.[0]?.toUpperCase() ?? ''
+  return (parts[0][0] + parts[1][0]).toUpperCase()
+}
+
 export function ProjectEditDialog({
   project,
   isOpen,
   onClose,
 }: ProjectEditDialogProps) {
-  // const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-  //   project?.dueDate ? new Date(project.dueDate) : undefined
-  // )
+const { data, loading, error } = useUserById(project?.creator ?? "")
 
   if (!project) return null
 
@@ -87,42 +92,14 @@ export function ProjectEditDialog({
                     />
                   ) : ( */}
                     <AvatarFallback>
-                      {project.creator
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                      {getInitials(data?.firstName + " " + data?.lastName)}
                     </AvatarFallback>
                   {/* )} */}
                 </Avatar>
                 <span className="text-sm text-gray-900 dark:text-gray-100">
-                  {project.creator}
+                  {data?.firstName + " " + data?.lastName}
                 </span>
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="due-date">Termin</Label>
-              {/* <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="due-date"
-                    variant="outline"
-                    className="w-full justify-start text-left"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
-                    {selectedDate
-                      ? format(selectedDate, "PPP", { locale: undefined })
-                      : "Wybierz termin"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover> */}
             </div>
           </div>
 
