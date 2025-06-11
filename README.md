@@ -14,7 +14,7 @@
 ## Features
 - Interactive dashboard
 - Project and task management with easy filtering and sorting
-- Shared file system with linking into project's
+- Shared file system with linking into project's\
     `Current structure of them is intended for internal team use, not suitable for extra large user bases`
 - Admin dashboard for user approval and role assingment
 - Secure auth via login/password or Authenthicator app
