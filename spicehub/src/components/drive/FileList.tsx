@@ -1,10 +1,11 @@
 'use client';
 
-import { FileItem } from '@/types';
 import FileIcon from './FileIcon';
+import { useUserById } from '@/hooks/userById';
+import { SFile } from '@/models/SFile';
 
 interface FileListProps {
-  files: FileItem[];
+  files: SFile[];
   selectedFiles: string[];
   onFileSelect: (fileId: string, isMultiple?: boolean) => void;
   onFileAction: (action: string, fileIds: string[]) => void;
@@ -27,35 +28,38 @@ export default function FileList({
         <div className="col-span-2">File size</div>
       </div>
 
-      {files.map(file => (
-        <div
-          key={file.id}
-          className={`grid grid-cols-12 gap-4 p-3 hover:bg-gray-50 
-                     dark:hover:bg-gray-800 cursor-pointer border-b 
-                     border-gray-100 dark:border-gray-800 transition-colors ${
+      {files.map(file => {
+        const userData = useUserById(file.owner);
+        return (
+          <div
+            key={file.id}
+            className={`grid grid-cols-12 gap-4 p-3 hover:bg-gray-50 
+                       dark:hover:bg-gray-800 cursor-pointer border-b 
+                       border-gray-100 dark:border-gray-800 transition-colors ${
                        selectedFiles.includes(file.id) 
                          ? 'bg-blue-50 dark:bg-blue-900/20' 
                          : ''
                      }`}
-          onClick={e => onFileSelect(file.id, e.ctrlKey || e.metaKey)}
+          onClick={e => onFileSelect(file.id, e.metaKey || e.ctrlKey)}
         >
           <div className="col-span-6 flex items-center gap-3">
-            <FileIcon file={file} size="small" />
+            <FileIcon isFolder={false} file={file.name} size="small" />
             <span className="text-sm text-black dark:text-white">
               {file.name}
             </span>
           </div>
           <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
-            {file.owner}
+            {userData.data?.firstName} {userData.data?.lastName}
           </div>
-          <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
+          {/* <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
             {file.modifiedAt.toLocaleDateString()}
-          </div>
-          <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
-            {file.size ? formatFileSize(file.size) : '—'}
-          </div>
+          </div> */}
+          {/* <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
+            // {file.size ? formatFileSize(file.size) : '—'}
+          </div> */}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

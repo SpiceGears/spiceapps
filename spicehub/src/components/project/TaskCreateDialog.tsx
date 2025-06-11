@@ -1,7 +1,7 @@
 // components/project/TaskCreateDialog.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -25,11 +25,12 @@ import { Calendar, User, Flag, FolderOpen } from "lucide-react";
 import { Task, TaskStatus, Section } from "@/models/Task";
 import { getBackendUrl } from "@/app/serveractions/backend-url";
 import { getCookie } from "typescript-cookie";
+import { NewTaskPayload } from "./TaskList";
 
 export interface TaskCreateDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (task: Task) => void;
+  onSave: (task: NewTaskPayload) => void;
   sections: Section[];
   defaultSection?: string;
 }
@@ -40,7 +41,7 @@ export function TaskCreateDialog({
   onSave,
   sections,
   defaultSection,
-}: TaskCreateDialogProps) {
+}: TaskCreateDialogProps): ReactNode {
   type FormData = {
     name: string;
     description: string;
@@ -72,7 +73,7 @@ export function TaskCreateDialog({
       assignedUsers: [],
       deadlineDate: "",
     });
-    setErrors({});
+    setErrors({});}
     // List of users who can be assigned to this task
     const [availableAssignees, setAvailableAssignees] = useState<
       { id: string; name: string; email: string }[]
@@ -137,16 +138,23 @@ export function TaskCreateDialog({
       setErrors(errs);
       return Object.keys(errs).length === 0;
     };
-
     const handleSave = async () => {
       if (!validate()) return;
-      const payload = {
-        name: formData.name.trim(),
-        description: formData.description.trim(),
+      const payload: NewTaskPayload = {
+        // name: formData.name.trim(),
+        // description: formData.description.trim(),
+        // status: formData.status,
+        // priority: formData.priority,
+        // assignedUsers: formData.assignedUsers,
+        // deadlineDate: formData.deadlineDate ? new Date(formData.deadlineDate) : null,
+        name: formData.name,
+        description: formData.description,
+        deadlineDate: new Date(formData.deadlineDate),
+        dependencies: [],
+        percentage: 0,
         status: formData.status,
         priority: formData.priority,
         assignedUsers: formData.assignedUsers,
-        deadlineDate: formData.deadlineDate ? new Date(formData.deadlineDate) : null,
         sectionId: formData.sectionId,
 
       };
@@ -365,8 +373,8 @@ export function TaskCreateDialog({
                     <div
                       key={u.id}
                       className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${sel
-                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                          : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                        : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50"
                         }`}
                       onClick={() => toggleAssignee(u.id)}
                     >
@@ -416,6 +424,5 @@ export function TaskCreateDialog({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    );
-  }
+    )
 }

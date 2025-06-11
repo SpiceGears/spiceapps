@@ -51,7 +51,7 @@ export default function FileGrid({
                          ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
                          : 'border-gray-200 dark:border-gray-700'
                      } bg-white dark:bg-gray-900`}
-          onClick={e => onFileSelect(file.id, e.ctrlKey || e.metaKey)}
+          onClick={e => onFileSelect(file.id, e.metaKey || e.ctrlKey)}
         >
           <div className="flex flex-col items-center">
             <FileIcon file={file.name} isFolder={false} size="large" />

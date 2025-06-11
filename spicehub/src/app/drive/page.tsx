@@ -125,17 +125,23 @@ export default function HomePage() {
   }, [currentPath]);
 
 
-  const handleFileSelect = (fileId: string, isMultiple: boolean = false) => {
+const handleFileSelect = (fileId: string, isMultiple: boolean = false) => {
+  setSelectedFiles(prev => {
     if (isMultiple) {
-      setSelectedFiles(prev =>
-        prev.includes(fileId)
-          ? prev.filter(id => id !== fileId)
-          : [...prev, fileId]
-      );
+      // Toggle selection for multi-select (ctrl/cmd-click)
+      return prev.includes(fileId)
+        ? prev.filter(id => id !== fileId)
+        : [...prev, fileId];
     } else {
-      setSelectedFiles([fileId]);
+      // Single-click: if this is already the only selection, clear it
+      if (prev.length === 1 && prev[0] === fileId) {
+        return [];
+      }
+      // Otherwise select only this file
+      return [fileId];
     }
-  };
+  });
+};
 
   const handleFileAction = (action: string, fileIds: string[]) => {
     switch (action) {
@@ -176,12 +182,12 @@ export default function HomePage() {
       />
     ) : (
       <>
-        {/* <FileList
+        <FileList
           files={files}
           selectedFiles={selectedFiles}
           onFileSelect={handleFileSelect}
           onFileAction={handleFileAction}
-        /> */}
+        />
       </>
     )}
   </>

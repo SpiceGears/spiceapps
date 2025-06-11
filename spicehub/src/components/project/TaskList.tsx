@@ -22,16 +22,16 @@ import {
   Section as SectionModel,
 } from "@/models/Task";
 
-type NewTaskPayload = Omit<
-  Task,
-  | "id"
-  | "created"
-  | "finished"
-  | "percentage"
-  | "creator"
-  | "scopesRequired"
-  | "dependencies"
-> & { sectionId: string };
+export type NewTaskPayload = { sectionId: string, 
+  name: string
+  description: string
+  dependencies: string[]
+  percentage: Number
+  status: TaskStatus
+  priority: Number
+  deadlineDate: Date
+  assignedUsers: string[]
+};
 
 interface TaskListProps {
   tasks: Task[];
@@ -50,7 +50,6 @@ export function TaskList({
   onUpdateStatus,
   onMoveToSection,
   onDeleteTasks,
-  onCreateTask,
 }: TaskListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPriority, setSelectedPriority] = useState<
@@ -243,27 +242,28 @@ export function TaskList({
 
   // handle create‐task from dialog
   const handleCreateTask = (payload: NewTaskPayload) => {
-    if (onCreateTask) {
-      onCreateTask(payload);
-    } else {
-      const full: Task = {
-        id: `task-${Date.now()}`,
-        ...payload,
-        scopesRequired: [],
-        dependencies: [],
-        percentage: 0,
-        created: new Date(),
-        creator: "system",
-        finished: null,
-      };
-      setSections((s) =>
-        s.map((sec) =>
-          sec.id === payload.sectionId
-            ? { ...sec, tasks: [...(sec.tasks || []), full] }
-            : sec
-        )
-      );
-    }
+    // if (onCreateTask) {
+    //   onCreateTask(payload);
+    // } else {
+    //   const full: Task = {
+    //     id: `task-${Date.now()}`,
+    //     ...payload,
+    //     scopesRequired: [],
+    //     dependencies: [],
+    //     percentage: 0,
+    //     created: new Date(),
+    //     creator: "system",
+    //     finished: null,
+    //   };
+    //   setSections((s) =>
+    //     s.map((sec) =>
+    //       sec.id === payload.sectionId
+    //         ? { ...sec, tasks: [...(sec.tasks || []), full] }
+    //         : sec
+    //     )
+    //   );
+    // }
+    
     setIsCreateDialogOpen(false);
   };
 
