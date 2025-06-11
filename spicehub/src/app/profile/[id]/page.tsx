@@ -6,6 +6,8 @@ import { Users, Hammer, Puzzle } from "lucide-react";
 import { useState } from "react";
 import ActivityWidget from "@/components/profile/ActivityWidget";
 import { ProjectCard } from "@/components/profile/ProjectCard";
+import { useUserData } from "@/hooks/userData";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Mock data for multiple years
 const mockData = {
@@ -77,6 +79,8 @@ export default function Profile() {
   const [workshopYear, setWorkshopYear] = useState(2025);
   const [projectYear, setProjectYear] = useState(2025);
 
+  const {data, loading, error} = useUserData();
+
   const userData = {
     firstName: "Jan",
     lastName: "Kowalski",
@@ -95,14 +99,15 @@ export default function Profile() {
           <Avatar className="h-48 w-48 md:h-64 md:w-64 border-4 border-gray-200 dark:border-gray-700">
               <AvatarFallback className="bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white text-6xl" />
               <AvatarImage
-                src={`https://ui-avatars.com/api/?name=${userData.firstName}+${userData.lastName}&background=random&color=fff`}
-                alt={`${userData.firstName} ${userData.lastName}`}
+                src={`https://ui-avatars.com/api/?name=${data?.firstName ?? "Jan"}+${data?.lastName ?? "Kowalski"}&background=random&color=fff`}
+                alt={`${data?.firstName ?? "Jan"} ${data?.lastName ?? "Kowalski"}`}
                 className="h-full w-full object-cover"
               />
           </Avatar>
 
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Jan Kowalski</h1>
+            { loading && <Skeleton className="text-2xl font-semibold text-gray-900 dark:text-white"/>}
+            {!loading && <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">{data?.firstName + " " + data?.lastName}</h1>}
           </div>
 
           <hr className="border-gray-200 dark:border-gray-700 my-4" />

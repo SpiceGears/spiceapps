@@ -21,7 +21,7 @@ namespace SpiceAPI.Controllers {
         [HttpPost("{id:guid}/avatar")]
         public async Task<IActionResult> SetAvatar([FromRoute] Guid id, 
             [FromHeader] string? Authorization,
-            [FromForm] IFormFile file)
+            IFormFile file)
         {
             var token = Authorization;
             if (token == null) return Unauthorized("Provide valid access token for this action");

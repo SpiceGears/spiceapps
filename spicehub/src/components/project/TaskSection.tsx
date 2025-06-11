@@ -29,40 +29,15 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { TaskCard } from "./TaskCard";
-
-type Assignee = {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-  email?: string;
-};
-
-type Task = {
-  id: string;
-  title: string;
-  description?: string;
-  status: "todo" | "in-progress" | "completed";
-  completed: boolean;
-  priority: "low" | "medium" | "high";
-  assignees: Assignee[];
-  dueDate?: string;
-  createdDate: string;
-  section: string;
-};
-
-type Section = {
-  id: string;
-  title: string;
-  icon: React.ReactNode;
-  color: string;
-};
+import { Task } from "@/models/Task";
+import { Section } from "@/models/Task";
 
 interface TaskSectionProps {
   sectionId: string;
-  title: string;
+  name: string;
   tasks: Task[];
   sections: Section[];
-  icon: React.ReactNode;
+  // icon: React.ReactNode;
   onToggleCompletion: (taskId: string) => void;
   onDragStart: (e: React.DragEvent, taskId: string) => void;
   onDragOver: (e: React.DragEvent) => void;
@@ -73,16 +48,16 @@ interface TaskSectionProps {
     sectionId: string,
     dropZoneElement: HTMLElement
   ) => void;
-  onRenameSection: (sectionId: string, newTitle: string) => void;
+  onRenameSection: (sectionId: string, newName: string) => void;
   onDeleteSection: (sectionId: string) => void;
 }
 
 export function TaskSection({
   sectionId,
-  title,
+  name,
   tasks,
   sections,
-  icon,
+  // icon,
   onToggleCompletion,
   onDragStart,
   onDragOver,
@@ -93,7 +68,7 @@ export function TaskSection({
   onDeleteSection,
 }: TaskSectionProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editingTitle, setEditingTitle] = useState(title);
+  const [editingName, setEditingName] = useState(name);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -107,27 +82,27 @@ export function TaskSection({
 
   // Auto-edit mode for new sections
   useEffect(() => {
-    if (title === "Nowa kolumna") {
+    if (name === "Nowa kolumna") {
       setIsEditing(true);
     }
-  }, [title]);
+  }, [name]);
 
   const handleStartEditing = () => {
-    setEditingTitle(title);
+    setEditingName(name);
     setIsEditing(true);
   };
 
   const handleSaveEdit = () => {
-    if (editingTitle.trim() && editingTitle !== title) {
-      onRenameSection(sectionId, editingTitle.trim());
+    if (editingName.trim() && editingName !== name) {
+      onRenameSection(sectionId, editingName.trim());
     } else {
-      setEditingTitle(title);
+      setEditingName(name);
     }
     setIsEditing(false);
   };
 
   const handleCancelEdit = () => {
-    setEditingTitle(title);
+    setEditingName(name);
     setIsEditing(false);
   };
 
@@ -158,14 +133,14 @@ export function TaskSection({
         {/* Section Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 rounded-t-lg">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            {icon}
+            {/* {icon} */}
 
             {isEditing ? (
               <div className="flex items-center gap-2 flex-1">
                 <Input
                   ref={inputRef}
-                  value={editingTitle}
-                  onChange={(e) => setEditingTitle(e.target.value)}
+                  value={editingName}
+                  onChange={(e) => setEditingName(e.target.value)}
                   onKeyDown={handleKeyDown}
                   onBlur={handleSaveEdit}
                   className="h-7 text-sm font-medium px-2 py-1 min-w-0 flex-1"
@@ -195,7 +170,7 @@ export function TaskSection({
                   onClick={handleStartEditing}
                   title="Kliknij, aby edytować"
                 >
-                  {title}
+                  {name}
                 </span>
                 <Badge variant="secondary" className="ml-2 flex-shrink-0">
                   {tasks.length}
@@ -242,7 +217,7 @@ export function TaskSection({
             <TaskCard
               key={task.id}
               task={task}
-              sections={sections} // Add this line
+              sections={sections}
               onToggleCompletion={onToggleCompletion}
               onDragStart={onDragStart}
             />
@@ -256,7 +231,7 @@ export function TaskSection({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-500" />
-              Usuń kolumnę "{title}"
+              Usuń kolumnę "{name}"
             </AlertDialogTitle>
             <AlertDialogDescription>
               Czy na pewno chcesz usunąć tę kolumnę?

@@ -2,9 +2,11 @@
 
 import { FileItem } from '@/types';
 import FileIcon from './FileIcon';
+import { SFile } from '@/models/SFile';
 
 interface FileGridProps {
-  files: FileItem[];
+  files: SFile[];
+  folders: string[]
   selectedFiles: string[];
   onFileSelect: (fileId: string, isMultiple?: boolean) => void;
   onFileAction: (action: string, fileIds: string[]) => void;
@@ -12,11 +14,34 @@ interface FileGridProps {
 
 export default function FileGrid({
   files,
+  folders,
   selectedFiles,
   onFileSelect,
 }: FileGridProps) {
   return (
     <div className="grid grid-cols-6 gap-4">
+      {folders.map((value: string, index: number) => (
+        <div
+          key={index}
+          className={`p-4 rounded-lg border cursor-pointer transition-all 
+                     hover:bg-gray-50 dark:hover:bg-gray-800`}
+        >
+          <div className="flex flex-col items-center">
+            <FileIcon file={value} isFolder={true} size="large" />
+            <div className="mt-2 text-center">
+              <div className="text-sm font-medium text-black dark:text-white 
+                            truncate w-full">
+                {value}
+              </div>
+              {/* {file.size && (
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {formatFileSize(file.size)}
+                </div>
+              )} */}
+            </div>
+          </div>
+        </div>
+      ))}
       {files.map(file => (
         <div
           key={file.id}
@@ -29,17 +54,17 @@ export default function FileGrid({
           onClick={e => onFileSelect(file.id, e.ctrlKey || e.metaKey)}
         >
           <div className="flex flex-col items-center">
-            <FileIcon file={file} size="large" />
+            <FileIcon file={file.name} isFolder={false} size="large" />
             <div className="mt-2 text-center">
               <div className="text-sm font-medium text-black dark:text-white 
                             truncate w-full">
                 {file.name}
               </div>
-              {file.size && (
+              {/* {file.size && (
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {formatFileSize(file.size)}
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </div>

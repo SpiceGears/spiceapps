@@ -37,7 +37,7 @@ export default function Toolbar({
         <div className="flex items-center gap-2 text-sm text-gray-600 
                        dark:text-gray-400">
           <Home size={16} />
-          <span>/</span>
+          <span className="text-black dark:text-white">Drive</span>
           <span className="font-medium text-black dark:text-white">
             {currentPath}
           </span>

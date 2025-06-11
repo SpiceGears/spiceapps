@@ -6,7 +6,7 @@ export enum TaskStatus
     Problem = 2,
 }
 
-export interface TaskSection 
+export interface Section 
 {
     id: string;
     name: string;

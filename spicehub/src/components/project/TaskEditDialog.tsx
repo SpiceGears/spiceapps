@@ -12,13 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon, X, Plus } from "lucide-react";
+import { Task, Section, TaskStatus } from "@/models/Task";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -28,10 +23,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
-import { CalendarIcon, User, X, Plus, FolderOpen } from "lucide-react"; // Added FolderOpen
 
+// Dummy user type for assignees (replace with your actual user model)
 type Assignee = {
   id: string;
   name: string;
@@ -39,111 +40,36 @@ type Assignee = {
   email?: string;
 };
 
-type Task = {
-  id: string;
-  title: string;
-  description?: string;
-  status: "todo" | "in-progress" | "completed";
-  completed: boolean;
-  priority: "low" | "medium" | "high";
-  assignees: Assignee[];
-  dueDate?: string;
-  createdDate: string;
-  section: string; // This should be the section ID
-};
-
-// Define Section type (similar to TaskCreateDialog)
-type Section = {
-  id: string;
-  title: string;
-  icon?: React.ReactNode;
-  color?: string;
-};
+// Dummy available users (replace with your actual users)
+const defaultAvailableUsers: Assignee[] = [];
 
 type TaskEditDialogProps = {
-  task?: Task;
+  task?: Task;                 // if undefined, this will be a "create" form
   isOpen: boolean;
   onClose: () => void;
   onSave: (task: Task) => void;
   availableUsers?: Assignee[];
-  sections: Section[]; // Added sections prop
+  sections: Section[];
 };
 
-// Mock data for assignees (already present)
-const assignees = [
-  {
-    id: "test",
-    name: "test",
-    avatarUrl: "test",
-    email: "test",
-  },
-];
-
-const priorityColors = {
-  low: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-  medium:
-    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-  high: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
+const statusLabels: Record<TaskStatus, string> = {
+  [TaskStatus.Planned]: "Zaplanowane",
+  [TaskStatus.OnTrack]: "W trakcie",
+  [TaskStatus.Finished]: "Ukończone",
+  [TaskStatus.Problem]: "Problem",
 };
 
-const statusLabels = {
-  todo: "Do zrobienia",
-  "in-progress": "W trakcie",
-  completed: "Ukończone",
+const priorityLabels: Record<number, string> = {
+  1: "Niski",
+  2: "Średni",
+  3: "Wysoki",
 };
 
-const priorityLabels = {
-  low: "Niski",
-  medium: "Średni",
-  high: "Wysoki",
+const priorityColors: Record<number, string> = {
+  1: "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 border-green-200 dark:border-green-800",
+  2: "bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800",
+  3: "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 border-red-200 dark:border-red-800",
 };
-
-const defaultAvailableUsers: Assignee[] = [
-  {
-    id: "1",
-    name: "Jan Kowalski",
-    email: "jan.kowalski@example.com",
-    avatarUrl: "/avatars/jan.jpg",
-  },
-  {
-    id: "2",
-    name: "Anna Nowak",
-    email: "anna.nowak@example.com",
-    avatarUrl: "/avatars/anna.jpg",
-  },
-  {
-    id: "3",
-    name: "Piotr Wiśniewski",
-    email: "piotr.wisniewski@example.com",
-  },
-  {
-    id: "4",
-    name: "Maria Wójcik",
-    email: "maria.wojcik@example.com",
-  },
-];
-
-// Mock data for sections - replace with your actual data source or pass via props
-const mockSections: Section[] = [
-  {
-    id: "s1",
-    title: "Lista zadań",
-    icon: <FolderOpen className="h-4 w-4" />,
-    color: "gray",
-  },
-  {
-    id: "s2",
-    title: "W trakcie",
-    icon: <FolderOpen className="h-4 w-4" />,
-    color: "blue",
-  },
-  {
-    id: "s3",
-    title: "Ukończone",
-    icon: <FolderOpen className="h-4 w-4" />,
-    color: "green",
-  },
-];
 
 export default function TaskEditDialog({
   task,
@@ -151,83 +77,82 @@ export default function TaskEditDialog({
   onClose,
   onSave,
   availableUsers = defaultAvailableUsers,
-  sections = mockSections, // Use mockSections as default
+  sections,
 }: TaskEditDialogProps) {
   const [formData, setFormData] = useState({
-    title: "",
+    name: "",
     description: "",
-    status: "todo" as Task["status"],
-    priority: "medium" as Task["priority"],
-    section: "", // Will hold section ID
+    status: TaskStatus.Planned as TaskStatus,
+    priority: 1 as number,
+    section: sections.length > 0 ? sections[0].id : "",
   });
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [selectedAssignees, setSelectedAssignees] = useState<Assignee[]>([]);
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
   const [isAssigneePopoverOpen, setIsAssigneePopoverOpen] = useState(false);
 
   useEffect(() => {
     if (task) {
       setFormData({
-        title: task.title,
+        name: task.name,
         description: task.description || "",
         status: task.status,
-        priority: task.priority,
-        section: task.section, // Initialize with task's section ID
+        priority: Number(task.priority),
+        section:
+          sections.find((s) => s.tasks.some((t) => t.id === task.id))?.id ||
+          sections[0]?.id ||
+          "",
       });
-      setSelectedDate(task.dueDate ? new Date(task.dueDate) : undefined);
-      setSelectedAssignees(task.assignees || []);
+      setSelectedDate(
+        task.deadlineDate ? new Date(task.deadlineDate) : undefined
+      );
+      setSelectedAssignees(task.assignedUsers || []);
     } else {
-      // Optionally reset form if task becomes undefined while dialog is open (though `if (!task) return null;` handles initial undefined)
-      setFormData({
-        title: "",
+      // creating a new task ⇒ reset form
+      setFormData((fd) => ({
+        ...fd,
+        name: "",
         description: "",
-        status: "todo",
-        priority: "medium",
-        section: sections.length > 0 ? sections[0].id : "", // Default to first section or empty
-      });
+        status: TaskStatus.Planned,
+        priority: 1,
+        section: sections[0]?.id || "",
+      }));
       setSelectedDate(undefined);
       setSelectedAssignees([]);
     }
-  }, [task, sections]); // Added sections to dependency array for default section logic
-
-  if (!task) return null;
+  }, [task, sections]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
+    // if you’re creating a new task, you’ll need to give it an `id` here or upstream
+    const base: Partial<Task> = task ?? {};
     const updatedTask: Task = {
-      ...task,
-      title: formData.title,
+      ...base,
+      id: base.id ?? crypto.randomUUID(),
+      name: formData.name,
       description: formData.description,
       status: formData.status,
       priority: formData.priority,
-      section: formData.section, // formData.section now holds the ID
-      completed: formData.status === "completed",
-      dueDate: selectedDate ? selectedDate.toISOString() : undefined,
-      assignees: selectedAssignees,
-    };
+      section: formData.section,
+      assignedUsers: selectedAssignees,
+      deadlineDate: selectedDate,
+    } as Task;
 
     onSave(updatedTask);
     onClose();
   };
 
-  const handleAssigneeToggle = (user: Assignee, checked: boolean) => {
-    if (checked) {
-      setSelectedAssignees((prev) => [...prev, user]);
-    } else {
-      setSelectedAssignees((prev) =>
-        prev.filter((assignee) => assignee.id !== user.id)
-      );
-    }
-  };
-
-  const removeAssignee = (userId: string) => {
+  const handleAssigneeToggle = (userId: string, checked: boolean) => {
     setSelectedAssignees((prev) =>
-      prev.filter((assignee) => assignee.id !== userId)
+      checked ? [...prev, userId] : prev.filter((id) => id !== userId)
     );
   };
 
+  const removeAssignee = (userId: string) => {
+    setSelectedAssignees((prev) => prev.filter((id) => id !== userId));
+  };
+
   const isUserAssigned = (userId: string) => {
-    return selectedAssignees.some((assignee) => assignee.id === userId);
+    return selectedAssignees.includes(userId);
   };
 
   const currentSection = sections.find((s) => s.id === formData.section);
@@ -236,17 +161,19 @@ export default function TaskEditDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl p-6 max-h-[80vh] overflow-y-auto">
         <DialogHeader className="relative mb-4">
-          <DialogTitle>Edytuj zadanie</DialogTitle>
+          <DialogTitle>{task ? "Edytuj zadanie" : "Nowe zadanie"}</DialogTitle>
+          <DialogClose className="absolute top-2 right-2" />
         </DialogHeader>
 
         <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Name */}
           <div className="space-y-2">
-            <Label htmlFor="task-title">Nazwa zadania</Label>
+            <Label htmlFor="task-name">Nazwa zadania</Label>
             <Input
-              id="task-title"
-              value={formData.title}
+              id="task-name"
+              value={formData.name}
               onChange={(e) =>
-                setFormData({ ...formData, title: e.target.value })
+                setFormData({ ...formData, name: e.target.value })
               }
               placeholder="Wprowadź nazwę zadania"
               className="w-full"
@@ -254,26 +181,30 @@ export default function TaskEditDialog({
             />
           </div>
 
+          {/* Status & Priority */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Status</Label>
               <Select
-                value={formData.status}
-                onValueChange={(value: Task["status"]) =>
-                  setFormData({ ...formData, status: value })
+                value={String(formData.status)}
+                onValueChange={(value: string) =>
+                  setFormData({
+                    ...formData,
+                    status: Number(value) as TaskStatus,
+                  })
                 }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>
+                    {statusLabels[formData.status]}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todo">{statusLabels.todo}</SelectItem>
-                  <SelectItem value="in-progress">
-                    {statusLabels["in-progress"]}
-                  </SelectItem>
-                  <SelectItem value="completed">
-                    {statusLabels.completed}
-                  </SelectItem>
+                  {(Object.values(TaskStatus) as TaskStatus[]).map((st) => (
+                    <SelectItem key={st} value={String(st)}>
+                      {statusLabels[st]}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -281,90 +212,83 @@ export default function TaskEditDialog({
             <div className="space-y-2">
               <Label>Priorytet</Label>
               <Select
-                value={formData.priority}
-                onValueChange={(value: Task["priority"]) =>
-                  setFormData({ ...formData, priority: value })
+                value={String(formData.priority)}
+                onValueChange={(value: string) =>
+                  setFormData({ ...formData, priority: Number(value) })
                 }
               >
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue>
+                    <Badge
+                      variant="secondary"
+                      className={priorityColors[formData.priority]}
+                    >
+                      {priorityLabels[formData.priority]}
+                    </Badge>
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">
-                    <div className="flex items-center gap-2">
+                  {[1, 2, 3].map((p) => (
+                    <SelectItem key={p} value={String(p)}>
                       <Badge
                         variant="secondary"
-                        className={priorityColors.low}
+                        className={priorityColors[p]}
                       >
-                        {priorityLabels.low}
+                        {priorityLabels[p]}
                       </Badge>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="medium">
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant="secondary"
-                        className={priorityColors.medium}
-                      >
-                        {priorityLabels.medium}
-                      </Badge>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="high">
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant="secondary"
-                        className={priorityColors.high}
-                      >
-                        {priorityLabels.high}
-                      </Badge>
-                    </div>
-                  </SelectItem>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
 
+          {/* Assignees & Due Date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Assignees */}
             <div className="space-y-2">
               <Label>Przypisane osoby</Label>
               <div className="space-y-3">
                 <div className="flex flex-wrap gap-2">
-                  {selectedAssignees.map((assignee) => (
-                    <div
-                      key={assignee.id}
-                      className="flex items-center gap-2 p-2 border rounded-md bg-gray-50 dark:bg-gray-800"
-                    >
-                      <Avatar className="w-6 h-6">
-                        {assignee.avatarUrl ? (
-                          <AvatarImage
-                            src={assignee.avatarUrl}
-                            alt={assignee.name}
-                          />
-                        ) : (
-                          <AvatarFallback className="text-xs">
-                            {assignee.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")
-                              .toUpperCase()}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                      <span className="text-sm font-medium">
-                        {assignee.name}
-                      </span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-4 w-4 p-0 hover:bg-red-100 dark:hover:bg-red-900"
-                        onClick={() => removeAssignee(assignee.id)}
+                  {selectedAssignees.map((uid) => {
+                    const user = availableUsers.find((u) => u.id === uid);
+                    if (!user) return null;
+                    return (
+                      <div
+                        key={uid}
+                        className="flex items-center gap-2 p-2 border rounded-md bg-gray-50 dark:bg-gray-800"
                       >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  ))}
+                        <Avatar className="w-6 h-6">
+                          {user.avatarUrl ? (
+                            <AvatarImage
+                              src={user.avatarUrl}
+                              alt={user.name}
+                            />
+                          ) : (
+                            <AvatarFallback className="text-xs">
+                              {user.name
+                                .split(" ")
+                                .map((w) => w[0])
+                                .join("")
+                                .toUpperCase()}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                        <span className="text-sm font-medium">
+                          {user.name}
+                        </span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 p-0 hover:bg-red-100 dark:hover:bg-red-900"
+                          onClick={() => removeAssignee(uid)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 <Popover
@@ -390,11 +314,14 @@ export default function TaskEditDialog({
                             key={user.id}
                             className="flex items-center space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
                           >
-                            <Checkbox
-                              id={`user-${user.id}`}
+                            <input
+                              type="checkbox"
                               checked={isUserAssigned(user.id)}
-                              onCheckedChange={(checked) =>
-                                handleAssigneeToggle(user, checked as boolean)
+                              onChange={(e) =>
+                                handleAssigneeToggle(
+                                  user.id,
+                                  e.target.checked
+                                )
                               }
                             />
                             <Avatar className="w-8 h-8">
@@ -407,7 +334,7 @@ export default function TaskEditDialog({
                                 <AvatarFallback>
                                   {user.name
                                     .split(" ")
-                                    .map((n) => n[0])
+                                    .map((w) => w[0])
                                     .join("")
                                     .toUpperCase()}
                                 </AvatarFallback>
@@ -432,6 +359,7 @@ export default function TaskEditDialog({
               </div>
             </div>
 
+            {/* Due Date */}
             <div className="space-y-2">
               <Label htmlFor="due-date">Termin wykonania</Label>
               <Popover>
@@ -459,7 +387,7 @@ export default function TaskEditDialog({
             </div>
           </div>
 
-          {/* Updated Section Input */}
+          {/* Section */}
           <div className="space-y-2">
             <Label htmlFor="task-section">Sekcja</Label>
             <Select
@@ -469,30 +397,21 @@ export default function TaskEditDialog({
               }
             >
               <SelectTrigger id="task-section" className="w-full">
-                <SelectValue placeholder="Wybierz sekcję">
-                  {currentSection ? (
-                    <div className="flex items-center gap-2">
-                      {currentSection.icon}
-                      <span>{currentSection.title}</span>
-                    </div>
-                  ) : (
-                    "Wybierz sekcję"
-                  )}
+                <SelectValue>
+                  {currentSection?.name || "Wybierz sekcję"}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {sections.map((section) => (
-                  <SelectItem key={section.id} value={section.id}>
-                    <div className="flex items-center gap-2">
-                      {section.icon}
-                      <span>{section.title}</span>
-                    </div>
+                {sections.map((sec) => (
+                  <SelectItem key={sec.id} value={sec.id}>
+                    {sec.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
+          {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="task-description">Opis zadania</Label>
             <Textarea
@@ -512,7 +431,9 @@ export default function TaskEditDialog({
                 Anuluj
               </Button>
             </DialogClose>
-            <Button type="submit">Zapisz zmiany</Button>
+            <Button type="submit">
+              {task ? "Zapisz zmiany" : "Utwórz zadanie"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

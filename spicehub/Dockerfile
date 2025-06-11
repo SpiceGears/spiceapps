@@ -10,7 +10,7 @@ COPY spicehub/ .
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install --legacy-peer-deps
+RUN npm i
 
 # Copy rest of the application
 # Build the Next.js application

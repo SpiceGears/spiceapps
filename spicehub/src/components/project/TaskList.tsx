@@ -1,300 +1,364 @@
-"use client"
+// components/project/TaskList.tsx
+"use client";
 
-import { useState } from "react"
-import { Search, Plus, Clock, Activity, CheckCircle } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react";
+import { Search, Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
-  SelectContent,
-  SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { TaskSection } from "./TaskSection"
-import { TaskCreateDialog } from "./TaskCreateDialog"
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import { TaskSection } from "./TaskSection";
+import { TaskCreateDialog } from "./TaskCreateDialog";
+import { getBackendUrl } from "@/app/serveractions/backend-url";
+import { getCookie } from "typescript-cookie";
+import {
+  Task,
+  TaskStatus,
+  Section as SectionModel,
+} from "@/models/Task";
 
-type Assignee = {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-  email?: string;
-};
-
-type Task = {
-  id: string
-  title: string
-  description?: string
-  status: "todo" | "in-progress" | "completed"
-  completed: boolean
-  priority: "low" | "medium" | "high"
-  assignees: Assignee[];
-  dueDate?: string
-  createdDate: string
-  section: string
-}
-
-type Section = {
-  id: string
-  title: string
-  icon: React.ReactNode
-  color: string
-}
+type NewTaskPayload = Omit<
+  Task,
+  | "id"
+  | "created"
+  | "finished"
+  | "percentage"
+  | "creator"
+  | "scopesRequired"
+  | "dependencies"
+> & { sectionId: string };
 
 interface TaskListProps {
-  tasks: Task[]
-  onToggleCompletion: (taskId: string) => void
-  onUpdateStatus: (taskId: string, newStatus: Task["status"]) => void
-  onMoveToSection: (taskId: string, newSection: string) => void
-  onDeleteTasks?: (taskIds: string[]) => void
-  onCreateTask?: (task: Omit<Task, "id" | "createdDate">) => void
+  tasks: Task[];
+  projectId: string;
+  onToggleCompletion: (taskId: string) => void;
+  onUpdateStatus: (taskId: string, newStatus: TaskStatus) => void;
+  onMoveToSection: (taskId: string, newSectionId: string) => void;
+  onDeleteTasks?: (taskIds: string[]) => void;
+  onCreateTask?: (task: NewTaskPayload) => void;
 }
 
 export function TaskList({
   tasks,
+  projectId,
   onToggleCompletion,
   onUpdateStatus,
   onMoveToSection,
   onDeleteTasks,
   onCreateTask,
 }: TaskListProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedPriority, setSelectedPriority] = useState<string>("all")
-  const [selectedAssignee, setSelectedAssignee] = useState<string>("all")
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  
-  // State for managing sections
-  const [sections, setSections] = useState<Section[]>([
-    {
-      id: "todo",
-      title: "Do zrobienia",
-      icon: <Clock className="h-4 w-4 text-orange-500" />,
-      color: "orange"
-    },
-    {
-      id: "in-progress",
-      title: "W trakcie",
-      icon: <Activity className="h-4 w-4 text-blue-500" />,
-      color: "blue"
-    },
-    {
-      id: "completed",
-      title: "Ukończone",
-      icon: <CheckCircle className="h-4 w-4 text-green-500" />,
-      color: "green"
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPriority, setSelectedPriority] = useState<
+    "all" | "high" | "medium" | "low"
+  >("all");
+  const [selectedAssignee, setSelectedAssignee] = useState<string>("all");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [sections, setSections] = useState<SectionModel[]>([]);
+
+  // Fetch sections
+  useEffect(() => {
+    async function fetchSections() {
+      try {
+        const backend = await getBackendUrl();
+        const token = getCookie("accessToken");
+        const res = await fetch(
+          `${backend}/api/project/${projectId}/getSections`,
+          { headers: token ? { Authorization: token } : {} }
+        );
+        if (!res.ok) throw new Error("Failed to fetch sections");
+        const data: SectionModel[] = await res.json();
+        // sanitize tasks = null → []
+        const sanitized = data.map((sec) => ({
+          ...sec,
+          tasks: Array.isArray(sec.tasks) ? sec.tasks : [],
+        }));
+        setSections(sanitized);
+      } catch (e) {
+        console.error(e);
+      }
     }
-  ])
+    fetchSections();
+  }, [projectId]);
 
-  // Filter and search logic
-  const filteredTasks = tasks.filter((task) => {
-    const matchesSearch = task.title
+  // Fetch tasks (if needed for future logic)
+  useEffect(() => {
+    async function fetchTasksData() {
+      try {
+        const backend = await getBackendUrl();
+        const token = getCookie("accessToken");
+        const res = await fetch(
+          `${backend}/api/project/${projectId}/getTasks`,
+          { headers: token ? { Authorization: token } : {} }
+        );
+        if (!res.ok) throw new Error("Failed to fetch tasks");
+        const data: Task[] = await res.json();
+        // sanitize tasks = null → []
+        data.map((task) => ({
+          ...task,
+          scopesRequired: Array.isArray(task.scopesRequired)
+            ? task.scopesRequired
+            : [],
+          dependencies: Array.isArray(task.dependencies)
+            ? task.dependencies
+            : [],
+          assignedUsers: Array.isArray(task.assignedUsers)
+            ? task.assignedUsers
+            : [],
+        }));
+        // You can set state here if needed
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    fetchTasksData();
+  }, [projectId]);
+
+  // filter incoming tasks prop
+  const filteredTasks = tasks.filter((t) => {
+    const matchesName = t.name
       .toLowerCase()
-      .includes(searchQuery.toLowerCase())
-    const matchesPriority =
-      selectedPriority === "all" || task.priority === selectedPriority
+      .includes(searchQuery.toLowerCase());
+    const matchesPri =
+      selectedPriority === "all" ||
+      (selectedPriority === "high" && t.priority === 3) ||
+      (selectedPriority === "medium" && t.priority === 2) ||
+      (selectedPriority === "low" && t.priority === 1);
     const matchesAssignee =
-      selectedAssignee === "all" ||
-      task.assignees.some((assignee) => assignee.name === selectedAssignee)
+      selectedAssignee === "all" || t.assignedUsers.includes(selectedAssignee);
+    return matchesName && matchesPri && matchesAssignee;
+  });
 
-    return matchesSearch && matchesPriority && matchesAssignee
-  })
+  const getTasksForSection = (sectionId: string): Task[] => {
+    const sec = sections.find((s) => s.id === sectionId);
+    if (!sec) return [];
+    const list = Array.isArray(sec.tasks) ? sec.tasks : [];
+    return list.filter((t) => filteredTasks.some((ft) => ft.id === t.id));
+  };
 
-  // Group tasks by section
-  const getTasksForSection = (sectionId: string) => {
-    return filteredTasks.filter((task) => task.section === sectionId)
-  }
-
-  // Drag and drop handlers
+  // drag & drop
   const handleDragStart = (e: React.DragEvent, taskId: string) => {
-    e.dataTransfer.setData("text/plain", taskId)
-    e.dataTransfer.effectAllowed = "move"
-  }
-
+    e.dataTransfer.setData("text/plain", taskId);
+    e.dataTransfer.effectAllowed = "move";
+  };
   const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = "move"
-  }
-
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
   const handleDrop = (
     e: React.DragEvent,
-    newSection: string,
-    dropZoneElement: HTMLElement
+    newSectionId: string,
+    dropZone: HTMLElement
   ) => {
-    e.preventDefault()
-    const taskId = e.dataTransfer.getData("text/plain")
-
-    if (taskId) {
-      onMoveToSection(taskId, newSection)
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData("text/plain");
+    const fromSec = sections.find(
+      (s) => Array.isArray(s.tasks) && s.tasks.some((t) => t.id === taskId)
+    );
+    if (taskId && fromSec) {
+      onMoveToSection(taskId, newSectionId);
+      setSections((secs) =>
+        secs.map((sec) => {
+          const oldTasks = Array.isArray(sec.tasks) ? sec.tasks : [];
+          let newTasks = oldTasks.filter((t) => t.id !== taskId);
+          if (sec.id === newSectionId) {
+            const moved = (fromSec.tasks || []).filter((t) => t.id === taskId);
+            newTasks = [...newTasks, ...moved];
+          }
+          return { ...sec, tasks: newTasks };
+        })
+      );
     }
-
-    dropZoneElement.classList.remove("drag-over")
-  }
-
+    dropZone.classList.remove("drag-over");
+  };
   const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault()
-    const element = e.currentTarget as HTMLElement
-    element.classList.add("drag-over")
-  }
-
+    e.currentTarget.classList.add("drag-over");
+  };
   const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault()
-    const element = e.currentTarget as HTMLElement
-    const rect = element.getBoundingClientRect()
-    const x = e.clientX
-    const y = e.clientY
-
-    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
-      element.classList.remove("drag-over")
+    const el = e.currentTarget as HTMLElement;
+    const r = el.getBoundingClientRect();
+    if (
+      e.clientX < r.left ||
+      e.clientX > r.right ||
+      e.clientY < r.top ||
+      e.clientY > r.bottom
+    ) {
+      el.classList.remove("drag-over");
     }
-  }
+  };
 
-  // Section management functions
-  const handleRenameSection = (sectionId: string, newTitle: string) => {
-    setSections(prev => 
-      prev.map(section => 
-        section.id === sectionId 
-          ? { ...section, title: newTitle }
-          : section
-      )
-    )
-  }
-
-  const handleDeleteSection = (sectionId: string) => {
-    setSections(prev => prev.filter(section => section.id !== sectionId))
-    
-    const tasksToDelete = tasks
-      .filter(task => task.section === sectionId)
-      .map(task => task.id)
-    
-    if (tasksToDelete.length > 0 && onDeleteTasks) {
-      onDeleteTasks(tasksToDelete)
+  // section CRUD
+  const handleRenameSection = async (id: string, name: string) => {
+    try {
+      const backend = await getBackendUrl();
+      const token = getCookie("accessToken");
+      const res = await fetch(
+        `${backend}/api/project/${projectId}/${id}/edit`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: token } : {}),
+          },
+          body: JSON.stringify({ name }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to rename section");
+      setSections((s) => s.map((x) => (x.id === id ? { ...x, name } : x)));
+    } catch (e) {
+      console.error(e);
     }
-  }
-
-  const handleAddSection = () => {
-    const newSectionId = `section-${Date.now()}`
-    const newSection: Section = {
-      id: newSectionId,
-      title: "Nowa kolumna",
-      icon: <Activity className="h-4 w-4 text-purple-500" />,
-      color: "purple"
+  };
+  const handleDeleteSection = (id: string) => {
+    const toDel = sections.find((s) => s.id === id)?.tasks.map((t) => t.id);
+    setSections((s) => s.filter((x) => x.id !== id));
+    if (toDel?.length && onDeleteTasks) onDeleteTasks(toDel);
+  };
+  const handleAddSection = async () => {
+    try {
+      const backend = await getBackendUrl();
+      const token = getCookie("accessToken");
+      const res = await fetch(
+        `${backend}/api/project/${projectId}/create`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: token } : {}),
+          },
+          body: JSON.stringify({ name: "Nowa kolumna" }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to create section");
+      const newSec: SectionModel = await res.json();
+      setSections((s) => [...s, { ...newSec, tasks: newSec.tasks || [] }]);
+    } catch (e) {
+      console.error(e);
     }
-    
-    setSections(prev => [...prev, newSection])
-  }
+  };
 
-  const handleCreateTask = (taskData: Omit<Task, "id" | "createdDate">) => {
+  // handle create‐task from dialog
+  const handleCreateTask = (payload: NewTaskPayload) => {
     if (onCreateTask) {
-      onCreateTask(taskData)
+      onCreateTask(payload);
+    } else {
+      const full: Task = {
+        id: `task-${Date.now()}`,
+        ...payload,
+        scopesRequired: [],
+        dependencies: [],
+        percentage: 0,
+        created: new Date(),
+        creator: "system",
+        finished: null,
+      };
+      setSections((s) =>
+        s.map((sec) =>
+          sec.id === payload.sectionId
+            ? { ...sec, tasks: [...(sec.tasks || []), full] }
+            : sec
+        )
+      );
     }
-  }
+    setIsCreateDialogOpen(false);
+  };
 
   return (
     <div className="p-6 h-full w-full">
-      <div className="flex flex-col h-full max-w-full mx-auto">
-        {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Szukaj zadań..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Select
-              value={selectedPriority}
-              onValueChange={setSelectedPriority}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Priorytet" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Wszystkie</SelectItem>
-                <SelectItem value="high">Wysoki</SelectItem>
-                <SelectItem value="medium">Średni</SelectItem>
-                <SelectItem value="low">Niski</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={selectedAssignee}
-              onValueChange={setSelectedAssignee}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Przypisany" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Wszyscy</SelectItem>
-                <SelectItem value="Janusz Kowalski">Janusz Kowalski</SelectItem>
-                <SelectItem value="Anna Nowak">Anna Nowak</SelectItem>
-                <SelectItem value="Piotr Wiśniewski">
-                  Piotr Wiśniewski
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      {/* Toolbar */}
+      <div className="flex mb-6 gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Szukaj..."
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
 
-        {/* Create Task Button */}
-        <div className="mb-6 flex">
-          <Button 
-            variant="default" 
-            className="flex items-center gap-2"
-            onClick={() => setIsCreateDialogOpen(true)}
+        <Select
+          value={selectedPriority}
+          onValueChange={(v) =>
+            setSelectedPriority(v as "all" | "high" | "medium" | "low")
+          }
+        >
+          <SelectTrigger className="w-32">
+            <SelectValue placeholder="Priorytet" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Wszystkie</SelectItem>
+            <SelectItem value="high">Wysoki</SelectItem>
+            <SelectItem value="medium">Średni</SelectItem>
+            <SelectItem value="low">Niski</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={selectedAssignee}
+          onValueChange={setSelectedAssignee}
+        >
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Przypisany" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Wszyscy</SelectItem>
+            {/* map real users here */}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Add Task */}
+      <Button
+        className="flex items-center gap-2 mb-6"
+        onClick={() => setIsCreateDialogOpen(true)}
+      >
+        <Plus className="h-4 w-4" /> Dodaj zadanie
+      </Button>
+
+      {/* Columns */}
+      <div className="flex gap-6 overflow-x-auto pb-4">
+        {sections.map((sec) => (
+          <TaskSection
+            key={sec.id}
+            sectionId={sec.id}
+            name={sec.name}
+            tasks={getTasksForSection(sec.id)}
+            sections={sections}
+            onToggleCompletion={onToggleCompletion}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onRenameSection={handleRenameSection}
+            onDeleteSection={handleDeleteSection}
+          />
+        ))}
+
+        <div className="flex-shrink-0 w-80">
+          <Button
+            variant="outline"
+            className="w-full h-16 border-dashed"
+            onClick={handleAddSection}
           >
-            <Plus className="h-4 w-4" />
-            Dodaj zadanie
+            <Plus className="h-4 w-4 mr-2" /> Dodaj kolumnę
           </Button>
-        </div>
-
-        {/* Horizontal Task Sections */}
-        <div className="flex gap-6 h-250 overflow-x-auto pb-4">
-          {sections.map((section) => (
-            <TaskSection
-              key={section.id}
-              sectionId={section.id} // Add this line
-              title={section.title}
-              tasks={getTasksForSection(section.id)}
-              sections={sections}
-              icon={section.icon}
-              onToggleCompletion={onToggleCompletion}
-              onDragStart={handleDragStart}
-              onDragOver={handleDragOver}
-              onDragEnter={handleDragEnter}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onRenameSection={handleRenameSection}
-              onDeleteSection={handleDeleteSection}
-            />
-          ))}
-
-          {/* Add Column Button */}
-          <div className="flex-shrink-0 w-80">
-            <Button
-              variant="outline"
-              className="w-full h-16 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500"
-              onClick={handleAddSection}
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Dodaj kolumnę
-            </Button>
-          </div>
         </div>
       </div>
 
-      {/* Task Create Dialog */}
+      {/* Create Dialog */}
       <TaskCreateDialog
         isOpen={isCreateDialogOpen}
         onClose={() => setIsCreateDialogOpen(false)}
         onSave={handleCreateTask}
         sections={sections}
-        defaultSection="todo"
+        defaultSection={sections[0]?.id}
       />
     </div>
-  )
+  );
 }

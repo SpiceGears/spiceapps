@@ -10,16 +10,18 @@ import {
   Archive
 } from 'lucide-react';
 import { FileItem } from '@/types';
+import { SFile } from '@/models/SFile';
 
 interface FileIconProps {
-  file: FileItem;
+  file: string;
+  isFolder: boolean;
   size?: 'small' | 'large';
 }
 
-export default function FileIcon({ file, size = 'small' }: FileIconProps) {
+export default function FileIcon({ file, isFolder, size = 'small' }: FileIconProps) {
   const iconSize = size === 'large' ? 48 : 20;
   
-  if (file.type === 'folder') {
+  if (isFolder) {
     return (
       <Folder 
         size={iconSize} 
@@ -31,16 +33,22 @@ export default function FileIcon({ file, size = 'small' }: FileIconProps) {
   const getFileIcon = (mimeType?: string) => {
     if (!mimeType) return FileText;
     
-    if (mimeType.startsWith('image/')) return Image;
-    if (mimeType.startsWith('video/')) return Film;
-    if (mimeType.startsWith('audio/')) return Music;
-    if (mimeType.includes('pdf')) return FileType;
-    if (mimeType.includes('zip') || mimeType.includes('rar')) return Archive;
+    if (mimeType.endsWith('.jpg') || 
+    mimeType.endsWith('.png') || 
+    mimeType.endsWith('.jpeg')) return Image;
+    if (mimeType.endsWith('.mp4') ||
+  mimeType.endsWith('.mkv')
+|| mimeType.endsWith('.avi')) return Film;
+    if (mimeType.startsWith('.mp3') || 
+  mimeType.endsWith('.wav') ||
+mimeType.endsWith('.ogg')) return Music;
+    if (mimeType.endsWith('pdf')) return FileType;
+    if (mimeType.endsWith('zip') || mimeType.endsWith('rar')) return Archive;
     
     return FileText;
   };
 
-  const Icon = getFileIcon(file.mimeType);
+  const Icon = getFileIcon(file);
   
   return (
     <Icon 

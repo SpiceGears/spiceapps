@@ -13,6 +13,7 @@ services:
       CRYPT_COST: "14"
       ENABLE_FILES: "yes"
       FILE_DIR: "/var/spicehub"
+      AVATAR_PATH: "/var/spicehub_avatars"
     ports:
       - "8080:8080"
       - "8081:8081"
@@ -21,6 +22,9 @@ services:
       - type: bind
         source: ./spicehub_storage
         target: /var/spicehub/
+      - type: bind
+        source: ./spicehub_avatars
+        target: /var/spicehub_avatars/
     depends_on:
       - db
     networks:

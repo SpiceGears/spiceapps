@@ -29,6 +29,7 @@ import { Project } from "@/models/Project"
 import ProjectCard from "@/components/project/ProjectCard"
 import { TaskStatus } from "@/models/Task"
 import { ProjectCardSkeleton } from "@/components/project/ProjectCardSkeleton"
+import Link from "next/link"
 
 // Helper to format dates
 function formatDate(dateString?: string | Date) {
@@ -179,9 +180,11 @@ export default function ProjectsPage() {
                 : "Stwórz swój pierwszy projekt."}
             </p>
             {!searchQuery && statusFilter === "all" && (
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                <Plus className="w-4 h-4 mr-2" /> Utwórz projekt
-              </Button>
+              <Link href="/spicelab/newProject">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Plus className="w-4 h-4 mr-2" /> Utwórz projekt
+                </Button>
+              </Link>
             )}
           </div>
         )}

@@ -155,6 +155,8 @@ namespace SpiceAPI.Controllers
 
             path = Path.Combine(StoragePath, path);
 
+            Directory.CreateDirectory(path);
+
             var filePath = Path.Combine(path, $"{id}");
 
             using var stream = new FileStream(filePath, FileMode.Create);
@@ -385,7 +387,15 @@ namespace SpiceAPI.Controllers
             path = Path.Combine(StoragePath, path);
             string[] dirs = Directory.GetDirectories(path);
 
-            return Ok(dirs);
+            List<string> propd = new List<string>();
+
+            foreach (var item in dirs)
+            {
+                var name = item.Split('/').Last();
+                propd.Add(name);
+            }
+
+            return Ok(propd);
         }
 
         [HttpGet("folders/getFiles")]
@@ -406,7 +416,14 @@ namespace SpiceAPI.Controllers
             path = Path.Combine(StoragePath, path);
             string[] dirs = Directory.GetFiles(path);
 
-            Guid[] ids = dirs.Select(Guid.Parse).ToArray();
+            List<string> properdirs = new List<String>();
+
+            foreach (var item in dirs)
+            {
+                properdirs.Add(Path.GetFileName(item));
+            }
+
+            Guid[] ids = properdirs.Select(Guid.Parse).ToArray();
 
             var files = await db.Files.Where(f => ids.Contains(f.Id)).ToListAsync();
 

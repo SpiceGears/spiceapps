@@ -78,7 +78,6 @@ export default function ProjectPage({
         setIsLoadingProject(false)
       }
     }
-
     const fetchTasksData = async () => {
       setIsLoadingTasks(true)
       try {
@@ -106,6 +105,9 @@ export default function ProjectPage({
     fetchProjectData()
     fetchTasksData()
   }, [id])
+
+  console.log("Project data:", project)
+  console.log("Tasks data:", tasks)
 
   const handleStatusUpdate = (status: string) => {
     router.push(
@@ -292,7 +294,7 @@ export default function ProjectPage({
             </TabsContent>
 
             {/* Task List Tab */}
-            {/* <TabsContent value="lista" className="h-full p-6">
+            <TabsContent value="lista" className="h-full p-6">
               {isLoadingTasks ? (
                 <div className="space-y-3">
                   {Array.from({ length: 5 }).map((_, idx) => (
@@ -308,6 +310,7 @@ export default function ProjectPage({
               ) : (
                 <TaskList
                   tasks={tasks}
+                  projectId={id}
                   onToggleCompletion={toggleTaskCompletion}
                   onUpdateStatus={updateTaskStatus}
                   onMoveToSection={moveTaskToSection}
@@ -315,7 +318,7 @@ export default function ProjectPage({
                   onCreateTask={createTask}
                 />
               )}
-            </TabsContent> */}
+            </TabsContent>
 
             {/* Dashboard Tab */}
             <TabsContent value="panel" className="h-full p-6">

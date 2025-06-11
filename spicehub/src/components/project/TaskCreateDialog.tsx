@@ -1,7 +1,7 @@
 // components/project/TaskCreateDialog.tsx
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,49 +22,17 @@ import {
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User, Flag, FolderOpen } from "lucide-react";
+import { Task, TaskStatus, Section } from "@/models/Task";
+import { getBackendUrl } from "@/app/serveractions/backend-url";
+import { getCookie } from "typescript-cookie";
 
-type Assignee = {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-  email?: string;
-};
-
-type Task = {
-  id: string;
-  title: string;
-  description?: string;
-  status: "todo" | "in-progress" | "completed";
-  completed: boolean;
-  priority: "low" | "medium" | "high";
-  assignees: Assignee[];
-  dueDate?: string;
-  createdDate: string;
-  section: string;
-};
-
-type Section = {
-  id: string;
-  title: string;
-  icon: React.ReactNode;
-  color: string;
-};
-
-interface TaskCreateDialogProps {
+export interface TaskCreateDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (task: Omit<Task, "id" | "createdDate">) => void;
+  onSave: (task: Task) => void;
   sections: Section[];
   defaultSection?: string;
 }
-
-// Mock assignees - in real app this would come from props or API
-const availableAssignees: Assignee[] = [
-  { id: "1", name: "Janusz Kowalski", email: "janusz@example.com" },
-  { id: "2", name: "Anna Nowak", email: "anna@example.com" },
-  { id: "3", name: "Piotr Wiśniewski", email: "piotr@example.com" },
-  { id: "4", name: "Maria Kowalczyk", email: "maria@example.com" },
-];
 
 export function TaskCreateDialog({
   isOpen,
@@ -73,313 +41,381 @@ export function TaskCreateDialog({
   sections,
   defaultSection,
 }: TaskCreateDialogProps) {
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    priority: "medium" as Task["priority"],
-    section: defaultSection || (sections[0]?.id || ""),
-    status: "todo" as Task["status"],
-    assignees: [] as Assignee[],
-    dueDate: "",
-  });
+  type FormData = {
+    name: string;
+    description: string;
+    priority: number;
+    status: TaskStatus;
+    sectionId: string;
+    assignedUsers: string[];
+    deadlineDate: string;
+  };
 
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    description: "",
+    priority: 2,
+    status: TaskStatus.Planned,
+    sectionId: defaultSection || sections[0]?.id || "",
+    assignedUsers: [],
+    deadlineDate: "",
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleClose = () => {
-    // Reset form
+  const resetForm = () => {
     setFormData({
-      title: "",
+      name: "",
       description: "",
-      priority: "medium",
-      section: defaultSection || (sections[0]?.id || ""),
-      status: "todo",
-      assignees: [],
-      dueDate: "",
+      priority: 2,
+      status: TaskStatus.Planned,
+      sectionId: defaultSection || sections[0]?.id || "",
+      assignedUsers: [],
+      deadlineDate: "",
     });
     setErrors({});
-    onClose();
-  };
+    // List of users who can be assigned to this task
+    const [availableAssignees, setAvailableAssignees] = useState<
+      { id: string; name: string; email: string }[]
+    >([]);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    useEffect(() => {
+      const fetchAssignees = async () => {
+        try {
+          const backend = await getBackendUrl();
+          const token = getCookie("accessToken");
+          if (!backend || !token) return;
 
-    if (!formData.title.trim()) {
-      newErrors.title = "Tytuł zadania jest wymagany";
-    }
+          // Fetch all users
+          const usersRes = await fetch(`${backend}/api/user/getAll`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+          if (!usersRes.ok) return;
+          const users = await usersRes.json();
 
-    if (!formData.section) {
-      newErrors.section = "Wybierz sekcję dla zadania";
-    }
+          // Fetch project members (users who can access this project)
+          const projectId = defaultSection; // assuming defaultSection is projectId
+          const membersRes = await fetch(`${backend}/api/project/${projectId}/members`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+          if (!membersRes.ok) return;
+          const members = await membersRes.json(); // array of user ids
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+          // Filter users who are project members
+          let filtered = users.filter((u: any) => members.includes(u.id));
 
-  const handleSave = () => {
-    if (!validateForm()) return;
+          // Exclude users already assigned to this task (if editing, not creating)
+          // For create dialog, formData.assignedUsers is empty, so this is just for safety
+          filtered = filtered.filter(
+            (u: any) => !formData.assignedUsers.includes(u.id)
+          );
 
-    const newTask: Omit<Task, "id" | "createdDate"> = {
-      title: formData.title.trim(),
-      description: formData.description.trim() || undefined,
-      priority: formData.priority,
-      section: formData.section,
-      status: formData.status,
-      assignees: formData.assignees,
-      dueDate: formData.dueDate || undefined,
-      completed: false,
+          setAvailableAssignees(filtered);
+        } catch (err) {
+          setAvailableAssignees([]);
+        }
+      };
+
+      fetchAssignees();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [defaultSection, formData.assignedUsers]);
+
+    const handleClose = () => {
+      resetForm();
+      onClose();
     };
 
-    onSave(newTask);
-    handleClose();
-  };
+    const validate = () => {
+      const errs: Record<string, string> = {};
+      if (!formData.name.trim()) errs.name = "Nazwa zadania jest wymagana";
+      if (!formData.sectionId) errs.sectionId = "Wybierz sekcję";
+      setErrors(errs);
+      return Object.keys(errs).length === 0;
+    };
 
-  const handleAssigneeToggle = (assignee: Assignee) => {
-    setFormData(prev => ({
-      ...prev,
-      assignees: prev.assignees.find(a => a.id === assignee.id)
-        ? prev.assignees.filter(a => a.id !== assignee.id)
-        : [...prev.assignees, assignee]
-    }));
-  };
+    const handleSave = async () => {
+      if (!validate()) return;
+      const payload = {
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        status: formData.status,
+        priority: formData.priority,
+        assignedUsers: formData.assignedUsers,
+        deadlineDate: formData.deadlineDate ? new Date(formData.deadlineDate) : null,
+        sectionId: formData.sectionId,
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
-      case "medium":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400";
-      case "low":
-        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
-    }
-  };
+      };
 
-  const getPriorityLabel = (priority: string) => {
-    switch (priority) {
-      case "high": return "Wysoki";
-      case "medium": return "Średni";
-      case "low": return "Niski";
-      default: return "Średni";
-    }
-  };
+      try {
+        const res = await fetch(
+          `/api/project/${defaultSection}/${formData.sectionId}/create`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        );
+        if (!res.ok) throw new Error("Błąd podczas tworzenia zadania");
+        const createdTask: Task = await res.json();
+        onSave(createdTask);
+        handleClose();
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
-  return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Dodaj nowe zadanie</DialogTitle>
-        </DialogHeader>
+    const toggleAssignee = (id: string) => {
+      setFormData((f) => ({
+        ...f,
+        assignedUsers: f.assignedUsers.includes(id)
+          ? f.assignedUsers.filter((u) => u !== id)
+          : [...f.assignedUsers, id],
+      }));
+    };
 
-        <div className="space-y-6 py-4">
-          {/* Title */}
-          <div className="space-y-2">
-            <Label htmlFor="title">
-              Tytuł zadania <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="title"
-              placeholder="Wprowadź tytuł zadania..."
-              value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              className={errors.title ? "border-red-500" : ""}
-            />
-            {errors.title && (
-              <p className="text-sm text-red-500">{errors.title}</p>
-            )}
-          </div>
+    const getPriorityColor = (p: number) => {
+      switch (p) {
+        case 3:
+          return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
+        case 2:
+          return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400";
+        case 1:
+          return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
+        default:
+          return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
+      }
+    };
+    const getPriorityLabel = (p: number) =>
+      p === 3 ? "Wysoki" : p === 2 ? "Średni" : "Niski";
 
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description">Opis</Label>
-            <Textarea
-              id="description"
-              placeholder="Dodaj opis zadania..."
-              value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              rows={3}
-            />
-          </div>
-
-          {/* Section Selection */}
-          <div className="space-y-2">
-            <Label>
-              Sekcja <span className="text-red-500">*</span>
-            </Label>
-            <Select
-              value={formData.section}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, section: value }))}
-            >
-              <SelectTrigger className={errors.section ? "border-red-500" : ""}>
-                <SelectValue placeholder="Wybierz sekcję">
-                  {formData.section && (
-                    <div className="flex items-center gap-2">
-                      <FolderOpen className="h-4 w-4" />
-                      {sections.find(s => s.id === formData.section)?.title}
-                    </div>
-                  )}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {sections.map((section) => (
-                  <SelectItem key={section.id} value={section.id}>
-                    <div className="flex items-center gap-2">
-                      {section.icon}
-                      {section.title}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.section && (
-              <p className="text-sm text-red-500">{errors.section}</p>
-            )}
-          </div>
-
-          {/* Priority and Status Row */}
-          <div className="grid grid-cols-2 gap-4">
-            {/* Priority */}
+    return (
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Dodaj nowe zadanie</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            {/* Name */}
             <div className="space-y-2">
-              <Label>Priorytet</Label>
-              <Select
-                value={formData.priority}
-                onValueChange={(value: Task["priority"]) => 
-                  setFormData(prev => ({ ...prev, priority: value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue>
-                    <div className="flex items-center gap-2">
-                      <Flag className="h-4 w-4" />
-                      <Badge variant="outline" className={getPriorityColor(formData.priority)}>
-                        {getPriorityLabel(formData.priority)}
-                      </Badge>
-                    </div>
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="high">
-                    <div className="flex items-center gap-2">
-                      <Flag className="h-4 w-4 text-red-500" />
-                      <Badge variant="outline" className={getPriorityColor("high")}>
-                        Wysoki
-                      </Badge>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="medium">
-                    <div className="flex items-center gap-2">
-                      <Flag className="h-4 w-4 text-yellow-500" />
-                      <Badge variant="outline" className={getPriorityColor("medium")}>
-                        Średni
-                      </Badge>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="low">
-                    <div className="flex items-center gap-2">
-                      <Flag className="h-4 w-4 text-green-500" />
-                      <Badge variant="outline" className={getPriorityColor("low")}>
-                        Niski
-                      </Badge>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Status */}
-            <div className="space-y-2">
-              <Label>Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: Task["status"]) => 
-                  setFormData(prev => ({ ...prev, status: value }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todo">Do zrobienia</SelectItem>
-                  <SelectItem value="in-progress">W trakcie</SelectItem>
-                  <SelectItem value="completed">Ukończone</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Due Date */}
-          <div className="space-y-2">
-            <Label htmlFor="dueDate">Termin wykonania</Label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Label htmlFor="name">
+                Nazwa zadania <span className="text-red-500">*</span>
+              </Label>
               <Input
-                id="dueDate"
-                type="date"
-                value={formData.dueDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, dueDate: e.target.value }))}
-                className="pl-10"
+                id="name"
+                placeholder="Wprowadź nazwę..."
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData((f) => ({ ...f, name: e.target.value }))
+                }
+                className={errors.name ? "border-red-500" : ""}
+              />
+              {errors.name && (
+                <p className="text-sm text-red-500">{errors.name}</p>
+              )}
+            </div>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <Label htmlFor="description">Opis</Label>
+              <Textarea
+                id="description"
+                placeholder="Dodaj opis..."
+                rows={3}
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData((f) => ({ ...f, description: e.target.value }))
+                }
               />
             </div>
-          </div>
 
-          {/* Assignees */}
-          <div className="space-y-2">
-            <Label>Przypisane osoby</Label>
+            {/* Section */}
             <div className="space-y-2">
-              {availableAssignees.map((assignee) => (
-                <div
-                  key={assignee.id}
-                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                    formData.assignees.find(a => a.id === assignee.id)
-                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                      : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                  }`}
-                  onClick={() => handleAssigneeToggle(assignee)}
+              <Label>
+                Sekcja <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={formData.sectionId}
+                onValueChange={(v) =>
+                  setFormData((f) => ({ ...f, sectionId: v }))
+                }
+              >
+                <SelectTrigger
+                  className={errors.sectionId ? "border-red-500" : ""}
                 >
-                  <div className="flex items-center gap-2 flex-1">
-                    <User className="h-4 w-4 text-gray-400" />
-                    <div>
-                      <p className="font-medium text-sm">{assignee.name}</p>
-                      <p className="text-xs text-gray-500">{assignee.email}</p>
-                    </div>
-                  </div>
-                  {formData.assignees.find(a => a.id === assignee.id) && (
-                    <Badge variant="secondary">Wybrane</Badge>
-                  )}
-                </div>
-              ))}
+                  <SelectValue placeholder="Wybierz sekcję" />
+                </SelectTrigger>
+                <SelectContent>
+                  {sections.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      <div className="flex items-center gap-2">
+                        <FolderOpen className="h-4 w-4" />
+                        {s.name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.sectionId && (
+                <p className="text-sm text-red-500">{errors.sectionId}</p>
+              )}
             </div>
-          </div>
 
-          {/* Selected Assignees Summary */}
-          {formData.assignees.length > 0 && (
-            <div className="space-y-2">
-              <Label>Wybrane osoby ({formData.assignees.length})</Label>
-              <div className="flex flex-wrap gap-2">
-                {formData.assignees.map((assignee) => (
-                  <Badge
-                    key={assignee.id}
-                    variant="secondary"
-                    className="cursor-pointer hover:bg-red-100 hover:text-red-800 dark:hover:bg-red-900/20 dark:hover:text-red-400"
-                    onClick={() => handleAssigneeToggle(assignee)}
-                  >
-                    {assignee.name} ×
-                  </Badge>
-                ))}
+            {/* Priority & Status */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Priority */}
+              <div className="space-y-2">
+                <Label>Priorytet</Label>
+                <Select
+                  value={formData.priority.toString()}
+                  onValueChange={(v) =>
+                    setFormData((f) => ({ ...f, priority: Number(v) }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue>
+                      <div className="flex items-center gap-2">
+                        <Flag className="h-4 w-4" />
+                        <Badge
+                          variant="outline"
+                          className={getPriorityColor(formData.priority)}
+                        >
+                          {getPriorityLabel(formData.priority)}
+                        </Badge>
+                      </div>
+                    </SelectValue>
+                  </SelectTrigger>
+                  {[1, 2, 3].map((val) => (
+                    <SelectItem key={val} value={val.toString()}>
+                      <div className="flex items-center gap-2">
+                        <Flag className="h-4 w-4" />
+                        <Badge
+                          variant="outline"
+                          className={getPriorityColor(val)}
+                        >
+                          {getPriorityLabel(val)}
+                        </Badge>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </Select>
+              </div>
+
+              {/* Status */}
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select
+                  value={formData.status.toString()}
+                  onValueChange={(v) =>
+                    setFormData((f) => ({
+                      ...f,
+                      status: Number(v) as TaskStatus,
+                    }))
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={TaskStatus.Planned.toString()}>
+                      Planowane
+                    </SelectItem>
+                    <SelectItem value={TaskStatus.OnTrack.toString()}>
+                      W trakcie
+                    </SelectItem>
+                    <SelectItem value={TaskStatus.Finished.toString()}>
+                      Ukończone
+                    </SelectItem>
+                    <SelectItem value={TaskStatus.Problem.toString()}>
+                      Problem
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          )}
-        </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
-            Anuluj
-          </Button>
-          <Button onClick={handleSave}>
-            Dodaj zadanie
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
+            {/* Deadline */}
+            <div className="space-y-2">
+              <Label htmlFor="deadlineDate">Termin wykonania</Label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="deadlineDate"
+                  type="date"
+                  className="pl-10"
+                  value={formData.deadlineDate}
+                  onChange={(e) =>
+                    setFormData((f) => ({ ...f, deadlineDate: e.target.value }))
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Assignees */}
+            <div className="space-y-2">
+              <Label>Przypisane osoby</Label>
+              <div className="space-y-2">
+                {availableAssignees.map((u) => {
+                  const sel = formData.assignedUsers.includes(u.id);
+                  return (
+                    <div
+                      key={u.id}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${sel
+                          ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                          : "border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                        }`}
+                      onClick={() => toggleAssignee(u.id)}
+                    >
+                      <div className="flex items-center gap-2 flex-1">
+                        <User className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <p className="font-medium text-sm">{u.name}</p>
+                          <p className="text-xs text-gray-500">{u.email}</p>
+                        </div>
+                      </div>
+                      {sel && <Badge variant="secondary">Wybrane</Badge>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Selected Assignees */}
+            {formData.assignedUsers.length > 0 && (
+              <div className="space-y-2">
+                <Label>
+                  Wybrane osoby ({formData.assignedUsers.length})
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {formData.assignedUsers.map((id) => {
+                    const u = availableAssignees.find((x) => x.id === id)!;
+                    return (
+                      <Badge
+                        key={id}
+                        variant="secondary"
+                        className="cursor-pointer hover:bg-red-100 hover:text-red-800 dark:hover:bg-red-900/20 dark:hover:text-red-400"
+                        onClick={() => toggleAssignee(id)}
+                      >
+                        {u.name} ×
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleClose}>
+              Anuluj
+            </Button>
+            <Button onClick={handleSave}>Dodaj zadanie</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 }
