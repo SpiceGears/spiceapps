@@ -15,7 +15,7 @@ namespace SpiceAPI.Controllers
     [Controller]
     [ApiController]
     [Route("api/user")]
-    public class UserController : Controller
+    public partial class UserController : Controller
     {
         private readonly Token tc;
         private readonly DataContext db;
