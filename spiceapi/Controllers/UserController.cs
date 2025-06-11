@@ -19,9 +19,20 @@ namespace SpiceAPI.Controllers
     {
         private readonly Token tc;
         private readonly DataContext db;
+        private bool AvatarsEnabled = false;
+        private string AvatarPath;
 
         public UserController(Token token, DataContext context)
-        { this.tc = token; db = context; }
+        { this.tc = token; db = context;
+            var ap = Environment.GetEnvironmentVariable("AVATAR_PATH");
+            if (string.IsNullOrWhiteSpace(ap)) AvatarsEnabled = false;
+            else 
+            {
+                AvatarsEnabled = true;
+                AvatarPath = ap;
+                Directory.CreateDirectory(AvatarPath);
+            }
+        }
 
 
 
