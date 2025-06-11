@@ -21,10 +21,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { RolePicker, Role } from "@/components/admin/RolePicker";
+import { RolePicker} from "@/components/admin/RolePicker";
 import { UserInfo } from "@/models/User";
 import { getBackendUrl } from "../serveractions/backend-url";
 import { getCookie } from "typescript-cookie";
+import { Switch } from "@/components/ui/switch";
+import { Role } from "@/models/User";
 
 
 export default function Admin() {
@@ -301,9 +303,9 @@ export default function Admin() {
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="flex items-center gap-1">
-                      <span className="text-sm text-gray-500">
+                      {/* <span className="text-sm text-gray-500">
                         {role.memberCount}
-                      </span>
+                      </span> */}
                       <Avatar className="h-4 w-4">
                         <AvatarFallback className="text-xs">U</AvatarFallback>
                       </Avatar>
@@ -372,23 +374,28 @@ export default function Admin() {
                     <Card className="p-4">
                       <div className="space-y-4">
                         {[
-                          "Tworzenie projektów",
-                          "Edycja użytkowników",
-                          "Zarządzanie rolami",
+                          { key: "projects.show", label: "Dostęp do projektów ogólnie" },
+                          { key: "projects.add", label: "Dodawanie i edycja projektów" },
+                          { key: "projects.delete", label: "Usuwanie projektów" },
+                          { key: "roles.list", label: "Wyświetlanie listy ról" },
+                          { key: "roles.manage", label: "Zarządzanie rolami" },
+                          { key: "roles.assign", label: "Ustawianie ról" },
+                          { key: "tasks.add", label: "Dodawanie i edycja zadań" },
+                          { key: "tasks.override", label: "Edycja zadań innych użytkowników" },
+                          { key: "users.unapproved", label: "Wyświetlanie i zatwierdzanie niezatwierdzonych użytkowników" },
+                          { key: "admin", label: "Uprawnienia administratora (wszystkie akcje dozwolone)" },
                         ].map((permission) => (
-                          <div
-                            key={permission}
-                            className="flex items-center justify-between"
-                          >
-                            <span>{permission}</span>
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4"
-                              defaultChecked={
-                                permission === "Tworzenie projektów"
-                              }
-                            />
-                          </div>
+                            <div
+                              key={permission.key}
+                              className="flex items-center justify-between"
+                            >
+                              <span>{permission.label}</span>
+                              <Switch
+                              checked={currentRole?.scopes?.includes(permission.key) ?? false}
+                              // onCheckedChange={...}
+                              id={`perm-${permission.key}`}
+                              />
+                            </div>
                         ))}
                       </div>
                     </Card>
