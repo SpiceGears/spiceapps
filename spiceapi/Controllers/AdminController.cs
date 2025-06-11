@@ -30,7 +30,7 @@ namespace SpiceAPI.Controllers
                 User? user = await tc.RetrieveUser(Authorization);
                 if (user == null) { return Forbid("You're trying to do action as null-user"); }
                 
-                Log.Warning(Newtonsoft.Json.JsonConvert.SerializeObject(user));
+                Log.Warning("Executing getUnapprovedUsers as {@User}", user);
                 
                 if (user.GetAllPermissions(db).Contains("admin") || 
                     user.GetAllPermissions(db).Contains("users.unapproved")) 

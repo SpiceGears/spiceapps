@@ -43,7 +43,19 @@ namespace SpiceAPI.Auth
         public bool VerifyToken(string b64token)
         {
             // Split the token into its components: the base64-encoded token and the signature
-            string[] token = b64token.Split('.');
+            string[] token;
+            try
+            {
+                token = b64token.Split('.');
+                // Accessing token[0] and token[1] below, so check length
+                if (token.Length < 2)
+                    throw new IndexOutOfRangeException("Token does not contain both payload and signature.");
+            }
+            catch (IndexOutOfRangeException e)
+            {
+                Log.Logger.Error(e, "Token format is invalid: {Token}", b64token);
+                return false;
+            }
 
 
 

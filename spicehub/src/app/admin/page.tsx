@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,44 +22,99 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { RolePicker, Role } from "@/components/admin/RolePicker";
+import { UserInfo } from "@/models/User";
+import { getBackendUrl } from "../serveractions/backend-url";
+import { getCookie } from "typescript-cookie";
 
-interface User {
-  id: number;
-  name: string;
-  roles: string[];
-  email: string;
-}
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState<"members" | "roles">("members");
+  const [activeTab, setActiveTab] = useState<"members" | "roles" | "approvals">("members");
   const [isEditingRole, setIsEditingRole] = useState(false);
   const [isAddingRole, setIsAddingRole] = useState(false);
   const [isDeletingRole, setIsDeletingRole] = useState(false);
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [currentRole, setCurrentRole] = useState<Role | null>(null);
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
   const [assignedRoles, setAssignedRoles] = useState<string[]>([]);
+  const [users, setUsers] = useState<UserInfo[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [unapprovedUsers, setUnapprovedUsers] = useState<UserInfo[]>([]);
 
-  const roles: Role[] = [
-    { name: "Administrator", memberCount: 5 },
-    { name: "Moderator", memberCount: 3 },
-    { name: "Użytkownik", memberCount: 12 },
-  ];
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const backend = await getBackendUrl();
+      if (!backend) {
+        console.error("No backend URL found");
+        return;
+      }
+      const token = getCookie("accessToken");
 
-  const users: User[] = [
-    {
-      id: 1,
-      name: "Jan Kowalski",
-      roles: ["Administrator"],
-      email: "jan.kowalski@example.com",
-    },
-    {
-      id: 2,
-      name: "Anna Nowak",
-      roles: ["Moderator"],
-      email: "anna.nowak@example.com",
-    }
-  ];
+      const res = await fetch(`${backend}/api/user/getAll`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: token } : {}),
+        },
+      });
+
+      if (res.ok) {
+        const data: UserInfo[] = await res.json();
+        setUsers(data);
+      } else {
+        console.error("Failed to fetch users");
+      }
+    };
+
+    const fetchRoles = async () => {
+      const backend = await getBackendUrl();
+      if (!backend) {
+        console.error("No backend URL found");
+        return;
+      }
+      const token = getCookie("accessToken");
+      const res = await fetch(`${backend}/api/roles`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: token } : {}),
+        },
+      });
+
+      if (res.ok) {
+        const data: Role[] = await res.json();
+        setRoles(data);
+      } else {
+        console.error("Failed to fetch roles");
+      }
+    };
+
+    const fetchUnapprovedUsers = async () => {
+      const backend = await getBackendUrl();
+      if (!backend) {
+        console.error("No backend URL found");
+        return;
+      }
+      const token = getCookie("accessToken");
+      const res = await fetch(`${backend}/api/admin/getUnapprovedUsers`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: token } : {}),
+        },
+      });
+
+      if (res.ok) {
+        const data: UserInfo[] = await res.json();
+        setUnapprovedUsers(data);
+      } else {
+        console.error("Failed to fetch unapproved users");
+      }
+    };
+
+    fetchUsers();
+    fetchRoles();
+    fetchUnapprovedUsers();
+  }, []);
 
   return (
     <div className="flex h-full w-full justify-center">
@@ -84,6 +139,16 @@ export default function Admin() {
             >
               Role
             </button>
+            <button
+              onClick={() => setActiveTab("approvals")}
+              className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-md ${
+                activeTab === "approvals"
+                  ? "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              Zatwierdzenia
+            </button>
           </nav>
         </div>
       </div>
@@ -105,22 +170,22 @@ export default function Admin() {
                   >
                     <div className="flex items-center gap-3">
                       <Avatar>
-                        <AvatarFallback>{user.name[0]}</AvatarFallback>
-                        <AvatarImage
+                        <AvatarFallback>{user.firstName[0]}</AvatarFallback>
+                        {/* <AvatarImage
                           src={`https://ui-avatars.com/api/?name=${user.name
                             .replace(" ", "")
                             .trim()}&background=random&color=fff`}
-                        />
+                        /> */}
                       </Avatar>
                       <div>
-                        <p className="font-medium">{user.name}</p>
+                        <p className="font-medium">{user.firstName} {user.lastName}</p>
                         <p className="text-sm text-gray-500">Użytkownik</p>
                       </div>
                     </div>
                     <Button
                       onClick={() => {
                         setCurrentUser(user);
-                        setAssignedRoles(user.roles);
+                        setAssignedRoles(user.roles ? user.roles.map(r => r.name) : []);
                         setIsEditingUser(true);
                       }}
                     >
@@ -142,7 +207,7 @@ export default function Admin() {
                             <Label htmlFor="user-name">Imię i nazwisko</Label>
                             <Input
                               id="user-name"
-                              defaultValue={currentUser?.name}
+                              defaultValue={currentUser?.firstName}
                               className="w-full"
                             />
                           </div>
@@ -185,6 +250,7 @@ export default function Admin() {
                                     return [...prev, role.name];
                                   });
                                 }}
+                                currentUser={currentUser}
                               />
                             </div>
                           </div>
@@ -416,6 +482,69 @@ export default function Admin() {
 
               </DialogContent>
             </Dialog>
+          </div>
+        )}
+        {activeTab === "approvals" && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Zatwierdzenie użytkowników</h2>
+              <Input
+                placeholder="Wyszukaj oczekujących..."
+                className="w-64"
+              />
+            </div>
+            <Card className="p-4">
+              <div className="space-y-4">
+                {unapprovedUsers.length === 0 && (
+                  <p className="text-gray-500">Brak oczekujących użytkowników.</p>
+                )}
+                {unapprovedUsers.map((user) => (
+                  <div
+                    key={user.id}
+                    className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 rounded-md"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarFallback>{user.firstName[0]}</AvatarFallback>
+                        {/* <AvatarImage
+                          src={`https://ui-avatars.com/api/?name=${user.name
+                            .replace(" ", "")
+                            .trim()}&background=random&color=fff`}
+                        /> */}
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{user.firstName} {user.lastName}</p>
+                        <p className="text-sm text-gray-500">{user.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() =>
+                          setUnapprovedUsers((prev) =>
+                            prev.filter((u) => u.id !== user.id)
+                          )
+                        }
+                      >
+                        Zatwierdź
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() =>
+                          setUnapprovedUsers((prev) =>
+                            prev.filter((u) => u.id !== user.id)
+                          )
+                        }
+                      >
+                        Odrzuć
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
           </div>
         )}
       </div>

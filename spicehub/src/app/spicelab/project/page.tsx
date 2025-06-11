@@ -99,8 +99,6 @@ export default function ProjectsPage() {
     fetchProjects()
   }, [])
 
-  console.log("Projects:", projects)
-
   const filtered = projects.filter((p) => {
     const matchesSearch =
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
