@@ -26,8 +26,8 @@ import { Badge } from "@/components/ui/badge"
 import { getBackendUrl } from "@/app/serveractions/backend-url"
 import { getCookie } from "typescript-cookie"
 import { Project } from "@/models/Project"
+import ProjectCard from "@/components/project/ProjectCard"
 import { TaskStatus } from "@/models/Task"
-import ProjectCard from "@/components/project/projectcard"
 import { ProjectCardSkeleton } from "@/components/project/ProjectCardSkeleton"
 
 // Helper to format dates
@@ -98,6 +98,8 @@ export default function ProjectsPage() {
 
     fetchProjects()
   }, [])
+
+  console.log("Projects:", projects)
 
   const filtered = projects.filter((p) => {
     const matchesSearch =

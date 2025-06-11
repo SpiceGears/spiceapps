@@ -19,9 +19,10 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { CopyLinkButton } from "@/components/CopyButton"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ProjectOverview } from "@/components/project/ProjectOverview"
 import { TaskList } from "@/components/project/TaskList"
-import { Dashboard } from "@/components/project/Dashboard"
+import Dashboard from "@/components/project/Dashboard"
 import { ActivitySidebar } from "@/components/project/ActivitySidebar"
 import { ProjectEditDialog } from "@/components/project/ProjectEditDialog"
 import { Task, TaskStatus } from "@/models/Task"
@@ -30,7 +31,7 @@ import { getCookie } from "typescript-cookie"
 import { getBackendUrl } from "@/app/serveractions/backend-url"
 
 export default function ProjectPage({
-params,
+  params,
 }: {
   params: Promise<{ id: string }>
 }) {
@@ -40,6 +41,10 @@ params,
   const [project, setProject] = useState<Project>()
   const [tasks, setTasks] = useState<Task[]>([])
   const [isEditingProject, setIsEditingProject] = useState(false)
+
+  // loading flags
+  const [isLoadingProject, setIsLoadingProject] = useState(true)
+  const [isLoadingTasks, setIsLoadingTasks] = useState(true)
 
   // derive some dashboard data
   const dashboardData = useMemo(() => {
@@ -52,45 +57,60 @@ params,
 
   useEffect(() => {
     const fetchProjectData = async () => {
-      const backendUrl = await getBackendUrl()
-      if (!backendUrl) {
-        console.error("Missing NEXT_PUBLIC_BACKEND_URL")
-        return
-      }
-
-      const at = getCookie("accessToken")
-      if (!at) {
-        console.error("No access token found")
-        return
-      }
-
+      setIsLoadingProject(true)
       try {
-        const [projRes, tasksRes] = await Promise.all([
-          fetch(`${backendUrl}/api/project/${id}`, {
-            headers: { Authorization: at },
-          }),
-          fetch(`${backendUrl}/api/project/${id}/getTasks`, {
-            headers: { Authorization: at },
-          }),
-        ])
-        if (!projRes.ok)
-          throw new Error("Failed to fetch project data")
-        if (!tasksRes.ok) throw new Error("Failed to fetch tasks")
+        const backendUrl = await getBackendUrl()
+        if (!backendUrl) throw new Error("Missing BACKEND_URL")
 
-        const projectData: Project = await projRes.json()
-        const tasksData: Task[] = await tasksRes.json()
+        const at = getCookie("accessToken")
+        if (!at) throw new Error("No access token")
+
+        const res = await fetch(`${backendUrl}/api/project/${id}`, {
+          headers: { Authorization: at },
+        })
+        if (!res.ok) throw new Error("Failed to fetch project")
+
+        const projectData: Project = await res.json()
         setProject(projectData)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setIsLoadingProject(false)
+      }
+    }
+
+    const fetchTasksData = async () => {
+      setIsLoadingTasks(true)
+      try {
+        const backendUrl = await getBackendUrl()
+        if (!backendUrl) throw new Error("Missing BACKEND_URL")
+
+        const at = getCookie("accessToken")
+        if (!at) throw new Error("No access token")
+
+        const res = await fetch(
+          `${backendUrl}/api/project/${id}/getTasks`,
+          { headers: { Authorization: at } }
+        )
+        if (!res.ok) throw new Error("Failed to fetch tasks")
+
+        const tasksData: Task[] = await res.json()
         setTasks(tasksData)
       } catch (e) {
         console.error(e)
+      } finally {
+        setIsLoadingTasks(false)
       }
     }
 
     fetchProjectData()
+    fetchTasksData()
   }, [id])
 
   const handleStatusUpdate = (status: string) => {
-    router.push(`/spicelab/project/${id}/statusUpdate?status=${status}`)
+    router.push(
+      `/spicelab/project/${id}/statusUpdate?status=${status}`
+    )
   }
 
   const toggleTaskCompletion = (taskId: string) => {
@@ -105,7 +125,8 @@ params,
                   : TaskStatus.Finished,
               finished:
                 t.status === TaskStatus.Finished ? undefined : new Date(),
-              percentage: t.status === TaskStatus.Finished ? 0 : 100,
+              percentage:
+                t.status === TaskStatus.Finished ? 0 : 100,
             }
           : t
       )
@@ -123,7 +144,10 @@ params,
     )
   }
 
-  const moveTaskToSection = (taskId: string, newSection: string) => {
+  const moveTaskToSection = (
+    taskId: string,
+    newSection: string
+  ) => {
     setTasks((prev) =>
       prev.map((t) =>
         t.id === taskId ? { ...t, section: newSection } : t
@@ -132,10 +156,14 @@ params,
   }
 
   const deleteTasksById = (ids: string[]) => {
-    setTasks((prev) => prev.filter((t) => !ids.includes(t.id)))
+    setTasks((prev) =>
+      prev.filter((t) => !ids.includes(t.id))
+    )
   }
 
-  const createTask = (data: Omit<Task, "id" | "createdDate">) => {
+  const createTask = (
+    data: Omit<Task, "id" | "createdDate">
+  ) => {
     const newTask: Task = {
       ...data,
       id: `task-${Date.now()}-${Math.random()
@@ -166,9 +194,13 @@ params,
         <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-3 mb-2">
             <Folder className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-            <span className="text-lg font-medium text-gray-900 dark:text-gray-100">
-              {project?.name ?? "Nieznany projekt"}
-            </span>
+            {isLoadingProject ? (
+              <Skeleton className="w-40 h-6" />
+            ) : (
+              <span className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                {project?.name ?? "Nieznany projekt"}
+              </span>
+            )}
 
             {/* Project Options */}
             <DropdownMenu modal={false}>
@@ -245,23 +277,60 @@ params,
 
         <div className="flex flex-1 overflow-hidden">
           <div className="flex-1 overflow-auto">
-            <TabsContent value="przeglad" className="h-full">
-              <ProjectOverview project={project} />
+            {/* Overview Tab */}
+            <TabsContent value="przeglad" className="h-full p-6">
+              {isLoadingProject ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-2/3" />
+                </div>
+              ) : (
+                <ProjectOverview project={project} />
+              )}
             </TabsContent>
 
-            <TabsContent value="lista" className="h-full">
-              {/* <TaskList
-                tasks={tasks}
-                onToggleCompletion={toggleTaskCompletion}
-                onUpdateStatus={updateTaskStatus}
-                onMoveToSection={moveTaskToSection}
-                onDeleteTasks={deleteTasksById}
-                onCreateTask={createTask}
-              /> */}
-            </TabsContent>
+            {/* Task List Tab */}
+            {/* <TabsContent value="lista" className="h-full p-6">
+              {isLoadingTasks ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 5 }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center space-x-4"
+                    >
+                      <Skeleton className="h-4 w-4 rounded-full" />
+                      <Skeleton className="h-4 w-full" />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <TaskList
+                  tasks={tasks}
+                  onToggleCompletion={toggleTaskCompletion}
+                  onUpdateStatus={updateTaskStatus}
+                  onMoveToSection={moveTaskToSection}
+                  onDeleteTasks={deleteTasksById}
+                  onCreateTask={createTask}
+                />
+              )}
+            </TabsContent> */}
 
-            <TabsContent value="panel" className="h-full">
-              {/* <Dashboard data={dashboardData} /> */}
+            {/* Dashboard Tab */}
+            <TabsContent value="panel" className="h-full p-6">
+              {isLoadingProject || isLoadingTasks ? (
+                <div className="grid grid-cols-3 gap-4">
+                  {Array.from({ length: 3 }).map((_, idx) => (
+                    <Skeleton
+                      key={idx}
+                      className="h-24 w-full rounded-md"
+                    />
+                  ))}
+                </div>
+              ) : (
+                project ? <Dashboard project={project} tasks={tasks} /> : null
+              )}
             </TabsContent>
           </div>
 

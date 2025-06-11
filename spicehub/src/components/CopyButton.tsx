@@ -14,14 +14,14 @@ export function CopyLinkButton({ text }: { text: string }) {
     try {
       await navigator.clipboard.writeText(window.location.href)
       setCopied(true)
-      toast("Link copied!", {
-        description: "You can now share this URL.",
+      toast("List został skopiowany do schowka!", {
+        description: "Możesz teraz udostępnić ten adres URL.",
     })
       setTimeout(() => setCopied(false), 2000)
     } catch (error) {
-      console.error("Copy failed", error)
-      toast("Failed to copy link", {
-        description: "destructive", 
+      console.error("Błąd podczas kopiowania", error)
+      toast("Nie udało się skopiować linku", {
+        description: "destructive",
       })
     }
   }

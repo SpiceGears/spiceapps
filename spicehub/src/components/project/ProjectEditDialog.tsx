@@ -14,17 +14,13 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { Label } from "@/components/ui/label"
-import { format } from "date-fns"
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Project } from "@/models/Project"
-import { useUserData } from "@/hooks/userData"
 import { useUserById } from "@/hooks/userById"
 
 interface ProjectEditDialogProps {
@@ -34,10 +30,14 @@ interface ProjectEditDialogProps {
   onSave: (project: Project) => void
 }
 
-const getInitials = (name: string) => {
-  const parts = name.split(' ')
-  if (parts.length < 2) return parts[0]?.[0]?.toUpperCase() ?? ''
-  return (parts[0][0] + parts[1][0]).toUpperCase()
+const getInitials = (name: string): string => {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length === 0) {
+    return ""
+  }
+  const firstChar  = parts[0][0] ?? ""
+  const secondChar = parts[1]?.[0] ?? ""
+  return (firstChar + secondChar).toUpperCase()
 }
 
 export function ProjectEditDialog({
@@ -45,7 +45,8 @@ export function ProjectEditDialog({
   isOpen,
   onClose,
 }: ProjectEditDialogProps) {
-const { data, loading, error } = useUserById(project?.creator ?? "")
+  const userId = project?.creator ?? ""
+  const { data, loading, error } = useUserById(userId)
 
   if (!project) return null
 
@@ -63,6 +64,7 @@ const { data, loading, error } = useUserById(project?.creator ?? "")
             onClose()
           }}
         >
+          {/* project name */}
           <div className="space-y-1">
             <label
               htmlFor="project-name"
@@ -78,31 +80,49 @@ const { data, loading, error } = useUserById(project?.creator ?? "")
             />
           </div>
 
+          {/* creator info */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Twórca projektu
               </label>
               <div className="flex items-center gap-2">
-                <Avatar className="w-8 h-8">
-                  {/* {project.owner.avatarUrl ? (
-                    <AvatarImage
-                      src={undefined}
-                      alt={project.creator}
-                    />
-                  ) : ( */}
-                    <AvatarFallback>
-                      {getInitials(data?.firstName + " " + data?.lastName)}
-                    </AvatarFallback>
-                  {/* )} */}
-                </Avatar>
-                <span className="text-sm text-gray-900 dark:text-gray-100">
-                  {data?.firstName + " " + data?.lastName}
-                </span>
+                {loading ? (
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                ) : (
+                  <Avatar className="w-8 h-8">
+                    {/* {data?.avatarUrl ? (
+                      <AvatarImage
+                        src={undefined}
+                        alt={`${data.firstName} ${data.lastName}`}
+                      />
+                    ) : ( */}
+                      <AvatarFallback>
+                        {getInitials(
+                          `${data?.firstName ?? ""} ${data?.lastName ?? ""}`
+                        )}
+                      </AvatarFallback>
+                    {/* )} */}
+                  </Avatar>
+                )}
+
+                {/* name */}
+                {loading ? (
+                  <Skeleton className="h-4 w-32" />
+                ) : error ? (
+                  <span className="text-sm text-red-500">
+                    Błąd ładowania
+                  </span>
+                ) : (
+                  <span className="text-sm text-gray-900 dark:text-gray-100">
+                    {data?.firstName} {data?.lastName}
+                  </span>
+                )}
               </div>
             </div>
           </div>
 
+          {/* description */}
           <div className="space-y-1">
             <label
               htmlFor="project-desc"
@@ -118,6 +138,7 @@ const { data, loading, error } = useUserById(project?.creator ?? "")
             />
           </div>
 
+          {/* actions */}
           <DialogFooter>
             <Button type="submit">Zapisz zmiany</Button>
             <DialogClose asChild>
