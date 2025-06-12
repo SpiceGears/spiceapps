@@ -89,7 +89,7 @@ export function TaskCreateDialog({
           // Fetch all users
           const usersRes = await fetch(`${backend}/api/user/getAll`, {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `${token}`,
               "Content-Type": "application/json",
             },
           });
@@ -138,6 +138,7 @@ export function TaskCreateDialog({
       setErrors(errs);
       return Object.keys(errs).length === 0;
     };
+
     const handleSave = async () => {
       if (!validate()) return;
       const payload: NewTaskPayload = {
@@ -160,17 +161,17 @@ export function TaskCreateDialog({
       };
 
       try {
-        const res = await fetch(
-          `/api/project/${defaultSection}/${formData.sectionId}/create`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-          }
-        );
-        if (!res.ok) throw new Error("Błąd podczas tworzenia zadania");
-        const createdTask: Task = await res.json();
-        onSave(createdTask);
+        // #ALREADY COVERED IN PAGE.TSX#
+        // const res = await fetch(
+        //   `/api/project/${defaultSection}/${formData.sectionId}/create`,
+        //   {
+        //     method: "POST",
+        //     headers: { "Content-Type": "application/json" },
+        //     body: JSON.stringify(payload),
+        //   }
+        // );
+        // if (!res.ok) throw new Error("Błąd podczas tworzenia zadania");
+        onSave(payload);
         handleClose();
       } catch (err) {
         console.error(err);
@@ -297,6 +298,7 @@ export function TaskCreateDialog({
                       </div>
                     </SelectValue>
                   </SelectTrigger>
+                  <SelectContent>
                   {[1, 2, 3].map((val) => (
                     <SelectItem key={val} value={val.toString()}>
                       <div className="flex items-center gap-2">
@@ -310,6 +312,7 @@ export function TaskCreateDialog({
                       </div>
                     </SelectItem>
                   ))}
+                  </SelectContent>
                 </Select>
               </div>
 

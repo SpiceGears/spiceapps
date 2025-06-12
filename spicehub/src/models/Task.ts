@@ -10,7 +10,6 @@ export interface Section
 {
     id: string;
     name: string;
-    tasks: Task[]
 }
 
 export interface Task 
@@ -27,5 +26,6 @@ export interface Task
     created: Date
     creator: string
     deadlineDate: Date
+    sectionId: string
     finished: Date | undefined | null | unknown
 }

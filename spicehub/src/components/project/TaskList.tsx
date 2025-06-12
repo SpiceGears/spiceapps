@@ -41,6 +41,8 @@ interface TaskListProps {
   onMoveToSection: (taskId: string, newSectionId: string) => void;
   onDeleteTasks?: (taskIds: string[]) => void;
   onCreateTask?: (task: NewTaskPayload) => void;
+  refresh: boolean,
+  setRefresh: any //no i will not copy the useStateSet type, no i won't
 }
 
 export function TaskList({
@@ -48,8 +50,11 @@ export function TaskList({
   projectId,
   onToggleCompletion,
   onUpdateStatus,
+  onCreateTask,
   onMoveToSection,
   onDeleteTasks,
+  refresh,
+  setRefresh,
 }: TaskListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPriority, setSelectedPriority] = useState<
@@ -72,17 +77,18 @@ export function TaskList({
         if (!res.ok) throw new Error("Failed to fetch sections");
         const data: SectionModel[] = await res.json();
         // sanitize tasks = null → []
-        const sanitized = data.map((sec) => ({
-          ...sec,
-          tasks: Array.isArray(sec.tasks) ? sec.tasks : [],
-        }));
-        setSections(sanitized);
+        // const sanitized = data.map((sec) => ({
+        //   ...sec,
+        //   tasks: Array.isArray(sec.tasks) ? sec.tasks : [],
+        // }));
+        setSections(data);
+        console.log(data)
       } catch (e) {
         console.error(e);
       }
     }
     fetchSections();
-  }, [projectId]);
+  }, [projectId, refresh]);
 
   // Fetch tasks (if needed for future logic)
   useEffect(() => {
@@ -115,7 +121,7 @@ export function TaskList({
       }
     }
     fetchTasksData();
-  }, [projectId]);
+  }, [projectId, refresh]);
 
   // filter incoming tasks prop
   const filteredTasks = tasks.filter((t) => {
@@ -135,8 +141,8 @@ export function TaskList({
   const getTasksForSection = (sectionId: string): Task[] => {
     const sec = sections.find((s) => s.id === sectionId);
     if (!sec) return [];
-    const list = Array.isArray(sec.tasks) ? sec.tasks : [];
-    return list.filter((t) => filteredTasks.some((ft) => ft.id === t.id));
+    const result = filteredTasks.filter(task => task.sectionId == sectionId)
+    return result;
   };
 
   // drag & drop
@@ -154,25 +160,25 @@ export function TaskList({
     dropZone: HTMLElement
   ) => {
     e.preventDefault();
-    const taskId = e.dataTransfer.getData("text/plain");
-    const fromSec = sections.find(
-      (s) => Array.isArray(s.tasks) && s.tasks.some((t) => t.id === taskId)
-    );
-    if (taskId && fromSec) {
-      onMoveToSection(taskId, newSectionId);
-      setSections((secs) =>
-        secs.map((sec) => {
-          const oldTasks = Array.isArray(sec.tasks) ? sec.tasks : [];
-          let newTasks = oldTasks.filter((t) => t.id !== taskId);
-          if (sec.id === newSectionId) {
-            const moved = (fromSec.tasks || []).filter((t) => t.id === taskId);
-            newTasks = [...newTasks, ...moved];
-          }
-          return { ...sec, tasks: newTasks };
-        })
-      );
-    }
-    dropZone.classList.remove("drag-over");
+    // const taskId = e.dataTransfer.getData("text/plain");
+    // const fromSec = sections.find(
+    //   (s) => Array.isArray(s.tasks) && s.tasks.some((t) => t.id === taskId)
+    // );
+    // if (taskId && fromSec) {
+    //   onMoveToSection(taskId, newSectionId);
+    //   setSections((secs) =>
+    //     secs.map((sec) => {
+    //       const oldTasks = Array.isArray(sec.tasks) ? sec.tasks : [];
+    //       let newTasks = oldTasks.filter((t) => t.id !== taskId);
+    //       if (sec.id === newSectionId) {
+    //         const moved = (fromSec.tasks || []).filter((t) => t.id === taskId);
+    //         newTasks = [...newTasks, ...moved];
+    //       }
+    //       return { ...sec, tasks: newTasks };
+    //     })
+    //   );
+    // }
+    // dropZone.classList.remove("drag-over");
   };
   const handleDragEnter = (e: React.DragEvent) => {
     e.currentTarget.classList.add("drag-over");
@@ -213,9 +219,9 @@ export function TaskList({
     }
   };
   const handleDeleteSection = (id: string) => {
-    const toDel = sections.find((s) => s.id === id)?.tasks.map((t) => t.id);
-    setSections((s) => s.filter((x) => x.id !== id));
-    if (toDel?.length && onDeleteTasks) onDeleteTasks(toDel);
+    // const toDel = sections.find((s) => s.id === id)?.tasks.map((t) => t.id);
+    // setSections((s) => s.filter((x) => x.id !== id));
+    // if (toDel?.length && onDeleteTasks) onDeleteTasks(toDel);
   };
   const handleAddSection = async () => {
     try {
@@ -234,7 +240,7 @@ export function TaskList({
       );
       if (!res.ok) throw new Error("Failed to create section");
       const newSec: SectionModel = await res.json();
-      setSections((s) => [...s, { ...newSec, tasks: newSec.tasks || [] }]);
+      setSections((s) => [...s, { ...newSec}]);
     } catch (e) {
       console.error(e);
     }
@@ -242,28 +248,8 @@ export function TaskList({
 
   // handle create‐task from dialog
   const handleCreateTask = (payload: NewTaskPayload) => {
-    // if (onCreateTask) {
-    //   onCreateTask(payload);
-    // } else {
-    //   const full: Task = {
-    //     id: `task-${Date.now()}`,
-    //     ...payload,
-    //     scopesRequired: [],
-    //     dependencies: [],
-    //     percentage: 0,
-    //     created: new Date(),
-    //     creator: "system",
-    //     finished: null,
-    //   };
-    //   setSections((s) =>
-    //     s.map((sec) =>
-    //       sec.id === payload.sectionId
-    //         ? { ...sec, tasks: [...(sec.tasks || []), full] }
-    //         : sec
-    //     )
-    //   );
-    // }
-    
+    if (!onCreateTask) {console.error("On Create Task is not defined");return;};
+    onCreateTask(payload);
     setIsCreateDialogOpen(false);
   };
 

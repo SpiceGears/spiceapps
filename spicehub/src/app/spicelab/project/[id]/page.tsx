@@ -21,7 +21,7 @@ import {
 import { CopyLinkButton } from "@/components/CopyButton"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ProjectOverview } from "@/components/project/ProjectOverview"
-import { TaskList } from "@/components/project/TaskList"
+import { NewTaskPayload, TaskList } from "@/components/project/TaskList"
 import Dashboard from "@/components/project/Dashboard"
 import { ActivitySidebar } from "@/components/project/ActivitySidebar"
 import { ProjectEditDialog } from "@/components/project/ProjectEditDialog"
@@ -39,6 +39,7 @@ export default function ProjectPage({
   const router = useRouter()
 
   const [project, setProject] = useState<Project>()
+  const [refresh, setRefresh] = useState(false); // an helper to restart useEffect without infinite looping
   const [tasks, setTasks] = useState<Task[]>([])
   const [isEditingProject, setIsEditingProject] = useState(false)
 
@@ -72,6 +73,7 @@ export default function ProjectPage({
 
         const projectData: Project = await res.json()
         setProject(projectData)
+        console.log(projectData)
       } catch (e) {
         console.error(e)
       } finally {
@@ -95,6 +97,7 @@ export default function ProjectPage({
 
         const tasksData: Task[] = await res.json()
         setTasks(tasksData)
+        console.log(tasksData)
       } catch (e) {
         console.error(e)
       } finally {
@@ -104,10 +107,9 @@ export default function ProjectPage({
 
     fetchProjectData()
     fetchTasksData()
-  }, [id])
+  }, [id, refresh])
 
-  console.log("Project data:", project)
-  console.log("Tasks data:", tasks)
+  
 
   const handleStatusUpdate = (status: string) => {
     router.push(
@@ -116,7 +118,7 @@ export default function ProjectPage({
   }
 
   const toggleTaskCompletion = (taskId: string) => {
-    setTasks((prev) =>
+    setTasks((prev: any[]) =>
       prev.map((t) =>
         t.id === taskId
           ? {
@@ -163,17 +165,59 @@ export default function ProjectPage({
     )
   }
 
-  const createTask = (
-    data: Omit<Task, "id" | "createdDate">
+  //create Task and add it to Tasks to make
+  const createTask = async (
+    data: NewTaskPayload
   ) => {
-    const newTask: Task = {
-      ...data,
-      id: `task-${Date.now()}-${Math.random()
-        .toString(36)
-        .substr(2, 9)}`,
-      created: new Date(),
+    // const newTask: Task = {
+    //   ...data,
+    //   id: `task-${Date.now()}-${Math.random()
+    //     .toString(36)
+    //     .substr(2, 9)}`,
+    //   created: new Date(),
+    // }
+    // setTasks((prev) => [...prev, newTask])
+    const backendUrl = await getBackendUrl()
+    if (!backendUrl) throw new Error("Missing BACKEND_URL")
+
+    const at = getCookie("accessToken")
+    if (!at) throw new Error("No access token")
+
+      //construct body, omitting sectionId so we don't get HTTP 415
+    let body = {
+      assignedUsers: data.assignedUsers,
+      name: data.name,
+      description: data.description,
+      dependencies: data.dependencies,
+      percentage: data.percentage,
+      status: data.status,
+      priority: data.priority,
+      deadlineDate: data.deadlineDate
     }
-    setTasks((prev) => [...prev, newTask])
+
+    //send RCP to create task
+    const res = await fetch(`${backendUrl}/api/project/${project?.id ?? "nothing"}/${data.sectionId}/create`,
+      {
+        method: "POST",
+        headers:
+        {
+          Authorization: at,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body)
+      })
+    let resdata: any;
+    if (!res.ok) {
+      resdata = await res.text();
+      console.error(resdata);
+    }
+    else {
+      //add to task list and refresh with UseEffect
+      let resdata = await res.json();
+      let newTask = resdata as Task;
+      setTasks((prev) => {return [...prev, newTask]});
+      setRefresh(!refresh);
+    }
   }
 
   const getStatusDotColor = (status: string) => {
@@ -316,6 +360,8 @@ export default function ProjectPage({
                   onMoveToSection={moveTaskToSection}
                   onDeleteTasks={deleteTasksById}
                   onCreateTask={createTask}
+                  refresh={refresh}
+                  setRefresh={setRefresh}
                 />
               )}
             </TabsContent>
