@@ -15,7 +15,7 @@ function CustomTabBarBackground() {
   return (
     <BlurView
       tint={tint}
-      intensity={50}
+      intensity={10}
       style={StyleSheet.absoluteFill}
     />
   );
@@ -55,7 +55,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="spicehub"
+        name="index"
         options={{
           title: "SpiceHub",
           tabBarIcon: ({ color }) => <Home size={24} color={color} />,
