@@ -160,6 +160,56 @@ namespace SpiceAPI.Controllers
             return Ok(task);
         }
 
+        [HttpPut("{id:guid}/{tid:guid}/moveTo")]
+        public async Task<IActionResult> MoveTaskTo([FromRoute] Guid id, [FromRoute] Guid tid,
+        [FromHeader] string? Authorization,
+        [FromHeader(Name = "SectionId")] string? SectionId
+        )
+        {
+            if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
+            bool isValid = tc.VerifyToken(Authorization);
+            if (!isValid) { return StatusCode(403, "Invalid Token"); }
+
+            User? user = await tc.RetrieveUser(Authorization);
+            if (user == null) { return BadRequest("NULL USER"); }
+
+            if (!user.IsApproved || !user.CheckForClaims("projects.show", db))
+            {
+                return StatusCode(403, "You do not have enough permissions");
+            }
+
+            Project? proj = await db.Projects.Include(o => o.Sections).ThenInclude(s => s.Tasks).FirstOrDefaultAsync(p => p.Id == id);
+            if (proj == null) { return NotFound("Project not found"); }
+            if (!user.CheckForClaims(proj.ScopesRequired.ToArray(), db)) { return StatusCode(403, "You do not have enough permissions"); }
+
+            if (!user.CheckForClaims("tasks.add", db)) { return StatusCode(403, "You do not have enough permissions"); }
+
+
+
+            STask? task = db.STasks.FirstOrDefault(t => t.Id == tid);
+            if (task == null) { return NotFound("Couldn't find the task of UUID specified"); }
+
+            if (!user.CheckForClaims("tasks.override", db) || user.Id != task.Creator) { return StatusCode(403, "You do not have enough permissions"); }
+
+            if (SectionId == null) return BadRequest("You must provide SectionId header");
+            Guid sectId = Guid.Empty;
+            try
+            {
+                sectId = Guid.Parse(SectionId);
+            }
+            catch (Exception e)
+            {
+                return BadRequest("The SectionId is invalid");
+            }
+
+            TaskSection? section = proj.Sections.FirstOrDefault(s => s.Id == sectId);
+            if (section == null) return NotFound("Section not found");
+
+            task.Section = section;
+            task.SectionId = section.Id;
+            await db.SaveChangesAsync();
+            return Ok(task);
+        }
         [HttpPut("{id:guid}/{tid:guid}/updateStatus")]
         public async Task<IActionResult> UpdateTaskStatus([FromRoute] Guid id, [FromRoute] Guid tid, [FromHeader] string? Authorization, [FromBody] STaskStatus body)
         {
