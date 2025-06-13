@@ -90,36 +90,36 @@ export default function TaskEditDialog({
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
   const [isAssigneePopoverOpen, setIsAssigneePopoverOpen] = useState(false);
 
-  useEffect(() => {
-    if (task) {
-      setFormData({
-        name: task.name,
-        description: task.description || "",
-        status: task.status,
-        priority: Number(task.priority),
-        section:
-          sections.find((s) => s.tasks.some((t) => t.id === task.id))?.id ||
-          sections[0]?.id ||
-          "",
-      });
-      setSelectedDate(
-        task.deadlineDate ? new Date(task.deadlineDate) : undefined
-      );
-      setSelectedAssignees(task.assignedUsers || []);
-    } else {
-      // creating a new task ⇒ reset form
-      setFormData((fd) => ({
-        ...fd,
-        name: "",
-        description: "",
-        status: TaskStatus.Planned,
-        priority: 1,
-        section: sections[0]?.id || "",
-      }));
-      setSelectedDate(undefined);
-      setSelectedAssignees([]);
-    }
-  }, [task, sections]);
+  // useEffect(() => {
+  //   if (task) {
+  //     setFormData({
+  //       name: task.name,
+  //       description: task.description || "",
+  //       status: task.status,
+  //       priority: Number(task.priority),
+  //       section:
+  //         sections.find((s) => s.tasks.some((t) => t.id === task.id))?.id ||
+  //         sections[0]?.id ||
+  //         "",
+  //     });
+  //     setSelectedDate(
+  //       task.deadlineDate ? new Date(task.deadlineDate) : undefined
+  //     );
+  //     setSelectedAssignees(task.assignedUsers || []);
+  //   } else {
+  //     // creating a new task ⇒ reset form
+  //     setFormData((fd) => ({
+  //       ...fd,
+  //       name: "",
+  //       description: "",
+  //       status: TaskStatus.Planned,
+  //       priority: 1,
+  //       section: sections[0]?.id || "",
+  //     }));
+  //     setSelectedDate(undefined);
+  //     setSelectedAssignees([]);
+  //   }
+  // }, [task, sections]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

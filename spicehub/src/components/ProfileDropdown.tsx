@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { UserCircle, User, Cog, LogOut, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -88,39 +88,39 @@ export default function ProfileDropdown() {
             switch (val.department) {
               case Department.Executive:
                 type = "executive"
-                return (<>
+                return (<Fragment key={val.roleID}>
                   <Badge variant={"executive"}>{val.name}</Badge>
-                </>)
+                </Fragment>)
                 break;
 
               case Department.Marketing:
                 type = "marketing"
-                return (<>
+                return (<Fragment key={val.roleID}>
                   <Badge variant={"marketing"}>{val.name}</Badge>
-                </>)
+                </Fragment>)
                 break;
               case Department.Mechanics:
                 type = "mechanic"
-                return (<>
+                return (<Fragment key={val.roleID}>
                   <Badge variant={"mechanic"}>{val.name}</Badge>
-                </>)
+                </Fragment>)
                 break;
               case Department.Programmers:
                 type = "programmer"
-                return (<>
+                return (<Fragment key={val.roleID}>
                   <Badge variant={"programmer"}>{val.name}</Badge>
-                </>)
+                </Fragment>)
                 break;
               case Department.SocialMedia:
                 type = "socialmedia"
-                return (<>
+                return (<Fragment key={val.roleID}>
                   <Badge variant={"socialmedia"}>{val.name}</Badge>
-                </>)
+                </Fragment>)
                 break;
               default:
-                return (<>
+                return (<Fragment key={val.roleID}>
                   <Badge variant={"default"}>{val.name}</Badge>
-                </>)
+                </Fragment>)
                 break;
             }
 
