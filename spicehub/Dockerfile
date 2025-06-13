@@ -14,6 +14,7 @@ RUN npm i
 
 # Copy rest of the application
 # Build the Next.js application
+# NOTE: Uncomment for release
 #RUN npm run build
 
 # Expose port 3000
@@ -22,5 +23,6 @@ EXPOSE 3000
 ENV PORT=3000
 
 # Start the application
+# NOTE: Use npm start instead on release
 #CMD ["npm", "start"]
  CMD ["npm", "run", "dev"]

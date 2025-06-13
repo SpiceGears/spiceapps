@@ -56,7 +56,7 @@ services:
       - spiceapi
     networks:
       - app-network
-    volumes:
+    volumes: # COMMENT OUT VOLUMES FOR RELEASE, SEE Dockerfile
       - ./spicehub:/app
       - /app/node_modules
       - /app/.next
