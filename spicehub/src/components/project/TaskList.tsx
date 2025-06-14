@@ -323,6 +323,8 @@ export function TaskList({
             onDrop={handleDrop}
             onRenameSection={handleRenameSection}
             onDeleteSection={handleDeleteSection}
+            refresh={refresh}
+            setRefresh={setRefresh}
           />
         ))}
 

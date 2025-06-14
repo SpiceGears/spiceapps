@@ -1,7 +1,7 @@
 // app/project/[id]/page.tsx
 "use client"
 
-import { useState, useEffect, useMemo, use } from "react"
+import { useState, useEffect, useMemo, use, createContext, SetStateAction, Dispatch } from "react"
 import { useRouter } from "next/navigation"
 import { Folder, ChevronDown, Pen, Palette } from "lucide-react"
 import {
@@ -29,6 +29,19 @@ import { Task, TaskStatus } from "@/models/Task"
 import { Project } from "@/models/Project"
 import { getCookie } from "typescript-cookie"
 import { getBackendUrl } from "@/app/serveractions/backend-url"
+import { UserInfo } from "@/models/User"
+
+export type ProjectContext =
+{
+  project: Project | undefined,
+  tasks: Task[],
+  users: UserInfo[],
+  
+  refresh: boolean, //the refresh value to listen for data re-fetch
+  setRefresh: Dispatch<SetStateAction<boolean>> | undefined//the setstate for refreshing and re-fetching data
+}
+
+export const projectContext = createContext<ProjectContext>({project: undefined, tasks: [], users: [], refresh: false, setRefresh: undefined});
 
 export default function ProjectPage({
   params,
@@ -41,11 +54,13 @@ export default function ProjectPage({
   const [project, setProject] = useState<Project>()
   const [refresh, setRefresh] = useState(false); // an helper to restart useEffect without infinite looping
   const [tasks, setTasks] = useState<Task[]>([])
+  const [users, setUsers] = useState<UserInfo[]>([]);
   const [isEditingProject, setIsEditingProject] = useState(false)
 
   // loading flags
   const [isLoadingProject, setIsLoadingProject] = useState(true)
   const [isLoadingTasks, setIsLoadingTasks] = useState(true)
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true)
 
   // derive some dashboard data
   const dashboardData = useMemo(() => {
@@ -105,8 +120,35 @@ export default function ProjectPage({
       }
     }
 
+    const fetchUsersData = async () => {
+      setIsLoadingTasks(true)
+      try {
+        const backendUrl = await getBackendUrl()
+        if (!backendUrl) throw new Error("Missing BACKEND_URL")
+
+        const at = getCookie("accessToken")
+        if (!at) throw new Error("No access token")
+
+        const res = await fetch(
+          `${backendUrl}/api/project/${id}/getUsers`,
+          { headers: { Authorization: at } }
+        )
+        if (!res.ok) throw new Error("Failed to fetch users")
+
+        const usersData: UserInfo[] = await res.json()
+        setUsers(usersData)
+        console.log(usersData)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setIsLoadingTasks(false)
+      }
+    }
+
+
     fetchProjectData()
     fetchTasksData()
+    fetchUsersData()
   }, [id, refresh])
 
   
@@ -234,6 +276,7 @@ export default function ProjectPage({
   }
 
   return (
+    <projectContext.Provider value={{project: project, tasks: tasks, users: users, refresh: refresh, setRefresh: setRefresh}}>
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
       <Tabs defaultValue="przeglad" className="flex flex-col flex-1">
         {/* Header */}
@@ -397,5 +440,6 @@ export default function ProjectPage({
         }}
       />
     </div>
+    </projectContext.Provider>
   )
 }

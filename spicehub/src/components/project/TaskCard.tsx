@@ -25,6 +25,8 @@ import { Task, Section, TaskStatus } from "@/models/Task";
 interface TaskCardProps {
   task: Task;
   sections: Section[];
+  refresh: boolean;
+  setRefresh: any;
   onToggleCompletion: (taskId: string) => void;
   onDragStart: (e: React.DragEvent, taskId: string) => void;
   onUpdateStatus?: (taskId: string, newStatus: TaskStatus) => void;
@@ -89,6 +91,8 @@ const getDueDateColor = (deadlineDate?: Date) => {
 export function TaskCard({
   task,
   sections,
+  refresh,
+  setRefresh,
   onToggleCompletion,
   onDragStart,
   onUpdateStatus,

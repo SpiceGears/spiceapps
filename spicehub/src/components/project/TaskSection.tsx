@@ -37,6 +37,8 @@ interface TaskSectionProps {
   name: string;
   tasks: Task[];
   sections: Section[];
+  refresh: boolean;
+  setRefresh: any;
   // icon: React.ReactNode;
   onToggleCompletion: (taskId: string) => void;
   onDragStart: (e: React.DragEvent, taskId: string) => void;
@@ -57,6 +59,8 @@ export function TaskSection({
   name,
   tasks,
   sections,
+  refresh,
+  setRefresh,
   // icon,
   onToggleCompletion,
   onDragStart,
@@ -218,6 +222,8 @@ export function TaskSection({
               key={task.id}
               task={task}
               sections={sections}
+              refresh={refresh}
+              setRefresh={setRefresh}
               onToggleCompletion={onToggleCompletion}
               onDragStart={onDragStart}
             />

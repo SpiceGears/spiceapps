@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   Dialog,
   DialogContent,
@@ -31,6 +31,11 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
+import { NewTaskPayload } from "./TaskList";
+import { UserInfo } from "@/models/User";
+import { projectContext } from "@/app/spicelab/project/[id]/page";
+import { getBackendUrl } from "@/app/serveractions/backend-url";
+import { getCookie } from "typescript-cookie";
 
 // Dummy user type for assignees (replace with your actual user model)
 type Assignee = {
@@ -41,23 +46,23 @@ type Assignee = {
 };
 
 // Dummy available users (replace with your actual users)
-const defaultAvailableUsers: Assignee[] = [];
+const defaultAvailableUsers: UserInfo[] = [];
 
 type TaskEditDialogProps = {
   task?: Task;                 // if undefined, this will be a "create" form
   isOpen: boolean;
   onClose: () => void;
   onSave: (task: Task) => void;
-  availableUsers?: Assignee[];
+  availableUsers?: UserInfo[];
   sections: Section[];
 };
 
-const statusLabels: Record<TaskStatus, string> = {
-  [TaskStatus.Planned]: "Zaplanowane",
-  [TaskStatus.OnTrack]: "W trakcie",
-  [TaskStatus.Finished]: "Ukończone",
-  [TaskStatus.Problem]: "Problem",
-};
+const statusLabels = new Map<TaskStatus, string>([
+  [TaskStatus.Planned, "Zaplanowane"],
+  [TaskStatus.OnTrack, "W trakcie"],
+  [TaskStatus.Finished, "Ukończone"],
+  [TaskStatus.Problem, "Problem"],
+]);
 
 const priorityLabels: Record<number, string> = {
   1: "Niski",
@@ -76,7 +81,7 @@ export default function TaskEditDialog({
   isOpen,
   onClose,
   onSave,
-  availableUsers = defaultAvailableUsers,
+  //availableUsers = defaultAvailableUsers,
   sections,
 }: TaskEditDialogProps) {
   const [formData, setFormData] = useState({
@@ -90,54 +95,116 @@ export default function TaskEditDialog({
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
   const [isAssigneePopoverOpen, setIsAssigneePopoverOpen] = useState(false);
 
-  // useEffect(() => {
-  //   if (task) {
-  //     setFormData({
-  //       name: task.name,
-  //       description: task.description || "",
-  //       status: task.status,
-  //       priority: Number(task.priority),
-  //       section:
-  //         sections.find((s) => s.tasks.some((t) => t.id === task.id))?.id ||
-  //         sections[0]?.id ||
-  //         "",
-  //     });
-  //     setSelectedDate(
-  //       task.deadlineDate ? new Date(task.deadlineDate) : undefined
-  //     );
-  //     setSelectedAssignees(task.assignedUsers || []);
-  //   } else {
-  //     // creating a new task ⇒ reset form
-  //     setFormData((fd) => ({
-  //       ...fd,
-  //       name: "",
-  //       description: "",
-  //       status: TaskStatus.Planned,
-  //       priority: 1,
-  //       section: sections[0]?.id || "",
-  //     }));
-  //     setSelectedDate(undefined);
-  //     setSelectedAssignees([]);
-  //   }
-  // }, [task, sections]);
+  const ctx = useContext(projectContext);
+
+  useEffect(() => {
+    if (task) {
+      setFormData({
+        name: task.name,
+        description: task.description || "",
+        status: task.status,
+        priority: Number(task.priority),
+        section: task.sectionId ||
+          sections[0]?.id || "",    });
+      setSelectedDate(
+        task.deadlineDate ? new Date(task.deadlineDate) : undefined
+      );
+      setSelectedAssignees(task.assignedUsers || []);
+    }
+  }, [task, sections]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // if you’re creating a new task, you’ll need to give it an `id` here or upstream
-    const base: Partial<Task> = task ?? {};
-    const updatedTask: Task = {
-      ...base,
-      id: base.id ?? crypto.randomUUID(),
+    // const base: Partial<Task> = task ?? {};
+    // const updatedTask: Task = {
+    //   ...base,
+    //   id: base.id ?? crypto.randomUUID(),
+    //   name: formData.name,
+    //   description: formData.description,
+    //   status: formData.status,
+    //   priority: formData.priority,
+    //   section: formData.section,
+    //   assignedUsers: selectedAssignees,
+    //   deadlineDate: selectedDate,
+    // } as Task;
+
+    const taskPayload: NewTaskPayload =  
+    {
       name: formData.name,
       description: formData.description,
+      dependencies: [],
+      deadlineDate: selectedDate || new Date(),
+      percentage: 0,
       status: formData.status,
+      sectionId: formData.section,
       priority: formData.priority,
-      section: formData.section,
       assignedUsers: selectedAssignees,
-      deadlineDate: selectedDate,
-    } as Task;
+    }
+    let sectionMove = formData.section != task?.sectionId;
 
-    onSave(updatedTask);
+    const editFetch = async () => {
+      const backend = await getBackendUrl();
+      if (!backend) throw new Error("Backend env var not SET");
+      const at = getCookie("accessToken")
+      if (!at) throw new Error("no accessToken provided")
+
+      const res = await fetch(`${backend}/api/project/${ctx.project?.id}/${task?.sectionId}/${task?.id}/edit`, 
+        {
+          method: "PUT",
+          headers: 
+          {
+            Authorization: at,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: formData.name,
+            description: formData.description,
+            dependencies: [],
+            deadlineDate: selectedDate || task?.deadlineDate,
+            percentage: 0,
+            status: formData.status,
+            priority: formData.priority,
+            assignedUsers: selectedAssignees,
+          })
+        })
+
+        if (!res.ok) throw new Error("Fetch failed: " + await res.text())
+        else {
+          console.log("Edit succeded - new info:"+await res.json());
+        }
+    }
+
+    const moveFetch = async () => {
+      const backend = await getBackendUrl();
+      if (!backend) throw new Error("Backend env var not SET");
+      const at = getCookie("accessToken")
+      if (!at) throw new Error("no accessToken provided");
+
+      const res = await fetch(`${backend}/api/project/${ctx.project?.id}/${task?.id}/moveTo`, 
+        {
+          method: "PUT",
+          headers: {
+            Authorization: at,
+            "SectionId": formData.section
+          }
+        })
+      if (!res.ok) throw new Error("Move fetch failed: "+await res.text())
+      else {
+        console.log("Move succeded")
+      }
+    }
+
+    
+    editFetch().then(()=>{
+      if (sectionMove) {moveFetch().finally(()=>{
+        if (ctx.setRefresh) ctx.setRefresh(!ctx.refresh);})}
+      else {if (ctx.setRefresh) ctx.setRefresh(!ctx.refresh);}
+    }, (r) => 
+      {
+        console.error("Edit task failed: ", r);
+      })
+    //onSave(updatedTask);
     onClose();
   };
 
@@ -196,13 +263,13 @@ export default function TaskEditDialog({
               >
                 <SelectTrigger>
                   <SelectValue>
-                    {statusLabels[formData.status]}
+                    {statusLabels.get(formData.status)}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
-                  {(Object.values(TaskStatus) as TaskStatus[]).map((st) => (
+                  {Array.from(statusLabels.entries()).map(([st, label]) => (
                     <SelectItem key={st} value={String(st)}>
-                      {statusLabels[st]}
+                      {label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -251,7 +318,7 @@ export default function TaskEditDialog({
               <div className="space-y-3">
                 <div className="flex flex-wrap gap-2">
                   {selectedAssignees.map((uid) => {
-                    const user = availableUsers.find((u) => u.id === uid);
+                    const user = ctx.users.find((u) => u.id === uid);
                     if (!user) return null;
                     return (
                       <div
@@ -259,23 +326,19 @@ export default function TaskEditDialog({
                         className="flex items-center gap-2 p-2 border rounded-md bg-gray-50 dark:bg-gray-800"
                       >
                         <Avatar className="w-6 h-6">
-                          {user.avatarUrl ? (
+                          {/*user.avatarUrl ? (
                             <AvatarImage
                               src={user.avatarUrl}
                               alt={user.name}
                             />
-                          ) : (
+                          ) : */(
                             <AvatarFallback className="text-xs">
-                              {user.name
-                                .split(" ")
-                                .map((w) => w[0])
-                                .join("")
-                                .toUpperCase()}
+                              {user.firstName + " " + user.lastName}
                             </AvatarFallback>
                           )}
                         </Avatar>
                         <span className="text-sm font-medium">
-                          {user.name}
+                          {user.firstName + " " + user.lastName}
                         </span>
                         <Button
                           type="button"
@@ -309,7 +372,7 @@ export default function TaskEditDialog({
                     <div className="p-4">
                       <h4 className="font-medium mb-3">Wybierz osoby</h4>
                       <div className="space-y-2 max-h-60 overflow-y-auto">
-                        {availableUsers.map((user) => (
+                        {ctx.users.map((user) => (
                           <div
                             key={user.id}
                             className="flex items-center space-x-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-md"
@@ -325,24 +388,20 @@ export default function TaskEditDialog({
                               }
                             />
                             <Avatar className="w-8 h-8">
-                              {user.avatarUrl ? (
+                              {/*user.avatarUrl ? (
                                 <AvatarImage
                                   src={user.avatarUrl}
                                   alt={user.name}
                                 />
-                              ) : (
+                              ) :*/ (
                                 <AvatarFallback>
-                                  {user.name
-                                    .split(" ")
-                                    .map((w) => w[0])
-                                    .join("")
-                                    .toUpperCase()}
+                                  {user.firstName + " " + user.lastName}
                                 </AvatarFallback>
                               )}
                             </Avatar>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">
-                                {user.name}
+                                {user.firstName + " " + user.lastName}
                               </p>
                               {user.email && (
                                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
