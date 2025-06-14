@@ -80,7 +80,7 @@ namespace SpiceAPI.Controllers
             public string Name { get; set; } 
             public string Description { get; set; } 
             public List<string> Scopes { get; set; }
-            public STaskStatus Status { get; set; }
+            public ProjectStatus Status { get; set; }
             public int Priority { get; set; }
         }
 

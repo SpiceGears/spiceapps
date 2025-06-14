@@ -11,7 +11,9 @@ namespace SpiceAPI.Models
 
         public string Name { get; set; }
         public string Description { get; set; }
-        public STaskStatus Status { get; set; }
+        public ProjectStatus Status { get; set; }
+
+        public List<ProjectUpdateEntry> Updates { get; set; } = new List<ProjectUpdateEntry>();
         public int Priority { get; set; }
         public Guid Creator { get; set; }
         public List<string> ScopesRequired { get; set; } = new List<string>();
@@ -40,6 +42,8 @@ namespace SpiceAPI.Models
         public List<Guid> Dependencies { get; set; }
         
         public STaskStatus Status { get; set; }
+
+
 
         public int Priority { get; set; }
         

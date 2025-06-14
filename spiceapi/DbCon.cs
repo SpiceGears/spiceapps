@@ -20,6 +20,7 @@ namespace SpiceAPI
         public DbSet<Role> Roles { get; set; }
 
         public DbSet<Project> Projects { get; set; }
+        public DbSet<ProjectUpdateEntry> projectUpdates { get; set; }
         public DbSet<TaskSection> taskSections { get; set; }
         public DbSet<STask> STasks { get; set; }
         public DbSet<Entry> Entrys { get; set; }
@@ -44,6 +45,12 @@ namespace SpiceAPI
                 .HasMany(p => p.Sections)
                 .WithOne(t => t.Project)
                 .HasForeignKey(e => e.ProjectId)
+                .IsRequired().OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Project>()
+                .HasMany(p => p.Updates)
+                .WithOne(u => u.Project)
+                .HasForeignKey(s => s.ProjectId)
                 .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
             //modelBuilder.Entity<Project>()
