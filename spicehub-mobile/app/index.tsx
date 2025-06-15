@@ -4,12 +4,10 @@ import { useEffect } from "react";
 
 export default function Index() {
   const router = useRouter();
-
   useEffect(() => {
     setTimeout(() => {
-      router.replace('/(tabs)/login');
-    }, 0);
+      router.replace("/auth");
+    }, 1);
   }, []);
-
   return null;
 }
