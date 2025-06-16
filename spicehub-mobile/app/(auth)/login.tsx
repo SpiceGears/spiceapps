@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { SafeAreaView, StyleSheet, View, StatusBar } from "react-native";
+import { SafeAreaView, StyleSheet, View, StatusBar, Alert } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BackendUrl } from "@/Constants/backend"
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "expo-router";
+import CookieManager from "@react-native-cookies/cookies"
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -30,6 +31,10 @@ export default function LoginScreen() {
             setError("Jeśli otrzymałeś ten błąd to jesteś bogiem")
             return;
         }
+        const payload = {
+            login: email.trim(),
+            password: password.trim()
+        }
 
         try{
             const response = await fetch(`${BackendUrl}/api/auth/login`, {
@@ -37,10 +42,37 @@ export default function LoginScreen() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify()
-            })
-        } catch (e) {
+                body: JSON.stringify(payload)
+            });
 
+            const data = await response.json();
+
+            if(!response.ok) {
+                throw new Error(data.message || "Coś się zepsuło")
+            }
+
+            if(data.access_Token && data.refresh_Token) {
+                await CookieManager.set(BackendUrl, {
+                    name: "refreshToken",
+                    value: data.refresh_Token,
+                    path: "/",
+                });
+
+                await CookieManager.set(BackendUrl, {
+                    name: "accessToken",
+                    value: data.access_Token,
+                    path: "/",
+                })
+
+                Alert.alert(
+                    "Sukces",
+                    "Zostałeś zalogowany"
+                )
+            } else {
+                throw new Error("Nie znaleziono tokenów w odpowiedzi");
+            }
+        } catch (err) {
+            setError("Logowanie nie powiodło się: " + err);
         }
     }
 
@@ -129,6 +161,7 @@ export default function LoginScreen() {
                         >
                             Login
                         </Button>
+                        {error && <Text style={styles.errorText}>{error}</Text>}
                     </View>
                     <View style={styles.spacer} />
                 </View>
@@ -195,4 +228,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: 16,
       },
+      errorText: {
+    marginTop: 15,
+    color: "red",
+    textAlign: "center",
+  },
 });
