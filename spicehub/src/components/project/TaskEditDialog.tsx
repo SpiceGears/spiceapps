@@ -128,13 +128,13 @@ export default function TaskEditDialog({
     //   assignedUsers: selectedAssignees,
     //   deadlineDate: selectedDate,
     // } as Task;
-
+    console.log(selectedDate);
     const taskPayload: NewTaskPayload =  
     {
       name: formData.name,
       description: formData.description,
       dependencies: [],
-      deadlineDate: selectedDate || new Date(),
+      deadlineDate: selectedDate ?? new Date(),
       percentage: 0,
       status: formData.status,
       sectionId: formData.section,

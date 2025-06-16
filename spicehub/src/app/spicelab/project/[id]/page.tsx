@@ -26,7 +26,7 @@ import Dashboard from "@/components/project/Dashboard"
 import { ActivitySidebar } from "@/components/project/ActivitySidebar"
 import { ProjectEditDialog } from "@/components/project/ProjectEditDialog"
 import { Task, TaskStatus } from "@/models/Task"
-import { Project } from "@/models/Project"
+import { Project, ProjectUpdateEntry } from "@/models/Project"
 import { getCookie } from "typescript-cookie"
 import { getBackendUrl } from "@/app/serveractions/backend-url"
 import { UserInfo } from "@/models/User"
@@ -36,12 +36,13 @@ export type ProjectContext =
   project: Project | undefined,
   tasks: Task[],
   users: UserInfo[],
+  events: ProjectUpdateEntry[],
   
   refresh: boolean, //the refresh value to listen for data re-fetch
   setRefresh: Dispatch<SetStateAction<boolean>> | undefined//the setstate for refreshing and re-fetching data
 }
 
-export const projectContext = createContext<ProjectContext>({project: undefined, tasks: [], users: [], refresh: false, setRefresh: undefined});
+export const projectContext = createContext<ProjectContext>({project: undefined, tasks: [], users: [], events: [], refresh: false, setRefresh: undefined});
 
 export default function ProjectPage({
   params,
@@ -55,6 +56,7 @@ export default function ProjectPage({
   const [refresh, setRefresh] = useState(false); // an helper to restart useEffect without infinite looping
   const [tasks, setTasks] = useState<Task[]>([])
   const [users, setUsers] = useState<UserInfo[]>([]);
+  const [events, setEvents] = useState<ProjectUpdateEntry[]>([]);
   const [isEditingProject, setIsEditingProject] = useState(false)
 
   // loading flags
@@ -145,8 +147,34 @@ export default function ProjectPage({
       }
     }
 
+    const fetchEventsData = async () => {
+      setIsLoadingProject(true)
+      try {
+        const backendUrl = await getBackendUrl()
+        if (!backendUrl) throw new Error("Missing BACKEND_URL")
+
+        const at = getCookie("accessToken")
+        if (!at) throw new Error("No access token")
+
+        const res = await fetch(
+          `${backendUrl}/api/project/${id}/updates`,
+          { headers: { Authorization: at } }
+        )
+        if (!res.ok) throw new Error("Failed to fetch users")
+
+        const usersData: ProjectUpdateEntry[] = await res.json()
+        setEvents(usersData)
+        console.log(usersData)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setIsLoadingProject(false)
+      }
+    }
+
 
     fetchProjectData()
+    fetchEventsData()
     fetchTasksData()
     fetchUsersData()
   }, [id, refresh])
@@ -276,7 +304,7 @@ export default function ProjectPage({
   }
 
   return (
-    <projectContext.Provider value={{project: project, tasks: tasks, users: users, refresh: refresh, setRefresh: setRefresh}}>
+    <projectContext.Provider value={{project: project, tasks: tasks, events: events, users: users, refresh: refresh, setRefresh: setRefresh}}>
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
       <Tabs defaultValue="przeglad" className="flex flex-col flex-1">
         {/* Header */}

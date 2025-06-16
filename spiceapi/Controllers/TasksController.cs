@@ -156,6 +156,7 @@ namespace SpiceAPI.Controllers
             task.Name = body.Name;
             task.Percentage = body.Percentage;
             task.Priority = body.Priority;
+            task.DeadlineDate = body.DeadlineDate;
             await db.SaveChangesAsync();
             return Ok(task);
         }
