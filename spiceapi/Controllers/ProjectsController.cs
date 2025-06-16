@@ -28,7 +28,7 @@ namespace SpiceAPI.Controllers
             List<Project> projects = new List<Project>();
             if (user.IsApproved && user.CheckForClaims("projects.show", db))
             {
-                foreach (Project proj in db.Projects.ToListAsync().Result) 
+                foreach (Project proj in db.Projects.ToListAsync().Result)
                 {
                     if (user.CheckForClaims(proj.ScopesRequired.ToArray(), db)) projects.Add(proj);
                 }
@@ -40,14 +40,14 @@ namespace SpiceAPI.Controllers
             }
         }
 
-        class DTO 
+        class DTO
         {
             public Guid Id { get; set; }
             public List<string> perms { get; set; }
         }
-        
+
         [HttpGet("{id:guid}/getUsers")]
-        public async Task<IActionResult> GetUsersOfProject([FromHeader] string? Authorization, [FromRoute] Guid id) 
+        public async Task<IActionResult> GetUsersOfProject([FromHeader] string? Authorization, [FromRoute] Guid id)
         {
             if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
             bool isValid = tc.VerifyToken(Authorization);
@@ -64,7 +64,7 @@ namespace SpiceAPI.Controllers
 
             List<User> users = new List<User>();
             var ulist = await db.Users.Include(u => u.Roles).ToListAsync();
-            foreach (var u in ulist) 
+            foreach (var u in ulist)
             {
                 if (u.IsApproved && u.CheckForClaims("projects.show", db) && u.CheckForClaims(proj.ScopesRequired.ToArray(), db)) users.Add(u);
             }
@@ -76,16 +76,17 @@ namespace SpiceAPI.Controllers
             return Ok(ui);
         }
 
-        public record CreateProjectHeader { 
-            public string Name { get; set; } 
-            public string Description { get; set; } 
+        public record CreateProjectHeader
+        {
+            public string Name { get; set; }
+            public string Description { get; set; }
             public List<string> Scopes { get; set; }
             public ProjectStatus Status { get; set; }
             public int Priority { get; set; }
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateProject([FromHeader] string? Authorization, [FromBody] CreateProjectHeader np) 
+        public async Task<IActionResult> CreateProject([FromHeader] string? Authorization, [FromBody] CreateProjectHeader np)
         {
             if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
             bool isValid = tc.VerifyToken(Authorization);
@@ -116,7 +117,7 @@ namespace SpiceAPI.Controllers
         }
 
         [HttpPut("{id:guid}/edit")]
-        public async Task<IActionResult> EditProject([FromHeader] string? Authorization, [FromBody] CreateProjectHeader np, [FromRoute] Guid id) 
+        public async Task<IActionResult> EditProject([FromHeader] string? Authorization, [FromBody] CreateProjectHeader np, [FromRoute] Guid id)
         {
             if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
             bool isValid = tc.VerifyToken(Authorization);
@@ -142,8 +143,54 @@ namespace SpiceAPI.Controllers
             return Ok(proj);
         }
 
+
+        public class editStatusHeaders
+        {
+            public string Name { get; set; }
+            public string Summary { get; set; }
+            public List<Guid> FilesLinked { get; set; }
+            public ProjectStatus Status { get; set; }
+        }
+
+        [HttpPost("{id:guid}/editStatus")]
+        public async Task<IActionResult> EditProjectStatus([FromRoute] Guid id,
+        [FromHeader] string? Authorization,
+        [FromBody] editStatusHeaders body)
+        {
+            if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
+            bool isValid = tc.VerifyToken(Authorization);
+            if (!isValid) { return StatusCode(403, "Invalid Token"); }
+
+            User? user = await tc.RetrieveUser(Authorization);
+            if (user == null) { return BadRequest("NULL USER"); }
+
+            if (!user.IsApproved || !user.CheckForClaims("projects.show", db))
+            {
+                return StatusCode(403, "You do not have enough permissions");
+            }
+
+            Project? proj = await db.Projects.Include(p => p.Files).FirstOrDefaultAsync(p => p.Id == id);
+            if (proj == null) { return NotFound(); }
+            if (!user.CheckForClaims(proj.ScopesRequired.ToArray(), db)) { return StatusCode(403, "You do not have enough permissions"); }
+
+            foreach (var filel in body.FilesLinked)
+            {
+                if (proj.Files.FirstOrDefault(f => f.Id == filel) == null)
+                {
+                    SFile? file = await db.Files.FirstOrDefaultAsync(f => f.Id == filel);
+                    if (file == null) return BadRequest("One or more files to be linked could not be found");
+                    proj.Files.Add(file);
+                }
+                else continue;
+            }
+            if (!await ProjectUpdateEntry.AddEvent(db, body.Name, body.Summary, StatusUpdateType.ProjectStatus, proj, user.Id, null, body.FilesLinked, body.Status)) return BadRequest("One or more parameters are invalid");
+            await db.SaveChangesAsync();
+            return Ok(proj);
+        }
+
+
         [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> DeleteProject([FromHeader] string? Authorization, [FromRoute] Guid id) 
+        public async Task<IActionResult> DeleteProject([FromHeader] string? Authorization, [FromRoute] Guid id)
         {
             if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
             bool isValid = tc.VerifyToken(Authorization);
@@ -158,14 +205,15 @@ namespace SpiceAPI.Controllers
             }
 
             Project? proj = await db.Projects.Include(o => o.Sections).ThenInclude(s => s.Tasks).FirstOrDefaultAsync(p => p.Id == id);
-            if (proj == null) { return NotFound(); };
+            if (proj == null) { return NotFound(); }
+            ;
             db.Projects.Remove(proj);
             await db.SaveChangesAsync(true);
             return Ok("Gone");
         }
 
         [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetProject([FromRoute] Guid id, [FromHeader] string? Authorization) 
+        public async Task<IActionResult> GetProject([FromRoute] Guid id, [FromHeader] string? Authorization)
         {
             if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
             bool isValid = tc.VerifyToken(Authorization);
@@ -184,6 +232,28 @@ namespace SpiceAPI.Controllers
             if (!user.CheckForClaims(proj.ScopesRequired.ToArray(), db)) { return StatusCode(403, "You do not have enough permissions"); }
 
             return Ok(proj);
+        }
+
+        [HttpGet("{id:guid}/updates")]
+        public async Task<IActionResult> GetProjectUpdates([FromRoute] Guid id, [FromHeader] string? Authorization)
+        {
+            if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
+            bool isValid = tc.VerifyToken(Authorization);
+            if (!isValid) { return StatusCode(403, "Invalid Token"); }
+
+            User? user = await tc.RetrieveUser(Authorization);
+            if (user == null) { return BadRequest("NULL USER"); }
+
+            if (!user.IsApproved || !user.CheckForClaims("projects.show", db))
+            {
+                return StatusCode(403, "You do not have enough permissions");
+            }
+
+            Project? proj = await db.Projects.Include(e => e.Updates).FirstOrDefaultAsync(p => p.Id == id);
+            if (proj == null) { return NotFound(); }
+            if (!user.CheckForClaims(proj.ScopesRequired.ToArray(), db)) { return StatusCode(403, "You do not have enough permissions"); }
+
+            return Ok(proj.Updates);
         }
         
     }
