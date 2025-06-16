@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SpiceAPI;
@@ -12,9 +13,11 @@ using SpiceAPI;
 namespace SpiceAPI.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250616095914_status update")]
+    partial class statusupdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -67,9 +70,6 @@ namespace SpiceAPI.Migrations
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");
-
-                    b.Property<Guid>("User")
-                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 

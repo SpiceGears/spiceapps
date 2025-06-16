@@ -109,6 +109,7 @@ namespace SpiceAPI.Controllers
             proj.Creator = user.Id;
 
             await db.Projects.AddAsync(proj);
+            await ProjectUpdateEntry.AddEvent(db, "Projekt utworzony", $"{user.FirstName} stworzył nowy projekt", StatusUpdateType.ProjectCreated, proj, user.Id, null, new List<Guid>(), ProjectStatus.Healthy);
             await db.SaveChangesAsync();
 
             return Ok(proj);

@@ -1,11 +1,20 @@
-import { TaskSection, TaskStatus } from "./Task";
+import { Section, TaskStatus } from "./Task";
 
 export interface Project {
   id: string;
     name: string;
     description: string;
-    status: TaskStatus;
+    status: ProjectStatus;
     creator: string;
     scopesRequired: string[];
-    sections: TaskSection[]
+    sections: Section[]
+}
+
+export enum ProjectStatus 
+{
+  Healthy = 0,
+    Endangered = 1,
+    Delayed = 2,
+    Abandoned = -2,
+    Finished = -1,
 }

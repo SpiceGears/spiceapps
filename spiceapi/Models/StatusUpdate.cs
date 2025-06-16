@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using SpiceAPI;
@@ -9,18 +11,20 @@ public class ProjectUpdateEntry
     [Key]
     public Guid Id { get; set; }
 
-    public UserInfo? user { get; set; }
+    public Guid User { get; set; }
 
     [JsonIgnore]
     public Project Project { get; set; }
     public Guid ProjectId { get; set; }
 
-    public STask? Task { get; set; }
+    public Guid? Task { get; set; }
 
     public DateTime HappenedAt { get; set; } = DateTime.UtcNow;
     public List<Guid> LinkedFiles { get; set; }
     public string Name { get; set; }
     public string Summary { get; set; }
+
+    public ProjectStatus Status { get; set; }
 
 
     public StatusUpdateType Type { get; set; }
@@ -47,15 +51,98 @@ public class ProjectUpdateEntry
         StatusUpdateType type,
         Project project,
         Guid User,
-        STask? task,
-        List<Guid> filesLinked
+        Guid? task,
+        List<Guid> filesLinked,
+        ProjectStatus? newStatus
     )
     {
         User? user = await db.Users.FirstOrDefaultAsync(u => u.Id == User);
         if (user == null) return false;
-        var ui = new UserInfo(user);
+
+        if (project == null) return false;
+        bool projChangeStatus = false;
+        
+        switch (type)
+        {
+            case StatusUpdateType.ProjectCreated:
+                break;
+            case StatusUpdateType.ProjectStatus:
+                projChangeStatus = true;
+                break;
+            case StatusUpdateType.SectionAdd:
+                break;
+            case StatusUpdateType.SectionEdit:
+                break;
+            case StatusUpdateType.SectionDelete:
+                break;
+            case StatusUpdateType.TaskAdd:
+                if (await db.STasks.FirstOrDefaultAsync(t => t.Id == task) == null) return false;
+                if (task == null) return false;
+                break;
+            case StatusUpdateType.TaskEdit:
+                if (await db.STasks.FirstOrDefaultAsync(t => t.Id == task) == null) return false;
+                if (task == null) return false;
+                break;
+            case StatusUpdateType.TaskDelete:
+                if (task == null) return false;
+                break;
+            case StatusUpdateType.TaskStatusUpdate:
+                if (await db.STasks.FirstOrDefaultAsync(t => t.Id == task) == null) return false;
+                if (task == null) return false;
+                break;
+            case StatusUpdateType.TaskMoveToSection:
+                if (await db.STasks.FirstOrDefaultAsync(t => t.Id == task) == null) return false;
+                if (task == null) return false;
+                break;
+            default:
+                break;
+        }
+        ProjectUpdateEntry entry;
+
+        if (projChangeStatus && newStatus != null) 
+        {
+            entry = new ProjectUpdateEntry()
+            {
+                Type = type,
+                HappenedAt = DateTime.UtcNow,
+                Project = project,
+                Task = task,
+                Id = Guid.NewGuid(),
+                LinkedFiles = filesLinked,
+                Name = name,
+                Summary = summary,
+                ProjectId = project.Id,
+                User = user.Id,
+                Status = (ProjectStatus)newStatus,
+            };
+
+            Project? proj = await db.Projects.FirstOrDefaultAsync(p => p.Id == project.Id);
+            if (proj != null) 
+            {
+                proj.Status = (ProjectStatus)newStatus;
+            }
+        }
+        else {
+            entry = new ProjectUpdateEntry()
+            {
+                Type = type,
+                HappenedAt = DateTime.UtcNow,
+                Project = project,
+                Task = task,
+                Id = Guid.NewGuid(),
+                LinkedFiles = filesLinked,
+                Name = name,
+                Summary = summary,
+                ProjectId = project.Id,
+                User = user.Id,
+                Status = project.Status,
+            };
+        }
+        await db.projectUpdates.AddAsync(entry);
 
         await db.SaveChangesAsync();
+
+
         return true;
     }
 }

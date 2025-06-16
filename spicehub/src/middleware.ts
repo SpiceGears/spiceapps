@@ -55,8 +55,10 @@ export const config = {
      * Match all routes except:
      * - /login (public login page)
      * - /api (optional: skip API routes)
+     * - /maintanance - in case of API being disabled
+     * - /register - registration page
      * - _next (Next.js internals like static files)
      */
-    '/((?!login|api|maintanance|_next|favicon.ico).*)',
+    '/((?!login|api|maintanance|register|_next|favicon.ico).*)',
   ],
 };
