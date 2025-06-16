@@ -43,7 +43,7 @@ namespace SpiceAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginHeaders form) 
         {
-            User user = await db.Users.Where(u => u.Email == form.Login).FirstAsync(); //retrieve the user with the email
+            User user = await db.Users.Where(u => u.Email == form.Login).FirstOrDefaultAsync(); //retrieve the user with the email
             if (user == null) 
             {
                 //who are we loggin' as? nonexistant one ig

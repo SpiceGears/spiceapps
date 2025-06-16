@@ -139,6 +139,13 @@ namespace SpiceAPI.Controllers
             proj.ScopesRequired = np.Scopes;
             proj.Status = np.Status;
             proj.Priority = np.Priority;
+
+            await ProjectUpdateEntry.AddEvent(db,
+            "Edytowano dane projektu",
+            $"{user.FirstName} zmienił dane projektu",
+            StatusUpdateType.ProjectStatus,
+            proj, user.Id, null, new List<Guid>(), np.Status);
+            
             await db.SaveChangesAsync();
             return Ok(proj);
         }
