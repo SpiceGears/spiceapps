@@ -3,14 +3,26 @@ import { SafeAreaView, StyleSheet, View, StatusBar } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BackendUrl } from "@/Constants/backend"
+import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "expo-router";
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const insets = useSafeAreaInsets()
+    const [error, setError] = useState("");
+    const insets = useSafeAreaInsets();
+    const router = useRouter();
+
+    const { login } = useAuth();
 
     const handleLogin = async () => {
-
+        if (login) {
+            const error = await login(email, password);
+            if (error) {
+                setError(error);
+            }
+            router.replace("/(tabs)/spicehub");
+        } 
     }
 
     return (
@@ -92,9 +104,7 @@ export default function LoginScreen() {
                             labelStyle={styles.buttonLabel}
                             disabled={
                                 !email ||
-                                !password ||
-                                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
-                                password.length < 7
+                                !password
                             }
                         >
                             Login
