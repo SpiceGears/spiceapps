@@ -10,20 +10,40 @@ export default function LoginScreen() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
+    const [loading, setLoading] = useState(null)
     const insets = useSafeAreaInsets();
     const router = useRouter();
 
-    const { login } = useAuth();
+    // const { login } = useAuth();
 
+    // const handleLogin = async () => {
+    //     if (login) {
+    //         const error = await login(email, password);
+    //         if (error) {
+    //             setError(error);
+    //         }
+    //         router.replace("/(tabs)/spicehub");
+    //     } 
+    // }
     const handleLogin = async () => {
-        if (login) {
-            const error = await login(email, password);
-            if (error) {
-                setError(error);
-            }
-            router.replace("/(tabs)/spicehub");
-        } 
+        if(!email || !password) {
+            setError("Jeśli otrzymałeś ten błąd to jesteś bogiem")
+            return;
+        }
+
+        try{
+            const response = await fetch(`${BackendUrl}/api/auth/login`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(payload)
+            })
+        } catch (e) {
+
+        }
     }
+
 
     return (
         <SafeAreaView
