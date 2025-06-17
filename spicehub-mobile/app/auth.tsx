@@ -108,6 +108,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     height: 48,
     marginVertical: 6,
+    backgroundColor: "#1976d2" // Changed to a more visible blue
   },
   buttonContent: {
     height: '100%',

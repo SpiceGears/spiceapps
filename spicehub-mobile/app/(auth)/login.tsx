@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
         alignSelf: "center",
     },
     button: {
-        backgroundColor: "#dce8f3",
+        backgroundColor: "#1976d2",
         borderRadius: 12,
         elevation: 0,
     },
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
         height: 48,
     },
     buttonLabel: {
-        color: "#121416",
+        color: "#ffffff",
         fontSize: 16,
         fontWeight: "bold",
     },
