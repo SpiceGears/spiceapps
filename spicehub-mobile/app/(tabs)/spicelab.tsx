@@ -13,6 +13,7 @@ import { useUserData } from '@/hooks/userData';
 import * as SecureStore from 'expo-secure-store';
 import { Task } from '@/models/Task';
 import { Project } from '@/models/Project';
+import { router } from 'expo-router';
 
 export default function TasksScreen() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -100,7 +101,7 @@ export default function TasksScreen() {
             <Card key={i} style={styles.taskCard}>
               <Card.Title
                 title={task.name}
-                subtitle={`Due: ${task.due} · ${task.category}`}
+                subtitle={`Due: ${task.deadlineDate}`}
                 left={(props) => (
                   <Avatar.Icon
                     {...props}
@@ -119,7 +120,7 @@ export default function TasksScreen() {
           projects.map((proj, i) => (
             <List.Item
               key={i}
-              title={proj}
+              title={proj.name}
               left={(props) => (
                 <List.Icon
                   {...props}
@@ -135,10 +136,10 @@ export default function TasksScreen() {
       <FAB
         icon="plus"
         onPress={() => {
-          /* TODO: navigate to “Create Task” screen */
-          console.log('FAB pressed');
+            router.replace("/(project)/NewProject");
         }}
         style={styles.fab}
+        color="#ffffff"
       />
     </SafeAreaView>
   );
@@ -161,5 +162,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 16,
     bottom: 16,
+    backgroundColor: "#1976d2",
+    color: "#ffffff"
   },
 });
