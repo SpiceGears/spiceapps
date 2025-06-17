@@ -3,9 +3,7 @@ import { SafeAreaView, StyleSheet, View, StatusBar, Alert } from "react-native";
 import { TextInput, Button, Text } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BackendUrl } from "@/Constants/backend"
-import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "expo-router";
-// import CookieManager from "@react-native-cookies/cookies"
 import * as SecureStore from "expo-secure-store";
 
 export default function LoginScreen() {
@@ -16,17 +14,6 @@ export default function LoginScreen() {
     const insets = useSafeAreaInsets();
     const router = useRouter();
 
-    // const { login } = useAuth();
-
-    // const handleLogin = async () => {
-    //     if (login) {
-    //         const error = await login(email, password);
-    //         if (error) {
-    //             setError(error);
-    //         }
-    //         router.replace("/(tabs)/spicehub");
-    //     } 
-    // }
     const handleLogin = async () => {
         if(!email || !password) {
             setError("Jeśli otrzymałeś ten błąd to jesteś bogiem")
@@ -57,13 +44,10 @@ export default function LoginScreen() {
 
                 await SecureStore.setItemAsync("accessToken", data.access_Token);
 
-                Alert.alert(
-                    "Sukces",
-                    "Zostałeś zalogowany"
-                )
             } else {
                 throw new Error("Nie znaleziono tokenów w odpowiedzi");
             }
+            router.replace("/(tabs)/spicehub");
         } catch (err) {
             setError("Logowanie nie powiodło się: " + err);
         }
@@ -154,7 +138,7 @@ export default function LoginScreen() {
                         >
                             Login
                         </Button>
-                        {error && <Text style={styles.errorText}>{error}</Text>}
+                        {error ? <Text style={styles.errorText}>{error}</Text> : null}
                     </View>
                     <View style={styles.spacer} />
                 </View>
