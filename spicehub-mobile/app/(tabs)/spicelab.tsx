@@ -1,13 +1,21 @@
 import { BackendUrl } from '@/Constants/backend';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet } from 'react-native';
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {
   Appbar,
   Card,
   Text,
-  List,
   Avatar,
   FAB,
+  Menu,
+  IconButton,
+  List,
+  useTheme,
 } from 'react-native-paper';
 import { useUserData } from '@/hooks/userData';
 import * as SecureStore from 'expo-secure-store';
@@ -16,153 +24,260 @@ import { Project } from '@/models/Project';
 import { router } from 'expo-router';
 
 export default function TasksScreen() {
+  const theme = useTheme();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const { data, loading, error } = useUserData();
 
-  // fetch tasks
+  // Task filter state
+  const [taskMenuVisible, setTaskMenuVisible] = useState(false);
+  const [taskFilter, setTaskFilter] = useState<
+    'All' | 'Pending' | 'Completed'
+  >('All');
+
+  // Project filter state
+  const [projMenuVisible, setProjMenuVisible] = useState(false);
+  const [projFilter, setProjFilter] = useState<'All' | 'Active'>(
+    'All'
+  );
+
+  // Apply filters
+  const filteredTasks = tasks.filter((t) => {
+    if (taskFilter === 'All') return true;
+    if (taskFilter === 'Pending') return !t.finished;
+    return t.finished;
+  });
+  const filteredProjects = projects.filter((p) => {
+    if (projFilter === 'All') return true;
+    return p.status !== -2 && p.status !== -1;
+  });
+
+  // Fetch tasks
   useEffect(() => {
-    const fetchTasks = async () => {
+    async function fetchTasks() {
       try {
-        const accessToken = await SecureStore.getItemAsync(
-          'accessToken'
-        );
+        const token = await SecureStore.getItemAsync('accessToken');
         const userId = data?.id;
-        if (!userId || !accessToken) return;
-        const response = await fetch(
+        if (!userId || !token) return;
+        const resp = await fetch(
           `${BackendUrl}/api/user/${userId}/getAssignedTasks`,
           {
             headers: {
               'Content-Type': 'application/json',
-              Authorization: accessToken,
+              Authorization: token,
             },
           }
         );
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(
-            `HTTP ${response.status}: ${errorText}`
-          );
-        }
-        const tasksData = await response.json();
-        setTasks(tasksData);
+        if (!resp.ok) throw new Error(await resp.text());
+        setTasks(await resp.json());
       } catch (err) {
         console.error('Failed to fetch tasks:', err);
       }
-    };
+    }
     if (!loading && !error && data?.id) fetchTasks();
   }, [data, loading, error]);
 
-  // fetch projects
+  // Fetch projects
   useEffect(() => {
-    const fetchProjects = async () => {
+    async function fetchProjects() {
       try {
-        const accessToken = await SecureStore.getItemAsync(
-          'accessToken'
-        );
-        if (!accessToken) return;
-        const response = await fetch(
-          `${BackendUrl}/api/project`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: accessToken,
-            },
-          }
-        );
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(
-            `HTTP ${response.status}: ${errorText}`
-          );
-        }
-        const projectData = await response.json();
-        setProjects(projectData);
+        const token = await SecureStore.getItemAsync('accessToken');
+        if (!token) return;
+        const resp = await fetch(`${BackendUrl}/api/project`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: token,
+          },
+        });
+        if (!resp.ok) throw new Error(await resp.text());
+        setProjects(await resp.json());
       } catch (err) {
         console.error('Failed to fetch projects:', err);
       }
-    };
+    }
     fetchProjects();
   }, []);
 
+  const cardStyle = {
+    backgroundColor: theme.colors.surface,
+    elevation: 2,
+    borderRadius: 12,
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: theme.colors.background },
+      ]}
+    >
       <Appbar.Header>
         <Appbar.Action icon="format-list-bulleted" />
-        <Appbar.Content title="Tasks" />
+        <Appbar.Content title="Dashboard" />
       </Appbar.Header>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.sectionTitle}>My Tasks</Text>
-        {tasks.length === 0 ? (
-          <Text>No tasks to do</Text>
-        ) : (
-          tasks.map((task, i) => (
-            <Card key={i} style={styles.taskCard}>
-              <Card.Title
-                title={task.name}
-                subtitle={`Due: ${task.deadlineDate}`}
-                left={(props) => (
-                  <Avatar.Icon
-                    {...props}
-                    icon="circle-outline"
+        {/* TASKS CARD */}
+        <Card style={[styles.sectionCard, cardStyle]}>
+          <Card.Content>
+            <View style={styles.headerRow}>
+              <Text variant="titleMedium">My Tasks</Text>
+              <Menu
+                visible={taskMenuVisible}
+                onDismiss={() => setTaskMenuVisible(false)}
+                anchor={
+                  <IconButton
+                    icon="filter-variant"
+                    onPress={() => setTaskMenuVisible(true)}
                   />
-                )}
-              />
-            </Card>
-          ))
-        )}
+                }
+              >
+                <Menu.Item
+                  title="All"
+                  onPress={() => {
+                    setTaskFilter('All');
+                    setTaskMenuVisible(false);
+                  }}
+                />
+                <Menu.Item
+                  title="Pending"
+                  onPress={() => {
+                    setTaskFilter('Pending');
+                    setTaskMenuVisible(false);
+                  }}
+                />
+                <Menu.Item
+                  title="Completed"
+                  onPress={() => {
+                    setTaskFilter('Completed');
+                    setTaskMenuVisible(false);
+                  }}
+                />
+              </Menu>
+            </View>
 
-        <Text style={styles.sectionTitle}>Projects</Text>
-        {projects.length === 0 ? (
-          <Text>No Projects found</Text>
-        ) : (
-          projects.map((proj, i) => (
-            <List.Item
-              key={i}
-              title={proj.name}
-              left={(props) => (
-                <List.Icon
+            {filteredTasks.length === 0 ? (
+              <Text
+                style={[
+                  styles.emptyText,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
+              >
+                No tasks to show
+              </Text>
+            ) : (
+              filteredTasks.map((task, i) => (
+                <List.Item
+                  key={i}
+                  title={task.name}
+                  description={`Due: ${task.deadlineDate}`}
+                  left={(props) => (
+                    <Avatar.Icon {...props} icon="circle-outline" />
+                  )}
+                />
+              ))
+            )}
+          </Card.Content>
+        </Card>
+
+        {/* PROJECTS CARD */}
+        <Card style={[styles.sectionCard, cardStyle]}>
+          <Card.Content>
+            <View style={styles.headerRow}>
+              <Text variant="titleMedium">Projects</Text>
+              <Menu
+                visible={projMenuVisible}
+                onDismiss={() => setProjMenuVisible(false)}
+                anchor={
+                  <IconButton
+                    icon="filter-variant"
+                    onPress={() => setProjMenuVisible(true)}
+                  />
+                }
+              >
+                <Menu.Item
+                  title="All"
+                  onPress={() => {
+                    setProjFilter('All');
+                    setProjMenuVisible(false);
+                  }}
+                />
+                <Menu.Item
+                  title="Active"
+                  onPress={() => {
+                    setProjFilter('Active');
+                    setProjMenuVisible(false);
+                  }}
+                />
+              </Menu>
+            </View>
+
+            {filteredProjects.length === 0 ? (
+              <Text
+              style={[
+                styles.emptyText,
+                { color: theme.colors.onSurfaceVariant },
+              ]}
+              >
+              No projects to show
+              </Text>
+            ) : (
+              filteredProjects.map((proj, i) => (
+              <List.Item
+                key={i}
+                title={proj.name}
+                description={`Status: ${
+                proj.status !== -2 && proj.status !== -1
+                  ? 'Active'
+                  : 'Inactive'
+                }`}
+                left={(props) => (
+                <Avatar.Icon
                   {...props}
                   icon="briefcase-outline"
+                  color="#1976d2"
+                  style={[props.style, { backgroundColor: 'transparent' }]}
                 />
-              )}
-            />
-          ))
-        )}
+                )}
+              />
+              ))
+            )}
+          </Card.Content>
+        </Card>
       </ScrollView>
 
-      {/* Floating Action Button */}
       <FAB
         icon="plus"
-        onPress={() => {
-            router.replace("/(project)/NewProject");
-        }}
-        style={styles.fab}
-        color="#ffffff"
+        onPress={() => router.replace('/(project)/NewProject')}
+        style={[styles.fab, { backgroundColor: "#1976d2" }]}
       />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  content: { padding: 16 },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#121416',
-    marginBottom: 8,
-    marginTop: 16,
+  container: {
+    flex: 1,
   },
-  taskCard: {
-    marginBottom: 8,
+  content: {
+    padding: 16,
+  },
+  sectionCard: {
+    marginBottom: 16,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginVertical: 8,
   },
   fab: {
     position: 'absolute',
     right: 16,
     bottom: 16,
-    backgroundColor: "#1976d2",
-    color: "#ffffff"
   },
 });
