@@ -5,7 +5,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BackendUrl } from "@/Constants/backend"
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "expo-router";
-import CookieManager from "@react-native-cookies/cookies"
+// import CookieManager from "@react-native-cookies/cookies"
+import * as SecureStore from "expo-secure-store";
 
 export default function LoginScreen() {
     const [email, setEmail] = useState("");
@@ -52,17 +53,9 @@ export default function LoginScreen() {
             }
 
             if(data.access_Token && data.refresh_Token) {
-                await CookieManager.set(BackendUrl, {
-                    name: "refreshToken",
-                    value: data.refresh_Token,
-                    path: "/",
-                });
+                await SecureStore.setItemAsync("refreshToken", data.refresh_Token);
 
-                await CookieManager.set(BackendUrl, {
-                    name: "accessToken",
-                    value: data.access_Token,
-                    path: "/",
-                })
+                await SecureStore.setItemAsync("accessToken", data.access_Token);
 
                 Alert.alert(
                     "Sukces",
