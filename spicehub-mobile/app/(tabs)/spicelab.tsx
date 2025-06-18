@@ -260,7 +260,7 @@ export default function TasksScreen() {
 
       <FAB
         icon="plus"
-        onPress={() => router.replace('/(project)/NewProject')}
+        onPress={() => router.replace('/project/NewProject')}
         style={[styles.fab, { backgroundColor: '#1976d2' }]}
       />
     </SafeAreaView>
