@@ -166,14 +166,20 @@ export default function TasksScreen() {
                 No tasks to show
               </Text>
             ) : (
-              filteredTasks.map((task, i) => (
+              filteredTasks.map((task) => (
                 <List.Item
-                  key={i}
+                  key={task.id}
                   title={task.name}
                   description={`Due: ${task.deadlineDate}`}
                   left={(props) => (
                     <Avatar.Icon {...props} icon="circle-outline" />
                   )}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/task/[id]",
+                      params: { id: String(task.id) }
+                    })
+                  }
                 />
               ))
             )}
@@ -214,32 +220,38 @@ export default function TasksScreen() {
 
             {filteredProjects.length === 0 ? (
               <Text
-              style={[
-                styles.emptyText,
-                { color: theme.colors.onSurfaceVariant },
-              ]}
+                style={[
+                  styles.emptyText,
+                  { color: theme.colors.onSurfaceVariant },
+                ]}
               >
-              No projects to show
+                No projects to show
               </Text>
             ) : (
-              filteredProjects.map((proj, i) => (
-              <List.Item
-                key={i}
-                title={proj.name}
-                description={`Status: ${
-                proj.status !== -2 && proj.status !== -1
-                  ? 'Active'
-                  : 'Inactive'
-                }`}
-                left={(props) => (
-                <Avatar.Icon
-                  {...props}
-                  icon="briefcase-outline"
-                  color="#1976d2"
-                  style={[props.style, { backgroundColor: 'transparent' }]}
+              filteredProjects.map((proj) => (
+                <List.Item
+                  key={proj.id}
+                  title={proj.name}
+                  description={`Status: ${
+                    proj.status !== -2 && proj.status !== -1
+                      ? 'Active'
+                      : 'Inactive'
+                  }`}
+                  left={(props) => (
+                    <Avatar.Icon
+                      {...props}
+                      icon="briefcase-outline"
+                      color="#1976d2"
+                      style={[props.style, { backgroundColor: 'transparent' }]}
+                    />
+                  )}
+                  onPress={() =>
+                    router.replace({
+                      pathname: "/project/[id]",
+                      params: { id: String(proj.id) }
+                    })
+                  }
                 />
-                )}
-              />
               ))
             )}
           </Card.Content>
@@ -249,7 +261,7 @@ export default function TasksScreen() {
       <FAB
         icon="plus"
         onPress={() => router.replace('/(project)/NewProject')}
-        style={[styles.fab, { backgroundColor: "#1976d2" }]}
+        style={[styles.fab, { backgroundColor: '#1976d2' }]}
       />
     </SafeAreaView>
   );
