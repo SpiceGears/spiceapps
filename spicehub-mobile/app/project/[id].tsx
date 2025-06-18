@@ -451,18 +451,18 @@ const ProjectTasksScreen = ({ navigation }: { navigation: any }) => {
         </View>
     );
 
-    const handleBackPress = () => {
-        if (navigation && navigation.goBack) {
-            navigation.goBack();
-        } else {
-            router.back();
-        }
-    };
+    // const handleBackPress = () => {
+    //     if (navigation && navigation.goBack) {
+    //         navigation.goBack();
+    //     } else {
+    //         router.back();
+    //     }
+    // };
 
     return (
         <SafeAreaView style={styles.container}>
             <Appbar.Header>
-                <Appbar.BackAction onPress={handleBackPress} />
+                <Appbar.BackAction onPress={() => router.replace("/(tabs)/spicelab")} />
                 <Appbar.Content title={projectData?.name || "Project"} />
                 <Appbar.Action
                     icon="dots-vertical"
