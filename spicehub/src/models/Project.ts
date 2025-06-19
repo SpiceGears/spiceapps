@@ -32,7 +32,7 @@ export interface ProjectUpdateEntry {
   task?: string | null;
 
   /** Timestamp (ISO 8601) when the update happened */
-  happenedAt: string;
+  happenedAt: Date;
 
   /** Any linked file IDs */
   linkedFiles: string[];

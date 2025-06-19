@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo, use, createContext, SetStateAction, Dispatch } from "react"
 import { useRouter } from "next/navigation"
-import { Folder, ChevronDown, Pen, Palette } from "lucide-react"
+import { Folder, ChevronDown, Pen, Palette, CarTaxiFront } from "lucide-react"
 import {
   Tabs,
   TabsList,
@@ -37,12 +37,20 @@ export type ProjectContext =
   tasks: Task[],
   users: UserInfo[],
   events: ProjectUpdateEntry[],
+  loading: boolean,
   
   refresh: boolean, //the refresh value to listen for data re-fetch
   setRefresh: Dispatch<SetStateAction<boolean>> | undefined//the setstate for refreshing and re-fetching data
 }
 
-export const projectContext = createContext<ProjectContext>({project: undefined, tasks: [], users: [], events: [], refresh: false, setRefresh: undefined});
+export const projectContext = createContext<ProjectContext>({
+  project: undefined, 
+  tasks: [], 
+  users: [], 
+  events: [],
+  loading: true, 
+  refresh: false, 
+  setRefresh: undefined});
 
 export default function ProjectPage({
   params,
@@ -62,7 +70,6 @@ export default function ProjectPage({
   // loading flags
   const [isLoadingProject, setIsLoadingProject] = useState(true)
   const [isLoadingTasks, setIsLoadingTasks] = useState(true)
-  const [isLoadingUsers, setIsLoadingUsers] = useState(true)
 
   // derive some dashboard data
   const dashboardData = useMemo(() => {
@@ -118,7 +125,7 @@ export default function ProjectPage({
       } catch (e) {
         console.error(e)
       } finally {
-        setIsLoadingTasks(false)
+        //setIsLoadingTasks(false)
       }
     }
 
@@ -172,11 +179,12 @@ export default function ProjectPage({
       }
     }
 
-
+    console.log("Is loading?:", isLoadingProject || isLoadingTasks)
     fetchProjectData()
     fetchEventsData()
     fetchTasksData()
     fetchUsersData()
+    console.log("Is loading?:", isLoadingProject || isLoadingTasks)
   }, [id, refresh])
 
   
@@ -304,7 +312,7 @@ export default function ProjectPage({
   }
 
   return (
-    <projectContext.Provider value={{project: project, tasks: tasks, events: events, users: users, refresh: refresh, setRefresh: setRefresh}}>
+    <projectContext.Provider value={{project: project, tasks: tasks, events: events, users: users, loading: isLoadingProject || isLoadingTasks, refresh: refresh, setRefresh: setRefresh}}>
     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
       <Tabs defaultValue="przeglad" className="flex flex-col flex-1">
         {/* Header */}

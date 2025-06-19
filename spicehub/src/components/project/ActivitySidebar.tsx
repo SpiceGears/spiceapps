@@ -22,16 +22,12 @@ export function ActivitySidebar() {
         </h3>
       </div>
       <div className="p-4 flex-1">
-        <StatusUpdate
-          title="Zaktualizowano status projektu"
-          author="Janusz Kowalski"
-          date={format(new Date(), "PPP")}
-        />
-        <ProjectCreated
-          title="Utworzono projekt"
-          author="Janusz Kowalski"
-          date={format(new Date(), "PPP")}
-        />
+        {/* <StatusUpdate
+          update={ctx.events[0]}
+        /> */}
+        {ctx.events.toReversed().map((update, index) => {
+          return (<StatusUpdate update={update} key={update.id} />)
+        })}
       </div>
     </div>
   )

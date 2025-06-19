@@ -6,6 +6,7 @@ using Serilog;
 using SpiceAPI;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using SpiceAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +41,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql());
 //builder.Services.AddDbContext<DataContext>(options => options.UseSqlite("Filename=debug_database.db"));
-
+builder.Services.AddSignalR();
 // Add services to the container.
 builder.Services.AddControllers(); // Ensure this line is present
 builder.Services.AddEndpointsApiExplorer();
@@ -161,6 +162,7 @@ app.UseHttpsRedirection();
 
 
 app.MapControllers(); // Ensure this line is present
+app.MapHub<NotificationsHub>("/realtime/notifications");
 
 app.Run();
 
