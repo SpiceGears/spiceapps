@@ -369,6 +369,31 @@ namespace SpiceAPI.Migrations
                     b.ToTable("RSAParams");
                 });
 
+            modelBuilder.Entity("SpiceAPI.Services.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("User")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("ProjectSFile", b =>
                 {
                     b.HasOne("SpiceAPI.Models.SFile", null)

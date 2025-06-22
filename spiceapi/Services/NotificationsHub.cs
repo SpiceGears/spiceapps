@@ -46,7 +46,8 @@ namespace SpiceAPI.Services
     {
         private readonly DataContext db;
         private readonly Token tc;
-        public NotificationHelper(DataContext db, Token tc) { this.tc = tc; this.db = db; }
+        private readonly IHubContext<NotificationsHub> hub;
+        public NotificationHelper(DataContext db, Token tc, IHubContext<NotificationsHub> hub) { this.tc = tc; this.db = db; this.hub = hub; }
         
         
         public List<string> GetUsersIdToGroup(List<Guid> ids)
@@ -59,8 +60,23 @@ namespace SpiceAPI.Services
             return strings;
         }
 
-        public async Task SendToUsersInProject(Guid projId, Notification notify) 
+        public async Task SendToUsersInProject(Guid projId, Notification notify)
         {
+            Project? proj = await db.Projects.FindAsync(projId);
+            if (proj == null) { throw new ArgumentNullException("Project of such ID not found"); }
+
+            List<User> users = new List<User>();
+            var ulist = await db.Users.Include(u => u.Roles).ToListAsync();
+            foreach (var u in ulist)
+            {
+                if (u.IsApproved && u.CheckForClaims("projects.show", db) && u.CheckForClaims(proj.ScopesRequired.ToArray(), db)) users.Add(u);
+            }
+            List<string> res = GetUsersIdToGroup(users.Select(u => u.Id).ToList());
+
+            foreach (var gr in res)
+            {
+                await hub.Clients.Group(gr).SendAsync("Notification", notify);
+            }
 
         }
     }
@@ -68,14 +84,14 @@ namespace SpiceAPI.Services
     public class Notification 
     {
         [Key]
-        Guid Id { get; set; }
+        public Guid Id { get; set; }
 
-        Guid User {  get; set; }
+        public Guid User {  get; set; }
 
-        string Title { get; set; }
-        string Description { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
 
-        NotificationType Type { get; set; }
+        public NotificationType Type { get; set; }
 
         public Notification() { }
         public Notification(Guid user, string title, string description, NotificationType type)
