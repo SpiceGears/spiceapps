@@ -61,6 +61,7 @@ namespace SpiceAPI.Models
         public bool CheckForClaims(string[] perms, DataContext db) 
         {
             string[] curpem = GetAllPermissions(db).ToArray();
+            if (!this.IsApproved) return false;
             if (curpem.Contains("admin")) return true;
             foreach (var perm in perms) 
             {
@@ -73,7 +74,7 @@ namespace SpiceAPI.Models
         public bool CheckForClaims(string perms, DataContext db)
         {
             string[] curpem = GetAllPermissions(db).ToArray();
-
+            if (!this.IsApproved) return false;
             if (curpem.Contains("admin")) return true;
             
             return curpem.Contains(perms);

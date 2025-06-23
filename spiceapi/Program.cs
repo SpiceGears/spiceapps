@@ -77,6 +77,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<Crypto>();
 builder.Services.AddScoped<SignatureCrypto>();
 builder.Services.AddScoped<Token>();
+builder.Services.AddScoped<NotificationHelper>();
 //builder.Services.AddScoped<FileContext>();
 
 // Load additional configuration from appsettings.Secret.json

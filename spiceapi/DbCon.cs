@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SpiceAPI.Auth;
 using SpiceAPI.Models;
+using SpiceAPI.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Data;
 using System.Security.Cryptography;
@@ -26,6 +27,8 @@ namespace SpiceAPI
         public DbSet<Entry> Entrys { get; set; }
 
         public DbSet<SFile> Files { get; set; }
+        
+        public DbSet<Notification> Notifications { get; set; }
 
 
         //w taki sposób dodajesz obiekty do przechowywania
@@ -52,6 +55,10 @@ namespace SpiceAPI
                 .WithOne(u => u.Project)
                 .HasForeignKey(s => s.ProjectId)
                 .IsRequired().OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Notification>().HasKey(k => k.Id);
+
+
 
             //modelBuilder.Entity<Project>()
             //    .HasMany(s => s.Sections)
