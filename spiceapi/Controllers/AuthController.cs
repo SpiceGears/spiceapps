@@ -100,7 +100,7 @@ namespace SpiceAPI.Controllers
             if (!password.Any(char.IsLower))
                 errors.Add(new("Hasło musi zawierać co najmniej jedną małą literę.", "PASSWORD_NO_LOWER"));
 
-            if (!password.Any(char.IsDigit) || !password.Any(char.IsSymbol))
+            if (!password.Any(char.IsDigit) && !password.Any(char.IsSymbol))
                 errors.Add(new("Hasło musi zawierać co najmniej jedną cyfrę lub znak specjalny.", "PASSWORD_NO_SPECIAL"));
 
             return errors.Count == 0;
