@@ -6,6 +6,7 @@ using SpiceAPI.Auth;
 using SpiceAPI.Helpers;
 using SpiceAPI.Models;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SpiceAPI.Controllers
 {
@@ -79,10 +80,35 @@ namespace SpiceAPI.Controllers
             }
         }
 
+        [NonAction]
+        public static bool IsStrongPassword(string password, out List<ErrorResponse> errors)
+        {
+            errors = new();
+
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                errors.Add(new("Hasło nie może być puste.", "PASSWORD_EMPTY"));
+                return false;
+            }
+
+            if (password.Length < 7)
+                errors.Add(new("Hasło musi mieć co najmniej 7 znaków.", "PASSWORD_TOO_SHORT"));
+
+            if (!password.Any(char.IsUpper))
+                errors.Add(new("Hasło musi zawierać co najmniej jedną wielką literę.", "PASSWORD_NO_UPPER"));
+
+            if (!password.Any(char.IsLower))
+                errors.Add(new("Hasło musi zawierać co najmniej jedną małą literę.", "PASSWORD_NO_LOWER"));
+
+            if (!password.Any(char.IsDigit) || !password.Any(char.IsSymbol))
+                errors.Add(new("Hasło musi zawierać co najmniej jedną cyfrę lub znak specjalny.", "PASSWORD_NO_SPECIAL"));
+
+            return errors.Count == 0;
+        }
         public class TokenResponse //returning tokens as response body
         {
             public string Access_Token { get; set; }
-            public string Refresh_Token { get; set;}
+            public string Refresh_Token { get; set; }
         }
 
         [HttpPost("register")]
@@ -103,6 +129,12 @@ namespace SpiceAPI.Controllers
                 case "executive":
                     break;
                 default: return BadRequest($"Department parameter: {ui.Department} is not an allowed value");
+            }
+            List<ErrorResponse> innerErrors = new();
+            if (!IsStrongPassword(ui.Password, out innerErrors))
+            {
+                var err = new ErrorResponse("Password is too weak", "PASSWORD_TOO_WEAK", "One or more criteria were not met", innerErrors);
+                return BadRequest(err);
             }
             
             
@@ -134,7 +166,7 @@ namespace SpiceAPI.Controllers
                 case "executive":
                     user.Department = Department.Executive;
                     break;
-                default: return BadRequest($"Department parameter: {ui.Department} is not an allowed value");
+                default: return BadRequest(new ErrorResponse("Department value is invalid", "INVALID_FORM", "Department parameter may only be: programmer, mechanic, socialmedia, marketing, mentor, executive"));
             }
 
             await db.Users.AddAsync( user );
@@ -167,7 +199,7 @@ namespace SpiceAPI.Controllers
         public async Task<IActionResult> Logout([FromHeader] string? Authorization) 
         {
             if (Authorization == null) { return BadRequest("Provide the refresh token to continue"); }
-            RefreshToken rt = await db.RefreshTokens.FindAsync(Authorization);
+            RefreshToken? rt = await db.RefreshTokens.FindAsync(Authorization);
             if (rt == null) { return BadRequest("This token does not exist"); }
             db.RefreshTokens.Remove(rt);
             await db.SaveChangesAsync();
@@ -228,6 +260,11 @@ namespace SpiceAPI.Controllers
 
             if (crypto.TestPassword(body.OldPassword, user.Password)) 
             {
+                if (!IsStrongPassword(body.NewPassword, out var errors))
+                {
+                    var err = new ErrorResponse("Password is too weak", "PASSWORD_TOO_WEAK", "One or more criteria were not met", errors);
+                    return BadRequest(err);
+                }
                 user.Password = crypto.Hash(body.NewPassword);
                 await db.SaveChangesAsync();
                 return Ok(new UserInfo(user));
