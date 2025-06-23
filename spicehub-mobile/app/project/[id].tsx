@@ -66,7 +66,9 @@ export default function ProjectScreen() {
         )}
         <Button>Test</Button>
       </ScrollView>
-      <ProjectMenu onSheetChange={() => console.log("sheet changed")} />
+      <ProjectMenu onSheetChange={(idx: number) => {
+        console.log("sheet moved to index", idx);
+      }} />
     </>
   )
 }
