@@ -1,6 +1,7 @@
 "use client";
 import Loading from '@/components/Loading';
 import React, { useRef, useState } from 'react'
+import { getBackendUrl } from '../serveractions/backend-url';
 
 export type RegisterBody = 
 {
@@ -12,6 +13,16 @@ export type RegisterBody =
   department: string,
 }
 
+async function register(body: RegisterBody) {
+  const backend = await getBackendUrl();
+  if (!backend) throw new Error("No Backend!");
+  const res = await fetch(`${backend}/api/auth/register`, 
+    {
+      method: 'POST',
+      
+    });
+  
+}
 
 const page = () => {
   const [loading, setLoading] = useState(false);
@@ -70,6 +81,22 @@ return (
                 rounded-md focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 
                 focus:border-blue-500 dark:focus:border-blue-400 sm:text-sm bg-white dark:bg-gray-700"
               placeholder="Nazwisko"
+            />
+          </div>
+
+          {/* Birthday Field */}
+          <div className='flex'>
+            <p className='text-sm'>Data Urodzenia</p>
+            <input
+              id="birthday"
+              name="birthday"
+              type="date"
+              required
+              className="w-full appearance-none px-3 py-2 border border-gray-300 dark:border-gray-600 
+                placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-gray-100 
+                rounded-md focus:outline-none focus:ring-blue-500 dark:focus:ring-blue-400 
+                focus:border-blue-500 dark:focus:border-blue-400 sm:text-sm bg-white dark:bg-gray-700"
+              placeholder="Data urodzenia"
             />
           </div>
 
