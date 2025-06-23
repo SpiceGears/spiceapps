@@ -5,13 +5,13 @@ import { PaperProvider } from "react-native-paper";
 import "@/global.css"
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { BottomSheetProvider } from "@/contexts/BottomSheetContext";
+import { SheetsProvider } from "@/contexts/SheetsContext";
 
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
-        <BottomSheetProvider>
+        <SheetsProvider>
           <GluestackUIProvider mode="light">
             <PaperProvider>
               <Stack screenOptions={{ headerShown: false }}>
@@ -21,7 +21,7 @@ export default function RootLayout() {
               </Stack>
             </PaperProvider>
           </GluestackUIProvider>
-        </BottomSheetProvider>
+        </SheetsProvider>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>
   );

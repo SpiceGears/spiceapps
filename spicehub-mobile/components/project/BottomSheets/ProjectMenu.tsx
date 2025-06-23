@@ -1,5 +1,5 @@
 // ProjectMenu.tsx
-import React from "react";
+import React, { useMemo } from "react";
 import {
   BottomSheetModal,
   BottomSheetView,
@@ -7,23 +7,22 @@ import {
 } from "@gorhom/bottom-sheet";
 import { Text } from "react-native";
 import { Button } from "react-native-paper";
+import { useSheets } from "@/contexts/SheetsContext";
 
-interface Props {
-  bottomSheetModalRef: React.RefObject<BottomSheetModal>;
-  onClose: () => void;
-  onSheetChange?: (index: number) => void;
+interface ProjectMenuProps {
+    onSheetChange: () => void;
 }
 
 export default function ProjectMenu({
-  bottomSheetModalRef,
-  onClose,
-  onSheetChange,
-}: Props) {
+    onSheetChange
+}:ProjectMenuProps) {
+    const { register, close } = useSheets();
+    const snapPoints = useMemo(() => ['50%'], []);
   return (
     <BottomSheetModal
-      ref={bottomSheetModalRef}
-      index={0}
-      snapPoints={["50%"]}
+      ref={register("projectSettings")}
+      index={1}
+      snapPoints={snapPoints}
       onChange={onSheetChange}
       backdropComponent={(props) => (
         <BottomSheetBackdrop
@@ -36,7 +35,7 @@ export default function ProjectMenu({
     >
       <BottomSheetView className="p-4">
         <Text className="text-lg mb-4">Awesome options 🎉</Text>
-        <Button onPress={onClose}>Dismiss</Button>
+        <Button onPress={() => close("projectSettings")}>Dismiss</Button>
       </BottomSheetView>
     </BottomSheetModal>
   );

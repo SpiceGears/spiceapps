@@ -20,6 +20,7 @@ import BottomSheet, { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } f
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Button } from 'react-native-paper'
 import ProjectScreenHeader from '@/components/project/Header'
+import ProjectMenu from '@/components/project/BottomSheets/ProjectMenu'
 
 export default function ProjectScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -48,7 +49,7 @@ export default function ProjectScreen() {
 
   return (
     <>
-      <ProjectScreenHeader 
+      <ProjectScreenHeader
         project={project!}
       />
       <ScrollView
@@ -65,6 +66,7 @@ export default function ProjectScreen() {
         )}
         <Button>Test</Button>
       </ScrollView>
+      <ProjectMenu onSheetChange={() => console.log("sheet changed")} />
     </>
   )
 }

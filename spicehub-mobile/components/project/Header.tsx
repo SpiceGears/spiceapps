@@ -9,7 +9,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@/Constants/TeamColors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Project } from "@/models/Project";
-import { useBottomSheet } from "@/contexts/BottomSheetContext";
+import { useSheets } from "@/contexts/SheetsContext";
 
 interface HeaderProps {
   project: Project;
@@ -19,7 +19,7 @@ export default function ProjectScreenHeader({
   project,
 }: HeaderProps) {
   const insets = useSafeAreaInsets();
-  const { present } = useBottomSheet();
+  const { open } = useSheets();
 
   function getHeaderColor(scopes?: string[]) {
     if (!scopes?.length || scopes.length > 1) return COLORS.NEUTRAL;
@@ -49,7 +49,7 @@ export default function ProjectScreenHeader({
             Powrót
           </Text>
         </View>
-        <Pressable onPress={present}>
+        <Pressable onPress={() => open("projectSettings")}>
           <Ionicons name="ellipsis-horizontal" size={28} color="#000" />
         </Pressable>
       </View>
