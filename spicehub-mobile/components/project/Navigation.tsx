@@ -11,6 +11,17 @@ export default function Navigation({ currentTab }: NavigationProps) {
     const insets = useSafeAreaInsets();
     const { register, close, open } = useSheets();
 
+    const getLabel = (currentTab: string) => {
+        switch(currentTab) {
+            case "Table":
+                return "Tabela"
+            case "Overview":
+                return "Przegląd"
+            case "Dashboard":
+                return "Dashboard"
+        }
+    }
+
     return (
         <Pressable
             onPress={() => open("tabSelection")}
@@ -21,7 +32,7 @@ export default function Navigation({ currentTab }: NavigationProps) {
             }}
         >
             <Text className="text-white text-xl text-center">
-                {currentTab}
+                {getLabel(currentTab)}
             </Text>
         </Pressable>
     )

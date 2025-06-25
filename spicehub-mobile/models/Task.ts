@@ -6,6 +6,13 @@ export enum TaskStatus
     Problem = 2,
 }
 
+export enum TaskPriority
+{
+    Low = 1,
+    Medium = 2,
+    High = 3
+}
+
 export interface Section 
 {
     id: string;
