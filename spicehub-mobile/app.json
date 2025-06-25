@@ -16,7 +16,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff",
-        "usesCleartextTraffic": true
+        "usesCleartextTraffic": true,
+        "softwareKeyboardLayoutMode": "resize"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.spicegears.spicehub"
