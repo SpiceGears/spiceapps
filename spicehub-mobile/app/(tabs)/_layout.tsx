@@ -1,8 +1,10 @@
 import { Tabs } from "expo-router";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6"
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function TabsLayout() {
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <Tabs screenOptions={{ tabBarActiveTintColor: "#1976d2" }}>
       <Tabs.Screen
       name="spicehub"
@@ -55,5 +57,6 @@ export default function TabsLayout() {
       }}
       />
     </Tabs>
+    </ GestureHandlerRootView >
   );
 }

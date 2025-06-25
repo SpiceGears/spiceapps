@@ -26,13 +26,13 @@ export interface Task
     scopesRequired: string[]
     dependencies: string[]
     status: TaskStatus
-    priority: Number
+    priority: TaskPriority
     name: string
     description: string
     percentage: Number
     created: Date
     creator: string
-    deadlineDate: Date
+    deadlineDate: string
     sectionId: string
-    finished: Date | undefined | null | unknown
+    finished: string
 }

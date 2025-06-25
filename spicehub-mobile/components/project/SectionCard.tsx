@@ -4,13 +4,13 @@ import TaskCard from "./TaskCard";
 import { TaskPriority, TaskStatus } from "@/models/Task";
 
 interface Task {
-  id: number;
+  id: string;
   name: string;
   description: string;
-  isCompleted: boolean;
+  finished: string
   status: TaskStatus;
   priority: TaskPriority;
-  dueDate: string;
+  deadlineDate: string
 }
 
 interface SectionCardProps {
@@ -46,10 +46,10 @@ export default function SectionCard({
             id={task.id}
             name={task.name}
             description={task.description}
-            isCompleted={task.isCompleted}
+            finished={task.finished}
             status={task.status}
             priority={task.priority}
-            dueDate={task.dueDate}
+            deadlineDate={task.deadlineDate}
           />
         ))}
       </View>
