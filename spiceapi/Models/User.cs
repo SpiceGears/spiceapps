@@ -91,10 +91,11 @@ namespace SpiceAPI.Models
         public Department Department { get; set; }
         public DateOnly BirthDay { get; set; }
         public decimal Coins { get; set; }
+        public bool IsApproved { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime LastLogin { get; set; }
 
-        public UserInfo(User us) 
+        public UserInfo(User us)
         {
             Id = us.Id;
             FirstName = us.FirstName;
@@ -106,6 +107,7 @@ namespace SpiceAPI.Models
             Coins = us.Coin;
             CreatedAt = us.CreatedAt;
             LastLogin = us.LastLogin;
+            IsApproved = us.IsApproved;
         }
 
         public UserInfo() { }

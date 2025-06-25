@@ -27,7 +27,8 @@ export default function ProfileDropdown() {
     birthday: new Date(),
     coins: 0,
     createdAt: new Date(),
-    lastLogin: new Date()
+    lastLogin: new Date(),
+    isApproved: true
   })
 
   useEffect(() => {
@@ -126,7 +127,7 @@ export default function ProfileDropdown() {
 
           }
           )}
-          <Badge variant="programmer">Programista</Badge></DropdownMenuLabel>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
         <DropdownMenuItem asChild className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer">
           <Link href={"/profile/" + userData.id} className="flex items-center w-full text-gray-700 dark:text-gray-100">

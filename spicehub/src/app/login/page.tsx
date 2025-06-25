@@ -6,6 +6,7 @@ import Loading from "@/components/Loading";
 import { getBackendUrl } from "../serveractions/backend-url";
 
 import { getCookie, setCookie} from 'typescript-cookie';
+import Link from "next/link";
 export default function LoginPage() {
     const email = useRef<HTMLInputElement>(null);
     const password = useRef<HTMLInputElement>(null);
@@ -115,7 +116,7 @@ export default function LoginPage() {
                 </div>
                 </div>
 
-                <div>
+                <div className="text-center">
                 <button
                   onClick={login}
                   disabled={loading}
@@ -126,6 +127,8 @@ export default function LoginPage() {
                 >
                   {loading ? 'Logowanie...' : 'Zaloguj się'}
                 </button>
+                <Link href="/register" className="mt-2 text-blue-600 dark:text-blue-500 
+                         hover:text-blue-700 dark:hover:text-blue-600">Nie masz konta? Zarejestruj się tutaj.</Link>
                 </div>
                 {error && (
                     <div className="text-red-600 dark:text-red-400 text-sm text-center">

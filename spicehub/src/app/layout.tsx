@@ -17,6 +17,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {default: "SpiceHub", template: "%s - SpiceHub"},
   description: "SpiceHub - full-suited team management",
+  robots: {
+    index: false,
+    follow: false
+  }
 };
 
 export default function RootLayout({

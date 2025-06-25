@@ -10,6 +10,7 @@ export interface UserInfo
     coins: Number
     createdAt: Date
     lastLogin: Date
+    isApproved: boolean
 }
 
 export interface Role 

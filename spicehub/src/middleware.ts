@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 import { getBackendUrl } from './app/serveractions/backend-url';
+import { UserInfo } from './models/User';
 
 // This function can be marked `async` if using `await` inside
 export async function middleware(request: NextRequest) {
@@ -27,7 +28,15 @@ export async function middleware(request: NextRequest) {
                     Authorization: at.value,
                 }
             });
-        if (res.status != 401) return NextResponse.next();
+        if (res.status != 401)
+        {
+            const user: UserInfo = await res.json();
+            if (user.isApproved === false) 
+            {
+                return NextResponse.redirect(new URL('/unapproved', request.url));
+            }
+            else return NextResponse.next(); 
+        }
     }
     let res = await fetch(backend+"/api/auth/generateAccess", 
         {
@@ -59,6 +68,6 @@ export const config = {
      * - /register - registration page
      * - _next (Next.js internals like static files)
      */
-    '/((?!login|api|maintanance|register|_next|favicon.ico).*)',
+    '/((?!login|api|maintanance|unapproved|register|_next|favicon.ico).*)',
   ],
 };

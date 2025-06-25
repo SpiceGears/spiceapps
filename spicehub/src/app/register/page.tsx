@@ -4,6 +4,7 @@ import React, { useRef, useState } from 'react'
 import { getBackendUrl } from '../serveractions/backend-url';
 import { useRouter } from 'next/navigation';
 import { ErrorRes } from '@/models/ErrorRes';
+import { setCookie } from 'typescript-cookie';
 
 export type RegisterBody =
   {
@@ -63,7 +64,31 @@ const page = () => {
         }
       });
     if (res.ok) {
-      router.push("/unapproved");
+     const payload = {
+            login: email.current?.value,
+            password: password.current?.value,
+      };
+      const resl = await fetch(backend+'/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+      });
+      const data = await resl.json();
+
+      if (data.refresh_Token && data.access_Token) {
+        //localStorage.setItem('refreshToken', data.refresh_Token);
+        //localStorage.setItem('accessToken', data.access_Token);
+        let ad = new Date();
+        ad.setDate(ad.getDate() + 2);
+        setCookie("refreshToken", data.refresh_Token, { expires: 30 });
+        setCookie("accessToken", data.access_Token, { expires: ad })
+        router.push('/dashboard');
+      } else {
+        setError('Invalid login credentials on register, this error should not happen at all');
+        router.push('/maintanance?code='+encodeURIComponent('Invalid login credentials on register, this error should not happen at all'))
+      }
     }
     else {
       setLoading(false);
