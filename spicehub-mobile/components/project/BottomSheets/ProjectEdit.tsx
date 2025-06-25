@@ -62,7 +62,7 @@ export default function ProjectEdit({
           contentContainerStyle={{ padding: 16 }}
           keyboardShouldPersistTaps="handled"
         >
-          <Text className="text-xl font-semibold mb-6">
+          <Text className="text-xl font-semibold mb-6 text-center">
             Edit Project
           </Text>
 

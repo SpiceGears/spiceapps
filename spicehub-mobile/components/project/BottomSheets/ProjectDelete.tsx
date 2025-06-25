@@ -44,8 +44,8 @@ export default function ProjectDelete({ onSheetChange, deleteProject }: ProjectM
             )}
         >
             <BottomSheetView className="p-4">
-                <Text className="text-lg font-semibold mb-4">
-                    Czy jesteś pewny?
+                <Text className="text-lg font-semibold mb-4 text-center text-red-400">
+                    Czy jesteś pewny? Ten akcji nie można odwrócić!
                 </Text>
 
                 {/* Delete */}

@@ -23,11 +23,13 @@ import ProjectScreenHeader from '@/components/project/Header'
 import ProjectMenu from '@/components/project/BottomSheets/ProjectMenu'
 import ProjectEdit from '@/components/project/BottomSheets/ProjectEdit'
 import ProjectDelete from '@/components/project/BottomSheets/ProjectDelete'
+import Navigation from '@/components/project/Navigation'
+import TabSelection from '@/components/project/BottomSheets/TabSelection'
 
 export default function ProjectScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const [project, setProject] = useState<Project | null>(null)
-  const [activeTab, setActiveTab] = useState<"Overview" | "Table">("Overview");
+  const [activeTab, setActiveTab] = useState<"Overview" | "Table" | "Dashboard">("Overview")
   const insets = useSafeAreaInsets()
   const router = useRouter();
 
@@ -99,6 +101,10 @@ export default function ProjectScreen() {
     }
   }
 
+  const setCurrentTab = (tab: "Overview" | "Table" | "Dashboard") => {
+    setActiveTab(tab)
+  }
+
   return (
     <>
       <ProjectScreenHeader
@@ -111,11 +117,9 @@ export default function ProjectScreen() {
         className="flex-1 bg-white"
       >
 
-        {activeTab === "Overview" ? (
-          <OverviewTab project={project!} />
-        ) : (
-          <OverviewTab project={project!} />
-        )}
+        {activeTab === "Overview" && <OverviewTab project={project!} />}
+        {activeTab === "Table" && <Text className='flex-1 bg-white m-8'>…your TableTab here…</Text>}
+        {activeTab === "Dashboard" && <Text className='flex-1 bg-white m-8'>…your DashboardTab…</Text>}
       </ScrollView>
       <ProjectMenu onSheetChange={(idx: number) => {
         console.log("project menu sheet moved to index", idx);
@@ -133,6 +137,14 @@ export default function ProjectScreen() {
         console.log("project menu sheet moved to index", idx);
       }} 
       deleteProject={deleteProject}
+      />
+      <TabSelection onSheetChange={(idx: number) => {
+        console.log("project menu sheet moved to index", idx);
+      }}
+      setCurrentTab={setCurrentTab} 
+      />
+      <Navigation 
+        currentTab={activeTab}
       />
     </>
   )

@@ -44,8 +44,8 @@ export default function ProjectMenu({ onSheetChange }: ProjectMenuProps) {
       )}
     >
       <BottomSheetView className="p-4">
-        <Text className="text-lg font-semibold mb-4">
-          Project Options
+        <Text className="text-lg font-semibold mb-4 text-center">
+          Opcje projektu
         </Text>
 
         {/* Edit */}
@@ -59,7 +59,7 @@ export default function ProjectMenu({ onSheetChange }: ProjectMenuProps) {
         >
           <Ionicons name="pencil" size={20} color="#444" />
           <Text className="ml-4 text-base text-gray-800">
-            Edit Project
+            Edytuj projekt
           </Text>
         </Pressable>
         <Divider 
@@ -97,7 +97,7 @@ export default function ProjectMenu({ onSheetChange }: ProjectMenuProps) {
         >
           <Ionicons name="share-social" size={20} color="#444" />
           <Text className="ml-4 text-base text-gray-800">
-            Share Project
+            Udostępnij projekt
           </Text>
         </Pressable>
                 <Divider 
@@ -116,18 +116,9 @@ export default function ProjectMenu({ onSheetChange }: ProjectMenuProps) {
         >
           <Ionicons name="trash" size={20} color="crimson" />
           <Text className="ml-4 text-base text-red-600">
-            Delete Project
+            Usuń projekt
           </Text>
         </Pressable>
-
-        {/* Dismiss button */}
-        <Button
-          mode="outlined"
-          style={{ marginTop: 16 }}
-          onPress={() => close("projectSettings")}
-        >
-          Dismiss
-        </Button>
       </BottomSheetView>
     </BottomSheetModal>
   );
