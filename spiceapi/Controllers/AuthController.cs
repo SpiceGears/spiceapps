@@ -17,11 +17,24 @@ namespace SpiceAPI.Controllers
         private readonly DataContext db;
         private readonly Crypto crypto;
         private readonly Token tg;
-        public AuthController(DataContext dataContext, Crypto crt, Token token) 
+
+        private bool AuthLimitEnabled = false;
+        private string AuthSecHeader = "";
+        public AuthController(DataContext dataContext, Crypto crt, Token token)
         {
             db = dataContext;
             crypto = crt;
             tg = token;
+            var authsec = Environment.GetEnvironmentVariable("AUTHSEC");
+            if (string.IsNullOrWhiteSpace(authsec) || authsec == "none")
+            {
+                AuthLimitEnabled = false;
+            }
+            else
+            {
+                AuthLimitEnabled = true;
+                AuthSecHeader = authsec;
+            }
         }
         
         public class LoginHeaders() //header names used for controller
@@ -44,7 +57,30 @@ namespace SpiceAPI.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginHeaders form) 
         {
-            User user = await db.Users.Where(u => u.Email == form.Login).FirstOrDefaultAsync(); //retrieve the user with the email
+            if (AuthLimitEnabled)
+            {
+                var ip = Request.Headers[AuthSecHeader].FirstOrDefault();
+                if (ip == null) return BadRequest(new ErrorResponse($"An {AuthSecHeader} containing ip is required", "AUTHSEC_INVALID_REQ", "You must provide correct headers, check proxy"));
+
+                LoginErrorAttempt? loginError = await db.LoginErrorAttempts.FirstOrDefaultAsync(i => i.Ip == ip);
+                if (loginError != null)
+                {
+                    if (loginError.RetryCount >= 5)
+                    {
+                        var now = DateTime.UtcNow;
+                        if (loginError.LastRetry.AddMinutes(15) <= now)
+                        {
+                            db.LoginErrorAttempts.Remove(loginError);
+                            await db.SaveChangesAsync();
+                        }
+                        else return Unauthorized();
+                    }
+                }
+            }
+
+
+
+            User? user = await db.Users.Where(u => u.Email == form.Login).FirstOrDefaultAsync(); //retrieve the user with the email
             if (user == null) 
             {
                 //who are we loggin' as? nonexistant one ig
@@ -55,8 +91,21 @@ namespace SpiceAPI.Controllers
             
             if (passwordTest) 
             {
+
+                if (AuthLimitEnabled) //clear login attempts to zero
+                {
+                    var ip = Request.Headers[AuthSecHeader].FirstOrDefault();
+                    if (ip == null) return BadRequest(new ErrorResponse($"An {AuthSecHeader} containing ip is required", "AUTHSEC_INVALID_REQ", "You must provide correct headers, check proxy"));
+
+                    LoginErrorAttempt? loginError = await db.LoginErrorAttempts.FirstOrDefaultAsync(i => i.Ip == ip);
+                    if (loginError != null)
+                    {
+                        db.LoginErrorAttempts.Remove(loginError);
+                        await db.SaveChangesAsync();
+                    }
+                }
                 //generate access and refresh tokens
-                UserToken utok = new UserToken(user.Id, user.FirstName, user.LastName, user.Email);
+                    UserToken utok = new UserToken(user.Id, user.FirstName, user.LastName, user.Email);
                 string atok = tg.GenerateToken(utok);
 
                 RefreshToken rtok = new RefreshToken();
@@ -72,9 +121,33 @@ namespace SpiceAPI.Controllers
 
                 return Ok(response); //return two tokens, in format depending on MIME type (default: application/json)
             }
-            
-            else 
+
+            else
             {
+                if (AuthLimitEnabled)
+                {
+                    var ip = Request.Headers[AuthSecHeader].FirstOrDefault();
+                    if (ip == null) return BadRequest(new ErrorResponse($"An {AuthSecHeader} containing ip is required", "AUTHSEC_INVALID_REQ", "You must provide correct headers, check proxy"));
+
+                    LoginErrorAttempt? loginError = await db.LoginErrorAttempts.FirstOrDefaultAsync(i => i.Ip == ip);
+                    if (loginError != null)
+                    {
+                        loginError.LastRetry = DateTime.UtcNow;
+                        loginError.RetryCount++;
+                        await db.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        LoginErrorAttempt firstAtt = new LoginErrorAttempt()
+                        {
+                            Ip = ip,
+                            LastRetry = DateTime.UtcNow,
+                            RetryCount = 1,
+                        };
+                        await db.LoginErrorAttempts.AddAsync(firstAtt);
+                        await db.SaveChangesAsync();
+                    }
+                }
                 //wrong password
                 return Unauthorized();
             }

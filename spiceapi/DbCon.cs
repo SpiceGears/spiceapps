@@ -30,6 +30,8 @@ namespace SpiceAPI
         
         public DbSet<Notification> Notifications { get; set; }
 
+        public DbSet<LoginErrorAttempt> LoginErrorAttempts { get; set; }
+
 
         //w taki sposób dodajesz obiekty do przechowywania
         //public DbSet<obiekt> zestawObiektów { get; set; };

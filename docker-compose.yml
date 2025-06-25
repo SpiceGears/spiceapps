@@ -14,6 +14,7 @@ services:
       ENABLE_FILES: "yes"
       FILE_DIR: "/var/spicehub"
       AVATAR_PATH: "/var/spicehub_avatars"
+      AUTHSEC: "none" #header for IP checks, or "none" for disable
     ports:
       - "8080:8080"
       - "8081:8081"

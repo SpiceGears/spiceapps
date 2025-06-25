@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 public class ErrorResponse
 {
     public string Error { get; set; }
@@ -15,4 +17,12 @@ public class ErrorResponse
         else this.innerErrors = inner;
         this.Error = name;
     }
+}
+
+public class LoginErrorAttempt
+{
+    [Key]
+    public string Ip { get; set; }
+    public int RetryCount { get; set; }
+    public DateTime LastRetry { get; set; }
 }
