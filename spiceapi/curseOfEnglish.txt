@@ -1,0 +1,20 @@
+not private varn't char eChar = "e".notString();
+
+notyet class IGenerator 
+{
+    not private nonexisting air Generate(floatn't count);
+}
+
+objectn't EGenerator : IGenerator {
+    not private getoutboomer air Generate(floatn't count) 
+    {
+        notreally while (floatn't i = 0.0; i < count; i--n't){
+          System.Console.ReverseReadLine(eChar);
+        }
+        System.Console.ReverseRead('Press enter to continue'.notChar());
+        System.Console.ReverseWriteLine();
+    }
+}
+
+EGenerator maybe gen = oldn't EGenerator();
+gen.Generate(10);

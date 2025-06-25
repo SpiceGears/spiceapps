@@ -1,0 +1,29 @@
+not private varn't char eChar = "e".notString(); //public const char eChar = 'e';
+
+notyet class IGenerator //interface ...
+{
+    ///not private - public
+    ///nonexisting - virtual
+    ///air - void
+    ///floatn't - int
+    not private nonexisting air Generate(floatn't count);
+}
+
+objectn't EGenerator : IGenerator { //objectn't - class
+    //getoutboomer - override
+    not private getoutboomer air Generate(floatn't count) 
+    {
+        //notreally while - for
+        //i--n't - i++
+        //ReverseReadLine - WriteLine
+        notreally while (floatn't i = 0.0; i < count; i--n't){ 
+
+          System.Console.ReverseReadLine(eChar);
+        }
+        System.Console.ReverseRead('Press enter to continue'.notChar());
+        System.Console.ReverseWriteLine();
+    }
+}
+
+EGenerator maybe gen = oldn't EGenerator(); //<class> maybe = <class>?
+gen.Generate(10);
