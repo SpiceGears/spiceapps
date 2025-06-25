@@ -84,49 +84,28 @@ export default function ProfileDropdown() {
         align="end"
       >
         <DropdownMenuLabel className="text-gray-700 dark:text-gray-100">{userData.firstName} {userData.lastName}
-          {userData.roles.map((val: Role, index: Number) => {
-            let type = "default"
-            switch (val.department) {
-              case Department.Executive:
-                type = "executive"
-                return (<Fragment key={val.roleID}>
-                  <Badge variant={"executive"}>{val.name}</Badge>
-                </Fragment>)
-                break;
+          {userData.roles.map((val: Role) => {
+            // Map Department to Badge variant, fallback to "default"
+            const departmentToVariant: Record<Department, 
+              "executive" | "marketing" | "mechanic" | "programmer" | "socialmedia" | "default"
+            > = {
+              [Department.Executive]: "executive",
+              [Department.Marketing]: "marketing",
+              [Department.Mechanics]: "mechanic",
+              [Department.Programmers]: "programmer",
+              [Department.SocialMedia]: "socialmedia",
+              [Department.NaDr]: "default",
+              [Department.Mentor]: "default",
+            };
 
-              case Department.Marketing:
-                type = "marketing"
-                return (<Fragment key={val.roleID}>
-                  <Badge variant={"marketing"}>{val.name}</Badge>
-                </Fragment>)
-                break;
-              case Department.Mechanics:
-                type = "mechanic"
-                return (<Fragment key={val.roleID}>
-                  <Badge variant={"mechanic"}>{val.name}</Badge>
-                </Fragment>)
-                break;
-              case Department.Programmers:
-                type = "programmer"
-                return (<Fragment key={val.roleID}>
-                  <Badge variant={"programmer"}>{val.name}</Badge>
-                </Fragment>)
-                break;
-              case Department.SocialMedia:
-                type = "socialmedia"
-                return (<Fragment key={val.roleID}>
-                  <Badge variant={"socialmedia"}>{val.name}</Badge>
-                </Fragment>)
-                break;
-              default:
-                return (<Fragment key={val.roleID}>
-                  <Badge variant={"default"}>{val.name}</Badge>
-                </Fragment>)
-                break;
-            }
+            const variant = departmentToVariant[val.department] ?? "default";
 
-          }
-          )}
+            return (
+              <Badge key={val.roleID} variant={variant}>
+                {val.name}
+              </Badge>
+            );
+          })}
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
         <DropdownMenuItem asChild className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer">
