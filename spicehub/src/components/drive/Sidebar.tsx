@@ -1,7 +1,6 @@
 'use client';
 
 import { Plus, HardDrive, Clock, Star, Trash2, Cloud } from 'lucide-react';
-import { SidebarProps } from '@/types/components';
 
 interface SidebarComponentProps {
   onCreateFolder: () => void;
@@ -54,7 +53,7 @@ interface SidebarItemProps {
   active?: boolean;
 }
 
-function SidebarItem({ icon: Icon, label, active , onCreateFolder}: SidebarItemProps) {
+function SidebarItem({ icon: Icon, label, active }: SidebarItemProps) {
   return (
     <button
       className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg 

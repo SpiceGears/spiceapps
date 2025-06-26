@@ -33,7 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { NewTaskPayload } from "./TaskList";
 import { UserInfo } from "@/models/User";
-import { projectContext } from "@/app/spicelab/project/[id]/page";
+import { projectContext } from "@/app/spicelab/project/[id]/projectContext";
 import { getBackendUrl } from "@/app/serveractions/backend-url";
 import { getCookie } from "typescript-cookie";
 

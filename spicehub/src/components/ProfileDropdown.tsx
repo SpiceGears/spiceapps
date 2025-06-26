@@ -24,7 +24,7 @@ export default function ProfileDropdown() {
     email: "test@spicelab.net",
     roles: [],
     department: Department.NaDr,
-    birthday: new Date(),
+    birthday: "2024-05-24",
     coins: 0,
     createdAt: new Date(),
     lastLogin: new Date(),
@@ -101,7 +101,7 @@ export default function ProfileDropdown() {
             const variant = departmentToVariant[val.department] ?? "default";
 
             return (
-              <Badge key={val.roleID} variant={variant}>
+              <Badge key={val.roleId} variant={variant}>
                 {val.name}
               </Badge>
             );

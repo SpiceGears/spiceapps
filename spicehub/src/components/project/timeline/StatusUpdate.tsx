@@ -1,6 +1,6 @@
 "use client"
 
-import { projectContext } from "@/app/spicelab/project/[id]/page";
+import { projectContext } from "@/app/spicelab/project/[id]/projectContext";
 import { ProjectUpdateEntry, StatusUpdateType } from "@/models/Project"
 import { CarTaxiFront } from "lucide-react";
 import React, { useContext } from "react"

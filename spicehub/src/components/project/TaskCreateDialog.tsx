@@ -98,9 +98,9 @@ export function TaskCreateDialog({
 
           // Fetch project members (users who can access this project)
           const projectId = defaultSection; // assuming defaultSection is projectId
-          const membersRes = await fetch(`${backend}/api/project/${projectId}/members`, {
+          const membersRes = await fetch(`${backend}/api/project/${projectId}/getUsers`, {
             headers: {
-              Authorization: `Bearer ${token}`,
+              Authorization: `${token}`,
               "Content-Type": "application/json",
             },
           });

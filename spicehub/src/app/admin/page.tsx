@@ -27,6 +27,7 @@ import { getBackendUrl } from "../serveractions/backend-url";
 import { getCookie } from "typescript-cookie";
 import { Switch } from "@/components/ui/switch";
 import { Role } from "@/models/User";
+import { toast, ToastClassnames } from "sonner";
 
 
 export default function Admin() {
@@ -38,9 +39,61 @@ export default function Admin() {
   const [currentRole, setCurrentRole] = useState<Role | null>(null);
   const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
   const [assignedRoles, setAssignedRoles] = useState<string[]>([]);
+  const [refresh, setRefresh] = useState(false);
   const [users, setUsers] = useState<UserInfo[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [unapprovedUsers, setUnapprovedUsers] = useState<UserInfo[]>([]);
+
+  async function handleUserEdit() 
+  {
+    const backend = await getBackendUrl();
+    if (!backend) throw new Error("No backend")
+    const at = await getCookie("accessToken")
+    if (!at) throw new Error("No access token");
+
+    const user = currentUser;
+    if (!user) {console.error("GET OUT, NOW"); throw new Error("User not set, weird")}
+
+    const rolesToRemove: Role[] = user.roles.filter(role => !assignedRoles.includes(role.name));
+    const rolesToAdd: Role[] = roles.filter(role =>
+      assignedRoles.includes(role.name) && !user.roles.some(r => r.name === role.name)
+    )
+
+    const rolesToRemoveIDs: string[] = rolesToRemove.map(role => role.roleId).filter((id): id is string => typeof id === 'string');
+    const rolesToAddIds = rolesToAdd.map(role => role?.roleId).filter((id): id is string => typeof id === 'string');
+
+    const remRes = await fetch(`${backend}/api/user/${user.id}/removeRoles`, 
+      {
+        method: 'PUT',
+        headers: {Authorization: at, "Content-Type": "application/json"},
+        body: JSON.stringify(rolesToRemoveIDs)
+      })
+
+    if (!remRes.ok) 
+    {
+      let err = await remRes.text();
+      console.error("Fetch failed: "+err)
+      toast("Error", {description: "Removing roles returned error: "+ err, className: "bg-red-500"})
+      return;
+    }
+
+    const addRes = await fetch(`${backend}/api/user/${user.id}/assignRoles`, 
+      {
+        method: 'PUT',
+        headers: {Authorization: at, "Content-Type": "application/json"},
+        body: JSON.stringify(rolesToAddIds)
+      })
+    if (!addRes.ok) 
+    {
+      let err = await addRes.text();
+      console.error("Fetch failed: "+err)
+      toast("Error", {description: "Assigning roles returned error: "+ err, className: "bg-red-500"})
+      return;
+    }
+    
+
+  }
+
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -116,7 +169,7 @@ export default function Admin() {
     fetchUsers();
     fetchRoles();
     fetchUnapprovedUsers();
-  }, []);
+  }, [refresh]);
 
   return (
     <div className="flex h-full w-full justify-center">
@@ -206,7 +259,7 @@ export default function Admin() {
                         </DialogHeader>
                         <div className="space-y-6 py-4">
                           <div className="space-y-2">
-                            <Label htmlFor="user-name">Imię i nazwisko</Label>
+                            <Label htmlFor="user-name">Imię</Label>
                             <Input
                               id="user-name"
                               defaultValue={currentUser?.firstName}
@@ -214,12 +267,16 @@ export default function Admin() {
                             />
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="user-email">Email</Label>
+                            <Label htmlFor="user-name">Nazwisko</Label>
                             <Input
-                              id="user-email"
-                              defaultValue={currentUser?.email}
+                              id="user-name"
+                              defaultValue={currentUser?.lastName}
                               className="w-full"
                             />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="birthday">Data urodzenia</Label>
+                            <Input id="birthday" defaultValue={currentUser?.birthday}/>
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="user-roles">Role</Label>
@@ -263,6 +320,7 @@ export default function Admin() {
                             <Button
                               onClick={() => {
                                 // tu powinna znaleźć się logika zapisu zmian użytkownika
+                                handleUserEdit();
                                 setIsEditingUser(false);
                                 setCurrentUser(null);
                               }}

@@ -3,11 +3,12 @@
 import React from 'react';
 
 type Props = {
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-const MaintenancePage = ({ searchParams }: Props) => {
-  const code = typeof searchParams.code === 'string' ? searchParams.code : 'UNKNOWN';
+const MaintenancePage = async ({ searchParams }: Props) => {
+  const params = await searchParams;
+  const code = typeof params.code === 'string' ? params.code : 'UNKNOWN';
 
   return (
     <div className='w-full min-h-screen flex flex-col justify-center items-center text-center'>

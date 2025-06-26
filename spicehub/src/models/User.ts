@@ -6,7 +6,7 @@ export interface UserInfo
     email: string
     roles: Role[]
     department: Department
-    birthday: Date
+    birthday: string
     coins: Number
     createdAt: Date
     lastLogin: Date
@@ -15,7 +15,7 @@ export interface UserInfo
 
 export interface Role 
 {
-    roleID: string,
+    roleId: string,
     name: string,
     scopes: string[]
     department: Department

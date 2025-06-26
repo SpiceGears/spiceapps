@@ -25,7 +25,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { getBackendUrl } from "@/app/serveractions/backend-url"
 import { getCookie } from "typescript-cookie"
-import { Project } from "@/models/Project"
+import { Project, ProjectStatus } from "@/models/Project"
 import ProjectCard from "@/components/project/ProjectCard"
 import { TaskStatus } from "@/models/Task"
 import { ProjectCardSkeleton } from "@/components/project/ProjectCardSkeleton"
@@ -44,31 +44,35 @@ function formatDate(dateString?: string | Date) {
 }
 
 const statusConfig: Record<
-  TaskStatus,
+  ProjectStatus,
   { label: string; color: string }
 > = {
-  [TaskStatus.Planned]: {
+  [ProjectStatus.Healthy]: {
     label: "Aktywny",
     color: "bg-green-100 text-green-800",
   },
-  [TaskStatus.OnTrack]: {
+  [ProjectStatus.Finished]: {
     label: "Zakończony",
     color: "bg-gray-100 text-gray-800",
   },
-  [TaskStatus.Finished]: {
-    label: "Wstrzymany",
+  [ProjectStatus.Delayed]: {
+    label: "Opóźniony",
     color: "bg-yellow-100 text-yellow-800",
   },
-  [TaskStatus.Problem]: {
-    label: "Problem",
+  [ProjectStatus.Endangered]: {
+    label: "Zagrożony",
     color: "bg-red-100 text-red-800",
   },
+  [ProjectStatus.Abandoned]: {
+    label: "Porzucony",
+    color: "bg-gray-500 bg-white-400"
+  }
 }
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<"all" | TaskStatus>(
+  const [statusFilter, setStatusFilter] = useState<"all" | ProjectStatus>(
     "all"
   )
   const [loading, setLoading] = useState(true)
@@ -105,7 +109,7 @@ export default function ProjectsPage() {
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.description.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus =
-      statusFilter === "all" || p.status === statusFilter
+      statusFilter === "all" || p.status == statusFilter
     return matchesSearch && matchesStatus
   })
 
@@ -143,7 +147,7 @@ export default function ProjectsPage() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {(
-                Object.keys(statusConfig) as unknown as TaskStatus[]
+                Object.keys(statusConfig) as unknown as ProjectStatus[]
               ).map((st) => (
                 <DropdownMenuItem
                   key={st}

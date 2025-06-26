@@ -3,32 +3,36 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useUserById } from '@/hooks/userById'
-import { Project } from '@/models/Project'
+import { Project, ProjectStatus } from '@/models/Project'
 import { TaskStatus } from '@/models/Task'
 import { ChevronRight, User } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 
 const statusConfig: Record<
-  TaskStatus,
+  ProjectStatus,
   { label: string; color: string }
 > = {
-  [TaskStatus.Planned]: {
-    label: 'Aktywny',
-    color: 'bg-green-100 text-green-800',
+  [ProjectStatus.Healthy]: {
+    label: "Aktywny",
+    color: "bg-green-100 text-green-800",
   },
-  [TaskStatus.OnTrack]: {
-    label: 'Zakończony',
-    color: 'bg-gray-100 text-gray-800',
+  [ProjectStatus.Finished]: {
+    label: "Zakończony",
+    color: "bg-gray-100 text-gray-800",
   },
-  [TaskStatus.Finished]: {
-    label: 'Wstrzymany',
-    color: 'bg-yellow-100 text-yellow-800',
+  [ProjectStatus.Delayed]: {
+    label: "Opóźniony",
+    color: "bg-yellow-100 text-yellow-800",
   },
-  [TaskStatus.Problem]: {
-    label: 'Problem',
-    color: 'bg-red-100 text-red-800',
+  [ProjectStatus.Endangered]: {
+    label: "Zagrożony",
+    color: "bg-red-100 text-red-800",
   },
+  [ProjectStatus.Abandoned]: {
+    label: "Porzucony",
+    color: "bg-gray-500 bg-white-400"
+  }
 }
 
 const getInitials = (name: string) => {

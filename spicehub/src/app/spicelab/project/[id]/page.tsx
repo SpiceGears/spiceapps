@@ -30,27 +30,9 @@ import { Project, ProjectUpdateEntry } from "@/models/Project"
 import { getCookie } from "typescript-cookie"
 import { getBackendUrl } from "@/app/serveractions/backend-url"
 import { UserInfo } from "@/models/User"
+import { projectContext } from "./projectContext"
 
-export type ProjectContext =
-{
-  project: Project | undefined,
-  tasks: Task[],
-  users: UserInfo[],
-  events: ProjectUpdateEntry[],
-  loading: boolean,
-  
-  refresh: boolean, //the refresh value to listen for data re-fetch
-  setRefresh: Dispatch<SetStateAction<boolean>> | undefined//the setstate for refreshing and re-fetching data
-}
 
-export const projectContext = createContext<ProjectContext>({
-  project: undefined, 
-  tasks: [], 
-  users: [], 
-  events: [],
-  loading: true, 
-  refresh: false, 
-  setRefresh: undefined});
 
 export default function ProjectPage({
   params,
@@ -345,10 +327,10 @@ export default function ProjectPage({
                   <Pen className="w-4 h-4 mr-2" />
                   Zmień szczegóły projektu
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                {/* <DropdownMenuItem>
                   <Palette className="w-4 h-4 mr-2" />
                   Zmień kolor projektu
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
                   <CopyLinkButton text="Skopiuj link do projektu" />
@@ -357,18 +339,18 @@ export default function ProjectPage({
             </DropdownMenu>
 
             {/* Set Status */}
-            <DropdownMenu modal={false}>
-              <DropdownMenuTrigger asChild>
+            {/* <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild> */}
                 <Button
                   variant="outline"
                   size="sm"
                   className="ml-2 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"
+                  onClick={() => handleStatusUpdate("")}
                 >
-                  <div className="w-2 h-2 bg-gray-400 rounded-full mr-2" />
+                  {/* <div className="w-2 h-2 bg-gray-400 rounded-full mr-2" /> */}
                   Ustaw status
-                  <ChevronDown className="w-4 h-4 ml-1" />
                 </Button>
-              </DropdownMenuTrigger>
+              {/* </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-white dark:bg-gray-800">
                 {[
                   ["in-progress", "W trakcie"],
@@ -390,7 +372,7 @@ export default function ProjectPage({
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
           </div>
 
           <TabsList>

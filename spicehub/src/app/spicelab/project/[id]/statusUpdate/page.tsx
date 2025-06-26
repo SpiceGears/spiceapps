@@ -22,31 +22,29 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Project, ProjectStatus } from "@/models/Project"
+import { getBackendUrl } from "@/app/serveractions/backend-url"
+import { ErrorRes } from "@/models/ErrorRes"
+import { getCookie } from "typescript-cookie"
+import { toast } from "sonner"
 
-type User = {
-    id: string
-    name: string
-    avatarUrl?: string
-    initials: string
+
+interface editStatusPayload 
+{
+    name: string,
+    summary: string,
+    filesLinked: string[]
+    status: ProjectStatus
 }
 
-const mockUsers: User[] = [
-    { id: "1", name: "Michał Kulik", initials: "MK" },
-    { id: "2", name: "Anna Nowak", initials: "AN" },
-    { id: "3", name: "Piotr Wiśniewski", initials: "PW" },
-    { id: "4", name: "Maria Kowalczyk", initials: "MK" },
-]
 
 export default function UpdateStatusPage({
     params,
 }: {
     params: Promise<{ id: string }>
 }) {
-    const [status, setStatus] = useState("on-track")
-    const [selectedCollaborators, setSelectedCollaborators] = useState<User[]>([
-        mockUsers[0], // Default to first user
-    ])
-    const [owner, setOwner] = useState(mockUsers[0])
+    const [status, setStatus] = useState("healthy")
     const [title, setTitle] = useState("")
     const [summary, setSummary] = useState("")
     const router = useRouter()
@@ -54,49 +52,54 @@ export default function UpdateStatusPage({
 
     const { id } = use(params)
 
+    const [project, setProject] = useState<Project>();
+    const [isLoadingProject, setIsLoadingProject] = useState(true)
+
+    //for select component to not complain
+    const statusStringRec: Record<string, ProjectStatus> = 
+    {
+        "healthy": ProjectStatus.Healthy,
+        "delayed": ProjectStatus.Delayed,
+        "endangered": ProjectStatus.Endangered,
+        "abandoned": ProjectStatus.Abandoned,
+        "finished": ProjectStatus.Finished,
+    }
+
     // Set status from query parameter and initialize title
     useEffect(() => {
-        const statusParam = searchParams.get("status")
-        if (statusParam) {
-            // Map the status values from the dropdown to the ones used in this component
-            const statusMapping: { [key: string]: string } = {
-                "in-progress": "at-risk",
-                "todo": "on-track",
-                "completed": "on-track",
-                "active": "on-track",
-                "on-hold": "at-risk",
-            }
-
-            const mappedStatus = statusMapping[statusParam] || "on-track"
-            setStatus(mappedStatus)
-        }
 
         // Set default title with current date using date-fns
         const currentDate = format(new Date(), "MMM d", { locale: pl })
-        setTitle(`Aktualizacja statusu - ${currentDate}`)
-    }, [searchParams])
+        setTitle(`${currentDate} - Aktualizacja statusu`)
+    }, [])
 
-    const getStatusColor = (status: string) => {
+    const getStatusColor = (status: ProjectStatus) => {
         switch (status) {
-            case "on-track":
+            case ProjectStatus.Healthy:
                 return "bg-green-500"
-            case "at-risk":
+            case ProjectStatus.Delayed:
                 return "bg-yellow-500"
-            case "off-track":
+            case ProjectStatus.Endangered:
                 return "bg-red-500"
+            case ProjectStatus.Finished:
+                return "bg-cyan-500"
             default:
                 return "bg-gray-500"
         }
     }
 
-    const getStatusLabel = (status: string) => {
+    const getStatusLabel = (status: ProjectStatus) => {
         switch (status) {
-            case "on-track":
+            case ProjectStatus.Healthy:
                 return "Na dobrej drodze"
-            case "at-risk":
+            case ProjectStatus.Endangered:
                 return "Zagrożony"
-            case "off-track":
+            case ProjectStatus.Delayed:
                 return "Opóźniony"
+            case ProjectStatus.Abandoned:
+                return "Porzucony"
+            case ProjectStatus.Finished:
+                return "Ukończony"
             default:
                 return "Nieznany"
         }
@@ -107,23 +110,51 @@ export default function UpdateStatusPage({
         console.log("Saving status update:", {
             title,
             status,
-            collaborators: selectedCollaborators,
-            owner,
             summary,
         })
-        router.push(`/spicelab/project/${id}`)
-    }
-
-    const addCollaborator = (user: User) => {
-        if (!selectedCollaborators.find((c) => c.id === user.id)) {
-            setSelectedCollaborators([...selectedCollaborators, user])
+        const payload: editStatusPayload = 
+        {
+            name: title,
+            summary: summary,
+            status: statusStringRec[status],
+            filesLinked: []
         }
-    }
+        const fetchSaveChanges = async () => 
+        {
+            const backend = await getBackendUrl();
+            if (!backend) throw new Error("No backend URL");
+            const at = getCookie("accessToken");
+            if (!at) throw new Error("No access token");
 
-    const removeCollaborator = (userId: string) => {
-        setSelectedCollaborators(
-            selectedCollaborators.filter((c) => c.id !== userId)
-        )
+            const res = await fetch(`${backend}/api/project/${id}/editStatus`, 
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: at, 
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                })
+            if (res.ok) {router.push(`/spicelab/project/${id}`)}
+            else throw (await res.text());
+        }
+
+        fetchSaveChanges().catch((e) => 
+            {
+                console.error("Fetch failed: ", e)
+                if (e instanceof Error) 
+                {
+                    console.warn("failure before the fetch, ", e.message)
+                }
+                else 
+                {
+                    toast(`${e}`) 
+                }
+                
+            })
+
+
+        //router.push(`/spicelab/project/${id}`)
     }
 
     return (
@@ -197,15 +228,15 @@ export default function UpdateStatusPage({
                                     <div className="flex items-center gap-2">
                                         <div
                                             className={`w-2 h-2 rounded-full ${getStatusColor(
-                                                status
+                                                statusStringRec[status]
                                             )}`}
                                         />
-                                        <span>{getStatusLabel(status)}</span>
+                                        <span>{getStatusLabel(statusStringRec[status])}</span>
                                     </div>
                                 </SelectTrigger>
                                 <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600">
                                     <SelectItem
-                                        value="on-track"
+                                        value={"healthy"}
                                         className="text-gray-900 dark:text-white"
                                     >
                                         <div className="flex items-center gap-2">
@@ -214,21 +245,39 @@ export default function UpdateStatusPage({
                                         </div>
                                     </SelectItem>
                                     <SelectItem
-                                        value="at-risk"
+                                        value={"delayed"}
                                         className="text-gray-900 dark:text-white"
                                     >
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-yellow-500" />
-                                            Zagrożony
+                                            Opóźniony
                                         </div>
                                     </SelectItem>
                                     <SelectItem
-                                        value="off-track"
+                                        value={"endangered"}
                                         className="text-gray-900 dark:text-white"
                                     >
                                         <div className="flex items-center gap-2">
                                             <div className="w-2 h-2 rounded-full bg-red-500" />
-                                            Opóźniony
+                                            Zagrożony
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem
+                                        value={"abandoned"}
+                                        className="text-gray-900 dark:text-white"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-gray-500" />
+                                            Porzucony
+                                        </div>
+                                    </SelectItem>
+                                    <SelectItem
+                                        value={"finished"}
+                                        className="text-gray-900 dark:text-white"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-2 rounded-full bg-cyan-500" />
+                                            Zakończony
                                         </div>
                                     </SelectItem>
                                 </SelectContent>
@@ -236,59 +285,14 @@ export default function UpdateStatusPage({
                         </div>
 
                         {/* Draft Collaborators */}
-                        <div className="flex items-center gap-4">
-                            <label className="text-sm font-medium text-gray-900 dark:text-gray-300 w-20">
-                                Osoby
-                            </label>
-                            <div className="flex items-center gap-2">
-                                {selectedCollaborators.map((collaborator) => (
-                                    <div
-                                        key={collaborator.id}
-                                        className="flex items-center justify-center w-8 h-8 bg-yellow-600 rounded-full text-xs font-medium cursor-pointer text-white"
-                                        onClick={() => {
-                                            removeCollaborator(collaborator.id);
-                                        }}
-                                    >
-                                        {collaborator.initials}
-                                    </div>
-                                ))}
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="w-8 h-8 border border-dashed border-gray-300 dark:border-gray-500 rounded-full text-gray-500 dark:text-gray-400"
-                                        >
-                                            <Plus className="w-4 h-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-600">
-                                        {mockUsers
-                                            .filter(
-                                                (user) =>
-                                                    !selectedCollaborators.find((c) => c.id === user.id)
-                                            )
-                                            .map((user) => (
-                                                <DropdownMenuItem
-                                                    key={user.id}
-                                                    onClick={() => addCollaborator(user)}
-                                                    className="text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                >
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="flex items-center justify-center w-6 h-6 bg-yellow-600 rounded-full text-xs text-white">
-                                                            {user.initials}
-                                                        </div>
-                                                        {user.name}
-                                                    </div>
-                                                </DropdownMenuItem>
-                                            ))}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </div>
-                        </div>
+                        {/* <div className="flex items-center gap-4">
+                            
+                        </div> */}
                     </div>
 
                     {/* Add Attachment */}
+                    <Tooltip>
+                    <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
                         className="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white justify-start p-0"
@@ -296,6 +300,11 @@ export default function UpdateStatusPage({
                         <Paperclip className="w-4 h-4 mr-2" />
                         Dodaj załącznik
                     </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Dostępne od wersji 1.0</p>
+                    </TooltipContent>
+                    </Tooltip>
 
                     {/* Summary */}
                     <div className="space-y-3">
