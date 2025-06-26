@@ -114,8 +114,8 @@ export default function ProjectMenu({ onSheetChange }: ProjectMenuProps) {
             })
           }
         >
-          <Ionicons name="trash" size={20} color="crimson" />
-          <Text className="ml-4 text-base text-red-600">
+          <Ionicons name="trash" size={20} color="hsl(9 21% 41%)" />
+          <Text className="ml-4 text-base text-light-danger">
             Usuń projekt
           </Text>
         </Pressable>

@@ -8,12 +8,12 @@ interface OverviewProps {
 export default function OverviewTab(props: OverviewProps) {
     return(
           <ScrollView
-        className="flex-1 bg-white m-8"
+        className="flex-1 bg-light-bg m-8"
       >
-        <Text className="text-2xl mb-5">
+        <Text className="text-2xl mb-5 text-light-text">
           Opis projektu
         </Text>
-        <Text className='text-xl'>
+        <Text className='text-xl text-light-text-muted'>
           {props.project?.description}
         </Text>
       </ScrollView>

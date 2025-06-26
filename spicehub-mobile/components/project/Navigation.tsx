@@ -26,12 +26,12 @@ export default function Navigation({ currentTab }: NavigationProps) {
         <Pressable
             onPress={() => open("tabSelection")}
             className="absolute left-1/2 transform -translate-x-1/2 w-40 p-3 rounded-full shadow-lg
-                     bg-blue-400 items-center justify-center"
+                     bg-light-primary items-center justify-center"
             style={{
                 bottom: insets.bottom + 20,
             }}
         >
-            <Text className="text-white text-xl text-center">
+            <Text className="text-dark-text text-xl text-center">
                 {getLabel(currentTab)}
             </Text>
         </Pressable>

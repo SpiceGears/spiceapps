@@ -157,7 +157,7 @@ export default function ProjectScreen() {
         contentContainerStyle={{
           paddingTop: insets.top + 100,
         }}
-        className="flex-1 bg-white"
+        className="flex-1 bg-light-bg"
       >
 
         {activeTab === "Overview" && <OverviewTab project={project!} />}

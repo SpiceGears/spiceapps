@@ -45,7 +45,7 @@ export default function ProjectScreenHeader({
           <Pressable onPress={() => router.replace("/(tabs)/spicelab")}>
             <Ionicons name="arrow-back" size={22} color="#000" />
           </Pressable>
-          <Text className="ml-3 mb-0.5 text-[20px] text-black">
+          <Text className="ml-3 mb-0.5 text-[20px] text-light-text">
             Powrót
           </Text>
         </View>
@@ -55,7 +55,7 @@ export default function ProjectScreenHeader({
       </View>
       <View className="flex-row items-center mt-8">
         <Ionicons name="folder" size={25} color="#000" />
-        <Text className="ml-5 text-2xl font-bold text-black">
+        <Text className="ml-5 text-2xl font-bold text-light-text">
           {project?.name}
         </Text>
       </View>

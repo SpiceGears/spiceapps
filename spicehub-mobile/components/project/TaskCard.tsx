@@ -80,7 +80,7 @@ export default function TaskCard({
   const isFinished = Boolean(finished);
 
   return (
-    <View className="bg-gray-50 rounded-xl p-5 border-l-4 border-blue-500 shadow-sm mb-3">
+    <View className="bg-light-bg-light rounded-xl p-5 border-l-4 border-light-primary shadow-sm mb-3">
       {/* Header Section */}
       <View className="flex-row items-start mb-4">
         <TouchableOpacity className="mr-4 pt-1">
@@ -99,14 +99,14 @@ export default function TaskCard({
         
         <View className="flex-1">
           <Text
-            className={`text-lg font-bold text-gray-900 mb-2 ${
+            className={`text-lg font-bold text-light-text mb-2 ${
               isFinished ? "line-through opacity-60" : ""
             }`}
           >
             {name}
           </Text>
           <Text
-            className={`text-sm text-gray-600 leading-5 ${
+            className={`text-sm text-light-text-muted leading-5 ${
               isFinished ? "line-through opacity-60" : ""
             }`}
           >

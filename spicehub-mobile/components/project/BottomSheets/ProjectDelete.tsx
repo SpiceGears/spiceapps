@@ -44,7 +44,7 @@ export default function ProjectDelete({ onSheetChange, deleteProject }: ProjectM
             )}
         >
             <BottomSheetView className="p-4">
-                <Text className="text-lg font-semibold mb-4 text-center text-red-400">
+                <Text className="text-lg font-semibold mb-4 text-center text-light-danger">
                     Czy jesteś pewny? Ten akcji nie można odwrócić!
                 </Text>
 
@@ -53,8 +53,8 @@ export default function ProjectDelete({ onSheetChange, deleteProject }: ProjectM
                     className="flex-row items-center py-3"
                     onPress={deleteProject}
                 >
-                    <Ionicons name="trash" size={20} color="crimson" />
-                    <Text className="ml-4 text-base text-red-600">
+                    <Ionicons name="trash" size={20} color="hsl(9 21% 41%)" />
+                    <Text className="ml-4 text-base text-light-danger">
                         Usuń projekt
                     </Text>
                 </Pressable>
