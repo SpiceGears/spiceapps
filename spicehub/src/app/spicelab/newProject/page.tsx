@@ -42,8 +42,27 @@ const handleSubmit = async (e: React.FormEvent) => {
     return;
   }
 
+  const departmentScopeRec: Record<Department, string | null> = 
+  {
+    [Department.NaDr]: null,
+    [Department.Executive]: "department.executive",
+    [Department.Marketing]: "department.marketing",
+    [Department.Mechanics]: "department.mechanics",
+    [Department.Mentor]: null,
+    [Department.Programmers]: "department.programmers",
+    [Department.SocialMedia]: "department.socialmedia"
+  }
   // 3) convert numeric enum values back to their string names
-  const scopesAsStrings = selectedSubteams.map((val) => Department[val]);
+  let scopesAsStrings: string[] = [];
+
+  for (const depar of selectedSubteams) 
+  {
+    const str = departmentScopeRec[depar];
+    if (!str) continue;
+    else scopesAsStrings.push(str);
+  }
+
+  
 
   const payload = {
     name,      
