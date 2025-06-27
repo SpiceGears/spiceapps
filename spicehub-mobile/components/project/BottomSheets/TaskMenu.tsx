@@ -11,12 +11,14 @@ import { Button } from "react-native-paper";
 import { Ionicons } from "@expo/vector-icons";
 import { useSheets } from "@/contexts/SheetsContext";
 import Divider from "@/components/utilities/Divider";
+import { Task } from "@/models/Task";
 
 interface ProjectMenuProps {
   onSheetChange: (idx: number) => void;
+  selectedTask: { sectionId: string; task: Task } | null;
 }
 
-export default function ProjectMenu({ onSheetChange }: ProjectMenuProps) {
+export default function TaskMenu({ onSheetChange }: ProjectMenuProps) {
   const { register, close, open } = useSheets();
   const snapPoints = useMemo(() => ["50%", "94%"], []);
 
@@ -28,7 +30,7 @@ export default function ProjectMenu({ onSheetChange }: ProjectMenuProps) {
 
   return (
     <BottomSheetModal
-      ref={register("projectSettings")}
+      ref={register("taskMenu")}
       index={1}                   // open at snapPoints[1] === "94%"
       snapPoints={snapPoints}
       onChange={onSheetChange}
@@ -45,7 +47,7 @@ export default function ProjectMenu({ onSheetChange }: ProjectMenuProps) {
     >
       <BottomSheetView className="p-4">
         <Text className="text-lg font-semibold mb-4 text-center">
-          Opcje projektu
+          Opcje zadania
         </Text>
 
         {/* Edit */}
@@ -59,48 +61,10 @@ export default function ProjectMenu({ onSheetChange }: ProjectMenuProps) {
         >
           <Ionicons name="pencil" size={20} color="#444" />
           <Text className="ml-4 text-base text-gray-800">
-            Edytuj projekt
+            Edytuj zadanie
           </Text>
         </Pressable>
         <Divider 
-          color="gray"
-          thickness={1}
-        />
-
-        {/* Activity */}
-        <Pressable
-          className="flex-row items-center py-3"
-          onPress={() =>
-            handleItemPress(() => {
-              // TODO: your share logic
-            })
-          }
-        >
-          <Ionicons name="time-outline" size={20} color="#444" />
-          <Text className="ml-4 text-base text-gray-800">
-            Zobacz historię aktywności
-          </Text>
-        </Pressable>
-                <Divider 
-          color="gray"
-          thickness={1}
-        />
-
-        {/* Share */}
-        <Pressable
-          className="flex-row items-center py-3"
-          onPress={() =>
-            handleItemPress(() => {
-              // TODO: your share logic
-            })
-          }
-        >
-          <Ionicons name="share-social" size={20} color="#444" />
-          <Text className="ml-4 text-base text-gray-800">
-            Udostępnij projekt
-          </Text>
-        </Pressable>
-                <Divider 
           color="gray"
           thickness={1}
         />
@@ -116,7 +80,7 @@ export default function ProjectMenu({ onSheetChange }: ProjectMenuProps) {
         >
           <Ionicons name="trash" size={20} color="#da4755" />
           <Text className="ml-4 text-base text-light-danger">
-            Usuń projekt
+            Usuń zadanie
           </Text>
         </Pressable>
       </BottomSheetView>

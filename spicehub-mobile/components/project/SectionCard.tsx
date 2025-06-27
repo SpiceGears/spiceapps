@@ -2,27 +2,23 @@ import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import TaskCard from "./TaskCard";
 import { TaskPriority, TaskStatus } from "@/models/Task";
-
-interface Task {
-  id: string;
-  name: string;
-  description: string;
-  finished: string
-  status: TaskStatus;
-  priority: TaskPriority;
-  deadlineDate: string
-}
+import TaskDelete from "@/components/project/BottomSheets/TaskDelete"
+import { Task } from "@/models/Task";
 
 interface SectionCardProps {
   sectionName: string;
   taskCount: number;
   tasks: Task[];
+  sectionId: string;
+  setSelectedTask: (data: { sectionId: string; task: Task } | null) => void;
 }
 
 export default function SectionCard({
   sectionName,
   taskCount,
   tasks,
+  sectionId,
+  setSelectedTask
 }: SectionCardProps) {
   return (
     <View className="bg-light-bg rounded-xl mr-4 p-4 w-80 shadow-lg min-h-96">
@@ -43,13 +39,9 @@ export default function SectionCard({
         {tasks.map((task) => (
           <TaskCard
             key={task.id}
-            id={task.id}
-            name={task.name}
-            description={task.description}
-            finished={task.finished}
-            status={task.status}
-            priority={task.priority}
-            deadlineDate={task.deadlineDate}
+            sectionId={sectionId}
+            task={task}
+            setSelectedTask={setSelectedTask}
           />
         ))}
       </View>

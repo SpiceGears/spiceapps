@@ -1,4 +1,4 @@
-import {  useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import {
   ScrollView,
   Alert,
@@ -18,6 +18,10 @@ import ProjectDelete from '@/components/project/BottomSheets/ProjectDelete'
 import Navigation from '@/components/project/Navigation'
 import TabSelection from '@/components/project/BottomSheets/TabSelection'
 import TasksTab from '@/components/project/tabs/Table'
+import TaskMenu from '@/components/project/BottomSheets/TaskMenu'
+import TaskDelete from '@/components/project/BottomSheets/TaskDelete'
+import { View } from 'react-native'
+import { ActivityIndicator } from 'react-native'
 
 export default function ProjectScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -25,6 +29,7 @@ export default function ProjectScreen() {
   const [activeTab, setActiveTab] = useState<"Overview" | "Table" | "Dashboard">("Overview");
   const [sectionsData, setSectionsData] = useState<Section[]>([]); // Fixed: Array type
   const [tasksData, setTasksData] = useState<Task[]>([]); // Fixed: Array type
+  const [selectedTask, setSelectedTask] = useState<{ sectionId: string; task: Task } | null>(null);
   const insets = useSafeAreaInsets()
   const router = useRouter();
 
@@ -81,12 +86,12 @@ export default function ProjectScreen() {
     const fetchTasks = async () => {
       try {
         const token = await SecureStore.getItemAsync("accessToken");
-        if(!token) return;
-        const res = await fetch(`${BackendUrl}/api/project/${id}/getTasks` ,{
+        if (!token) return;
+        const res = await fetch(`${BackendUrl}/api/project/${id}/getTasks`, {
           method: "GET",
           headers: { Authorization: token }
         })
-        if(!res.ok) throw new Error(await res.text());
+        if (!res.ok) throw new Error(await res.text());
         setTasksData(await res.json());
       } catch (e: any) {
         Alert.alert('Error', e.message || e.toString()); // Fixed: e.text() to e.message
@@ -144,8 +149,35 @@ export default function ProjectScreen() {
     }
   }
 
+  const deleteTask = async () => {
+    if (!selectedTask) return;
+    const { sectionId, task } = selectedTask;
+    try {
+      const token = await SecureStore.getItemAsync("accessToken");
+      if (!token) return;
+      const res = await fetch(`${BackendUrl}/api/project/${id}/${sectionId}/${task.id}`, {
+        method: "DELETE",
+        headers: { Authorization: token }
+      })
+      if (!res.ok) throw new Error(await res.text());
+      setTasksData(prevTasks => prevTasks.filter(t => t.id !== task.id));
+      setSelectedTask(null);
+    } catch (e: any) {
+      Alert.alert("Error", e.message);
+    }
+  }
+
   const setCurrentTab = (tab: "Overview" | "Table" | "Dashboard") => {
     setActiveTab(tab)
+  }
+
+    if (!project) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F5F5' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text style={{ marginTop: 10, color: '#555' }}>Loading project...</Text>
+      </View>
+    );
   }
 
   return (
@@ -161,7 +193,7 @@ export default function ProjectScreen() {
       >
 
         {activeTab === "Overview" && <OverviewTab project={project!} />}
-        {activeTab === "Table" && <TasksTab sectionsData={combinedSectionsData} />}
+        {activeTab === "Table" && <TasksTab sectionsData={combinedSectionsData} setSelectedTask={setSelectedTask}/>}
         {activeTab === "Dashboard" && <Text className='flex-1 bg-white m-8'>…your DashboardTab…</Text>}
       </ScrollView>
       <ProjectMenu onSheetChange={(idx: number) => {
@@ -185,6 +217,16 @@ export default function ProjectScreen() {
         console.log("project menu sheet moved to index", idx);
       }}
         setCurrentTab={setCurrentTab}
+      />
+      <TaskMenu onSheetChange={(idx: number) => {
+        console.log("project menu sheet moved to index", idx);
+      }}
+      selectedTask={selectedTask}
+      />
+      <TaskDelete onSheetChange={(idx: number) => {
+        console.log("project menu sheet moved to index", idx);
+      }}
+        deleteTask={deleteTask}
       />
       <Navigation
         currentTab={activeTab}

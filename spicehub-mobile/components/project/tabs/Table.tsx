@@ -12,9 +12,10 @@ interface ExtendedSection extends Section {
 
 export interface TasksTabProps {
   sectionsData: ExtendedSection[];
+  setSelectedTask: (data: { sectionId: string; task: Task } | null) => void;
 }
 
-export default function TasksTab({ sectionsData }: TasksTabProps) {
+export default function TasksTab({ sectionsData, setSelectedTask }: TasksTabProps) {
     const { height } = useWindowDimensions();
   const handleAddSection = () => {
     console.log("Add section pressed");
@@ -33,6 +34,8 @@ export default function TasksTab({ sectionsData }: TasksTabProps) {
             sectionName={section.name}
             taskCount={section.taskCount}
             tasks={section.tasks}
+            sectionId={section.id}
+            setSelectedTask={setSelectedTask}
           />
         ))}
         <AddSectionCard onPress={handleAddSection} />

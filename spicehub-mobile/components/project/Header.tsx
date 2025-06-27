@@ -1,36 +1,40 @@
-import { router } from "expo-router";
+// ProjectScreenHeader.tsx
 import {
   Pressable,
   View,
   Text,
-  LayoutChangeEvent,
-} from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "@/Constants/TeamColors";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Project } from "@/models/Project";
-import { useSheets } from "@/contexts/SheetsContext";
+} from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { router } from 'expo-router'
+
+import { Department, DepartmentColors } from '@/Constants/TeamColors'
+import { Project } from '@/models/Project'
+import { useSheets } from '@/contexts/SheetsContext'
 
 interface HeaderProps {
-  project: Project;
+  project: Project
 }
 
-export default function ProjectScreenHeader({
-  project,
-}: HeaderProps) {
-  const insets = useSafeAreaInsets();
-  const { open } = useSheets();
+export default function ProjectScreenHeader({ project }: HeaderProps) {
+  const insets = useSafeAreaInsets()
+  const { open } = useSheets()
 
-  function getHeaderColor(scopes?: string[]) {
-    if (!scopes?.length || scopes.length > 1) return COLORS.NEUTRAL;
-    for (let s of scopes) {
-      const key = s.trim().toUpperCase() as keyof typeof COLORS;
-      if (key in COLORS) return COLORS[key];
-    }
-    return COLORS.NEUTRAL;
+
+function getHeaderColor(scopes: string[]) {
+  if (scopes.length !== 1) {
+    return DepartmentColors[Department.NEUTRAL];
   }
 
-  const headerBg = getHeaderColor(project?.scopesRequired);
+  const raw = scopes[0].trim();
+  const parts = raw.split(".");
+  const deptSlug = parts.length > 1 ? parts[1].toLowerCase() : parts[0].toLowerCase();
+
+  const key = deptSlug as Department;
+  return DepartmentColors[key] ?? DepartmentColors[Department.NEUTRAL];
+}
+
+  const headerBg = getHeaderColor(project?.scopesRequired)
 
   return (
     <View
@@ -42,15 +46,19 @@ export default function ProjectScreenHeader({
     >
       <View className="flex-row justify-between items-center">
         <View className="flex-row items-center">
-          <Pressable onPress={() => router.replace("/(tabs)/spicelab")}>
+          <Pressable onPress={() => router.replace('/(tabs)/spicelab')}>
             <Ionicons name="arrow-back" size={22} color="#000" />
           </Pressable>
           <Text className="ml-3 mb-0.5 text-[20px] text-light-text">
             Powrót
           </Text>
         </View>
-        <Pressable onPress={() => open("projectSettings")}>
-          <Ionicons name="ellipsis-horizontal" size={28} color="#000" />
+        <Pressable onPress={() => open('projectSettings')}>
+          <Ionicons
+            name="ellipsis-horizontal"
+            size={28}
+            color="#000"
+          />
         </Pressable>
       </View>
       <View className="flex-row items-center mt-8">
@@ -60,5 +68,5 @@ export default function ProjectScreenHeader({
         </Text>
       </View>
     </View>
-  );
+  )
 }

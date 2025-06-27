@@ -14,21 +14,26 @@ import Divider from "@/components/utilities/Divider";
 
 export interface ProjectMenuProps {
     onSheetChange: (idx: number) => void;
-    deleteProject: () => void; 
+    deleteTask: () => void; 
 }
 
-export default function ProjectDelete({ onSheetChange, deleteProject }: ProjectMenuProps) {
+export default function TaskDelete({ onSheetChange, deleteTask }: ProjectMenuProps) {
     const { register, close, open } = useSheets();
     const snapPoints = useMemo(() => ["30%"], []);
 
-    const handleItemPress = (action: () => void) => {
-        action();
-        close("projectDelete");
+    const handleDeletePress = () => {
+        deleteTask();
+        close("taskDelete");
+    };
+
+    const handleCancelPress = () => {
+        close("taskDelete");
+        open("taskMenu");
     };
 
     return (
         <BottomSheetModal
-            ref={register("projectDelete")}
+            ref={register("taskDelete")}
             index={1}
             snapPoints={snapPoints}
             onChange={onSheetChange}
@@ -51,11 +56,11 @@ export default function ProjectDelete({ onSheetChange, deleteProject }: ProjectM
                 {/* Delete */}
                 <Pressable
                     className="flex-row items-center py-3"
-                    onPress={deleteProject}
+                    onPress={handleDeletePress}
                 >
                     <Ionicons name="trash" size={20} color="#da4755" />
                     <Text className="ml-4 text-base text-light-danger">
-                        Usuń projekt
+                        Usuń zadanie
                     </Text>
                 </Pressable>
 
@@ -64,14 +69,9 @@ export default function ProjectDelete({ onSheetChange, deleteProject }: ProjectM
                     thickness={1}
                 />
 
-                {/* Share */}
                 <Pressable
                     className="flex-row items-center py-3"
-                    onPress={() => {
-                        handleItemPress(() => {
-                            open("projectSettings")
-                        })
-                    }}
+                    onPress={handleCancelPress}
                 >
                     <Ionicons name="close" size={20} color="#444" />
                     <Text className="ml-4 text-base text-gray-800">

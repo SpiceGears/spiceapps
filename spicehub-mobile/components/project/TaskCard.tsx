@@ -1,15 +1,13 @@
+import { useSheets } from "@/contexts/SheetsContext";
 import { TaskPriority, TaskStatus } from "@/models/Task";
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
+import { Task } from "@/models/Task";
 
 interface TaskCardProps {
-  id: string;
-  name: string;
-  description: string;
-  finished: string | null;
-  status: TaskStatus;
-  priority: TaskPriority;
-  deadlineDate: string;
+  sectionId: string;
+  task: Task;
+  setSelectedTask: (data: { sectionId: string; task: Task } | null) => void;
 }
 
 const getStatusColor = (status: TaskStatus) => {
@@ -69,15 +67,18 @@ const getPriorityColor = (priority: TaskPriority) => {
 };
 
 export default function TaskCard({
-  id,
-  name,
-  description,
-  finished,
-  status,
-  priority,
-  deadlineDate,
+  task,
+  sectionId,
+  setSelectedTask
 }: TaskCardProps) {
+  const { id, name, description, finished, status, priority, deadlineDate } = task;
   const isFinished = Boolean(finished);
+  const { open } = useSheets();
+
+  const handleOpenTaskMenu = () => {
+    setSelectedTask({ sectionId, task: task });
+    open("taskMenu");
+  };
 
   return (
     <View className="bg-light-bg-light rounded-xl p-5 border-l-4 border-light-primary shadow-sm mb-3">
@@ -114,7 +115,7 @@ export default function TaskCard({
           </Text>
         </View>
         
-        <TouchableOpacity className="p-2 -mr-2 -mt-1">
+        <TouchableOpacity className="p-2 -mr-2 -mt-1" onPress={handleOpenTaskMenu}>
           <Text className="text-lg text-gray-400 font-bold">⋯</Text>
         </TouchableOpacity>
       </View>
