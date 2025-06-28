@@ -10,6 +10,8 @@ using SpiceAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var prodenv = Environment.GetEnvironmentVariable("PRODUCTION");
+
 Log.Logger = new LoggerConfiguration().MinimumLevel.Information().WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}").CreateLogger();
 
 string ConnectionString = $"{Environment.GetEnvironmentVariable("CONSTRING")}";
@@ -44,23 +46,30 @@ builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql());
 builder.Services.AddSignalR();
 // Add services to the container.
 builder.Services.AddControllers(); // Ensure this line is present
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "SpiceAPI", Version = "v1" });
 
-    // Define the custom header security scheme
-    c.AddSecurityDefinition("Authorization", new OpenApiSecurityScheme
+if (string.IsNullOrWhiteSpace(prodenv) || prodenv != "true")
+{
+    builder.Services.AddEndpointsApiExplorer();
+    builder.Services.AddSwaggerGen(c =>
     {
-        In = ParameterLocation.Header,
-        Name = "Authorization",
-        Type = SecuritySchemeType.ApiKey,
-        Description = "Custom authorization header using the format 'ULogChallenge: username#password'"
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "SpiceAPI", Version = "v1" });
+
+        // Define the custom header security scheme
+        c.AddSecurityDefinition("Authorization", new OpenApiSecurityScheme
+        {
+            In = ParameterLocation.Header,
+            Name = "Authorization",
+            Type = SecuritySchemeType.ApiKey,
+            Description = "Custom authorization header using the format 'ULogChallenge: username#password'"
+        });
+
+        // Register the operation filter that will add the security requirement to specific endpoints
+        c.OperationFilter<AddAuthorizationHeaderFilter>();
     });
-    
-    // Register the operation filter that will add the security requirement to specific endpoints
-    c.OperationFilter<AddAuthorizationHeaderFilter>();
-});
+    Log.Logger.Warning("Swagger is enabled(build stage)!!!");
+    Log.Logger.Warning((!string.IsNullOrWhiteSpace(prodenv) && prodenv == "true").ToString());
+    Log.Logger.Warning($"{prodenv}");
+}
 
 //cors shit so it works anywhere
 builder.Services.AddCors(options =>
@@ -93,13 +102,14 @@ app.UseCors("F-off");
 
 
 
-//if (app.Environment.IsDevelopment())
+if (string.IsNullOrWhiteSpace(prodenv) || prodenv != "true")
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "SpiceAPI V1");
     });
+    Log.Logger.Warning("Swagger is enabled!!!");
 }
 
 //

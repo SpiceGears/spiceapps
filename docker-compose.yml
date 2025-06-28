@@ -15,6 +15,7 @@ services:
       FILE_DIR: "/var/spicehub"
       AVATAR_PATH: "/var/spicehub_avatars"
       AUTHSEC: "none" #header for IP checks, or "none" for disable
+      PRODUCTION: "false" # change to true for production, disable swagger and debug points
     ports:
       - "8080:8080"
       - "8081:8081"
