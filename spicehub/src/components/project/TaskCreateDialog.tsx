@@ -1,7 +1,7 @@
 // components/project/TaskCreateDialog.tsx
 "use client";
 
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useContext, useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +26,8 @@ import { Task, TaskStatus, Section } from "@/models/Task";
 import { getBackendUrl } from "@/app/serveractions/backend-url";
 import { getCookie } from "typescript-cookie";
 import { NewTaskPayload } from "./TaskList";
+import { projectContext } from "@/app/spicelab/project/[id]/projectContext";
+import { UserInfo } from "@/models/User";
 
 export interface TaskCreateDialogProps {
   isOpen: boolean;
@@ -52,6 +54,8 @@ export function TaskCreateDialog({
     deadlineDate: string;
   };
 
+  const ctx = useContext(projectContext);
+
   const [formData, setFormData] = useState<FormData>({
     name: "",
     description: "",
@@ -76,53 +80,11 @@ export function TaskCreateDialog({
     setErrors({});}
     // List of users who can be assigned to this task
     const [availableAssignees, setAvailableAssignees] = useState<
-      { id: string; name: string; email: string }[]
+      UserInfo[]
     >([]);
 
     useEffect(() => {
-      const fetchAssignees = async () => {
-        try {
-          const backend = await getBackendUrl();
-          const token = getCookie("accessToken");
-          if (!backend || !token) return;
-
-          // Fetch all users
-          const usersRes = await fetch(`${backend}/api/user/getAll`, {
-            headers: {
-              Authorization: `${token}`,
-              "Content-Type": "application/json",
-            },
-          });
-          if (!usersRes.ok) return;
-          const users = await usersRes.json();
-
-          // Fetch project members (users who can access this project)
-          const projectId = defaultSection; // assuming defaultSection is projectId
-          const membersRes = await fetch(`${backend}/api/project/${projectId}/getUsers`, {
-            headers: {
-              Authorization: `${token}`,
-              "Content-Type": "application/json",
-            },
-          });
-          if (!membersRes.ok) return;
-          const members = await membersRes.json(); // array of user ids
-
-          // Filter users who are project members
-          let filtered = users.filter((u: any) => members.includes(u.id));
-
-          // Exclude users already assigned to this task (if editing, not creating)
-          // For create dialog, formData.assignedUsers is empty, so this is just for safety
-          filtered = filtered.filter(
-            (u: any) => !formData.assignedUsers.includes(u.id)
-          );
-
-          setAvailableAssignees(filtered);
-        } catch (err) {
-          setAvailableAssignees([]);
-        }
-      };
-
-      fetchAssignees();
+      setAvailableAssignees(ctx.users);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [defaultSection, formData.assignedUsers]);
 
@@ -384,7 +346,7 @@ export function TaskCreateDialog({
                       <div className="flex items-center gap-2 flex-1">
                         <User className="h-4 w-4 text-gray-400" />
                         <div>
-                          <p className="font-medium text-sm">{u.name}</p>
+                          <p className="font-medium text-sm">{u.firstName}</p>
                           <p className="text-xs text-gray-500">{u.email}</p>
                         </div>
                       </div>
@@ -411,7 +373,7 @@ export function TaskCreateDialog({
                         className="cursor-pointer hover:bg-red-100 hover:text-red-800 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                         onClick={() => toggleAssignee(id)}
                       >
-                        {u.name} ×
+                        {u.firstName} ×
                       </Badge>
                     );
                   })}

@@ -39,6 +39,8 @@ namespace SpiceAPI.Models
         [BsonElement("isApproved")]
         public bool IsApproved { get; set; } = false;
 
+        public bool AvatarSet { get; set; } = false;
+
         [BsonElement("createdAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
@@ -95,6 +97,8 @@ namespace SpiceAPI.Models
         public DateTime CreatedAt { get; set; }
         public DateTime LastLogin { get; set; }
 
+        public bool avatarSet { get; set; }
+
         public UserInfo(User us)
         {
             Id = us.Id;
@@ -108,6 +112,7 @@ namespace SpiceAPI.Models
             CreatedAt = us.CreatedAt;
             LastLogin = us.LastLogin;
             IsApproved = us.IsApproved;
+            avatarSet = us.AvatarSet;
         }
 
         public UserInfo() { }

@@ -238,8 +238,17 @@ namespace SpiceAPI.Controllers
             return Ok(tasks.Count);
         }
 
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> EditUserData([FromHeader] string? Authorization, [FromRoute] Guid id, [FromBody] User body) 
+        
+        public class UserEditDetails 
+        {
+            public DateOnly BirthDay { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public Department Department { get; set; }
+        }
+        
+        [HttpPut("{id:guid}/editDetails")]
+        public async Task<IActionResult> EditUserData([FromHeader] string? Authorization, [FromRoute] Guid id, [FromBody] UserEditDetails body) 
         {
             if (Authorization == null)
                 return Unauthorized("Provide an Access Token to continue");
@@ -259,7 +268,6 @@ namespace SpiceAPI.Controllers
             if (nus == null) return NotFound("Didn't find any user with that uuid");
 
             nus.BirthDay = body.BirthDay;
-            nus.Email = body.Email;
             nus.FirstName = body.FirstName;
             nus.LastName = body.LastName;
             nus.Department = body.Department;

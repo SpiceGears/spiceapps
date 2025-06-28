@@ -28,7 +28,8 @@ export default function ProfileDropdown() {
     coins: 0,
     createdAt: new Date(),
     lastLogin: new Date(),
-    isApproved: true
+    isApproved: true,
+    avatarSet: false,
   })
 
   useEffect(() => {

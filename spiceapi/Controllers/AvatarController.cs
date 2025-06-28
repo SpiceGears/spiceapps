@@ -37,6 +37,9 @@ namespace SpiceAPI.Controllers {
             await file.CopyToAsync(stream);
             stream.Close();
 
+            user.AvatarSet = true;
+            await db.SaveChangesAsync();
+
             return Ok("Avatar set");
         }
 
@@ -56,6 +59,8 @@ namespace SpiceAPI.Controllers {
             if (user.CheckForClaims("admin", db) || user.Id == id) 
             {
                 System.IO.File.Delete(apath);
+                user.AvatarSet = false;
+                await db.SaveChangesAsync();
                 return Ok("Avatar deleted");
             }
             else { return StatusCode(403, $"You must be admin or this user to delete this avatar: {id}"); }
