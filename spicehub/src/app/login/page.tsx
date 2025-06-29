@@ -120,14 +120,14 @@ export default function LoginPage() {
                 <button
                   onClick={login}
                   disabled={loading}
-                  className="group relative w-full flex justify-center py-2 px-4 border border-transparent 
+                  className="group relative w-full mb-8 flex justify-center py-2 px-4 border border-transparent 
                          text-sm font-medium rounded-md text-white bg-blue-600 dark:bg-blue-500 
                          hover:bg-blue-700 dark:hover:bg-blue-600 
                          focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900"
                 >
                   {loading ? 'Logowanie...' : 'Zaloguj się'}
                 </button>
-                <Link href="/register" className="mt-2 text-blue-600 dark:text-blue-500 
+                <Link href="/register" className="mt-5 text-blue-600 dark:text-blue-500 
                          hover:text-blue-700 dark:hover:text-blue-600">Nie masz konta? Zarejestruj się tutaj.</Link>
                 </div>
                 {error && (
