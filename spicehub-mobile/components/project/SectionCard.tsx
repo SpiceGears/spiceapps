@@ -12,6 +12,7 @@ interface SectionCardProps {
   tasks: Task[];
   sectionId: string;
   setSelectedTask: (data: { sectionId: string; task: Task } | null) => void;
+  onOpenSectionMenu: (sectionId: string) => void;
 }
 
 export default function SectionCard({
@@ -19,7 +20,8 @@ export default function SectionCard({
   taskCount,
   tasks,
   sectionId,
-  setSelectedTask
+  setSelectedTask,
+  onOpenSectionMenu
 }: SectionCardProps) {
   const { open } = useSheets();
   return (
@@ -32,7 +34,7 @@ export default function SectionCard({
               <Text className="text-white text-xs font-bold">{taskCount}</Text>
             </View>
           </View>
-          <TouchableOpacity className="p-1" onPress={() => open("sectionMenu")}>
+          <TouchableOpacity className="p-1" onPress={() => onOpenSectionMenu(sectionId)}>
             <Text className="text-xl text-gray-600 font-bold">⋯</Text>
           </TouchableOpacity>
         </View>

@@ -25,6 +25,7 @@ import { ActivityIndicator } from 'react-native'
 import { Button } from 'react-native-paper'
 import SectionMenu from '@/components/project/BottomSheets/SectionMenu'
 import DeleteSection from '@/components/project/BottomSheets/DeleteSection'
+import { useSheets } from '@/contexts/SheetsContext'
 
 export default function ProjectScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -36,6 +37,7 @@ export default function ProjectScreen() {
   const [pendingSectionId, setPendingSectionId] = useState<string>("")
   const insets = useSafeAreaInsets()
   const router = useRouter();
+  const { open } = useSheets();
 
   // Combine sections with their tasks and count tasks
   const combinedSectionsData = useMemo(() => {
@@ -248,7 +250,7 @@ export default function ProjectScreen() {
       >
 
         {activeTab === "Overview" && <OverviewTab project={project!} />}
-        {activeTab === "Table" && <TasksTab sectionsData={combinedSectionsData} setSelectedTask={setSelectedTask}/>}
+        {activeTab === "Table" && <TasksTab sectionsData={combinedSectionsData} setSelectedTask={setSelectedTask} onOpenSectionMenu={handleOpenSectionMenu}/>}
         {activeTab === "Dashboard" && <Text className='flex-1 bg-white m-8'>…your DashboardTab…</Text>}
       </ScrollView>
       <ProjectMenu onSheetChange={(idx: number) => {
