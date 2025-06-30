@@ -74,7 +74,7 @@ export default function TaskMenu({ onSheetChange }: ProjectMenuProps) {
           className="flex-row items-center py-3"
           onPress={() =>
             handleItemPress(() => {
-              open("projectDelete")
+              open("taskDelete")
             })
           }
         >

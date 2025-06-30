@@ -16,13 +16,6 @@ export default function Dashboard() {
         
         {/* Widgets container */}
         <div className="space-y-6 max-w-4xl mx-auto">
-          {/* Workshop widget */}
-            <WorkshopCard
-              title="Warsztat"
-              status="Otwarty"
-              participants={12}
-              time="10:00"
-            />
           
           {/* Season widget */}
             <SeasonCard isOffseason />

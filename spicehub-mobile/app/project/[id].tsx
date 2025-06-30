@@ -22,6 +22,7 @@ import TaskMenu from '@/components/project/BottomSheets/TaskMenu'
 import TaskDelete from '@/components/project/BottomSheets/TaskDelete'
 import { View } from 'react-native'
 import { ActivityIndicator } from 'react-native'
+import { Button } from 'react-native-paper'
 
 export default function ProjectScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
