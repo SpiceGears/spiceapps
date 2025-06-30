@@ -4,3 +4,4 @@
 .vscode
 spicehub_avatars
 spicehub_storage
+docker-compose.yml.override
