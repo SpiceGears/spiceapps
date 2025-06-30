@@ -23,6 +23,8 @@ import TaskDelete from '@/components/project/BottomSheets/TaskDelete'
 import { View } from 'react-native'
 import { ActivityIndicator } from 'react-native'
 import { Button } from 'react-native-paper'
+import SectionMenu from '@/components/project/BottomSheets/SectionMenu'
+import DeleteSection from '@/components/project/BottomSheets/DeleteSection'
 
 export default function ProjectScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -31,6 +33,7 @@ export default function ProjectScreen() {
   const [sectionsData, setSectionsData] = useState<Section[]>([]); // Fixed: Array type
   const [tasksData, setTasksData] = useState<Task[]>([]); // Fixed: Array type
   const [selectedTask, setSelectedTask] = useState<{ sectionId: string; task: Task } | null>(null);
+  const [pendingSectionId, setPendingSectionId] = useState<string>("")
   const insets = useSafeAreaInsets()
   const router = useRouter();
 
@@ -168,6 +171,57 @@ export default function ProjectScreen() {
     }
   }
 
+  const deleteSection = async (sectionId: string) => {
+    try {
+      const token = await SecureStore.getItemAsync("accessToken");
+      if (!token) return;
+      const res = await fetch(
+        `${BackendUrl}/api/project/${id}/section/${sectionId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: token },
+        }
+      );
+      if (!res.ok) throw new Error(await res.text());
+      // remove from local
+      setSectionsData((prev) =>
+        prev.filter((s) => s.id !== sectionId)
+      );
+    } catch (e: any) {
+      Alert.alert("Error", e.message);
+    }
+  };
+
+  const editSection = async (sectionId: string, newName: string) => {
+    try {
+      const token = await SecureStore.getItemAsync("accessToken");
+      if (!token) return;
+      const res = await fetch(
+        `${BackendUrl}/api/project/${id}/section/${sectionId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+          body: JSON.stringify({ name: newName }),
+        }
+      );
+      if (!res.ok) throw new Error(await res.text());
+      const updated: Section = await res.json();
+      setSectionsData((prev) =>
+        prev.map((s) => (s.id === sectionId ? updated : s))
+      );
+    } catch (e: any) {
+      Alert.alert("Error", e.message);
+    }
+  };
+
+  const handleOpenSectionMenu = (sectionId: string) => {
+    setPendingSectionId(sectionId);
+    open("sectionMenu");
+  };
+
   const setCurrentTab = (tab: "Overview" | "Table" | "Dashboard") => {
     setActiveTab(tab)
   }
@@ -228,6 +282,16 @@ export default function ProjectScreen() {
         console.log("project menu sheet moved to index", idx);
       }}
         deleteTask={deleteTask}
+      />
+      <SectionMenu onSheetChange={(idx: number) => {
+        console.log("project menu sheet moved to index", idx);
+      }}
+      selectedTask={selectedTask}
+      />
+      <DeleteSection onSheetChange={(idx: number) => {
+        console.log("project menu sheet moved to index", idx);
+      }}
+        deleteSection={deleteSection}
       />
       <Navigation
         currentTab={activeTab}

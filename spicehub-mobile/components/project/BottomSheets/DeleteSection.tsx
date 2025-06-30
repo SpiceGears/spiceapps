@@ -12,23 +12,23 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSheets } from "@/contexts/SheetsContext";
 import Divider from "@/components/utilities/Divider";
 
-export interface ProjectDeleteProps {
+export interface DeleteSectionProps {
     onSheetChange: (idx: number) => void;
-    deleteProject: () => void; 
+    deleteSection: () => void; 
 }
 
-export default function ProjectDelete({ onSheetChange, deleteProject }: ProjectDeleteProps) {
+export default function DeleteSection({ onSheetChange, deleteSection }: DeleteSectionProps) {
     const { register, close, open } = useSheets();
     const snapPoints = useMemo(() => ["30%"], []);
 
     const handleItemPress = (action: () => void) => {
         action();
-        close("projectDelete");
+        close("sectionDelete");
     };
 
     return (
         <BottomSheetModal
-            ref={register("projectDelete")}
+            ref={register("sectionDelete")}
             index={1}
             snapPoints={snapPoints}
             onChange={onSheetChange}
@@ -51,11 +51,11 @@ export default function ProjectDelete({ onSheetChange, deleteProject }: ProjectD
                 {/* Delete */}
                 <Pressable
                     className="flex-row items-center py-3"
-                    onPress={deleteProject}
+                    onPress={deleteSection}
                 >
                     <Ionicons name="trash" size={20} color="#da4755" />
                     <Text className="ml-4 text-base text-light-danger">
-                        Usuń projekt
+                        Usuń sekcję
                     </Text>
                 </Pressable>
 

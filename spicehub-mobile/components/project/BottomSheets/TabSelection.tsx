@@ -10,7 +10,7 @@ import { Ionicons } from "@expo/vector-icons"
 import { useSheets } from "@/contexts/SheetsContext"
 import Divider from "@/components/utilities/Divider"
 
-export interface ProjectMenuProps {
+export interface TabSelectionProps {
   onSheetChange: (idx: number) => void
   setCurrentTab: (name: "Overview" | "Table" | "Dashboard") => void
 }
@@ -18,7 +18,7 @@ export interface ProjectMenuProps {
 export default function TabSelection({
   onSheetChange,
   setCurrentTab,
-}: ProjectMenuProps) {
+}: TabSelectionProps) {
   const { register, close } = useSheets()
   const snapPoints = useMemo(() => ["50%", "94%"], [])
 

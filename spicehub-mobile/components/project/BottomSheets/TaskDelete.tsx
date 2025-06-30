@@ -12,12 +12,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSheets } from "@/contexts/SheetsContext";
 import Divider from "@/components/utilities/Divider";
 
-export interface ProjectMenuProps {
+export interface TaskDeleteProps {
     onSheetChange: (idx: number) => void;
     deleteTask: () => void; 
 }
 
-export default function TaskDelete({ onSheetChange, deleteTask }: ProjectMenuProps) {
+export default function TaskDelete({ onSheetChange, deleteTask }: TaskDeleteProps) {
     const { register, close, open } = useSheets();
     const snapPoints = useMemo(() => ["30%"], []);
 

@@ -13,12 +13,12 @@ import { useSheets } from "@/contexts/SheetsContext";
 import Divider from "@/components/utilities/Divider";
 import { Task } from "@/models/Task";
 
-interface ProjectMenuProps {
+interface TaskMenuProps {
   onSheetChange: (idx: number) => void;
   selectedTask: { sectionId: string; task: Task } | null;
 }
 
-export default function TaskMenu({ onSheetChange }: ProjectMenuProps) {
+export default function TaskMenu({ onSheetChange }: TaskMenuProps) {
   const { register, close, open } = useSheets();
   const snapPoints = useMemo(() => ["50%", "94%"], []);
 

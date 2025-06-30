@@ -4,6 +4,7 @@ import TaskCard from "./TaskCard";
 import { TaskPriority, TaskStatus } from "@/models/Task";
 import TaskDelete from "@/components/project/BottomSheets/TaskDelete"
 import { Task } from "@/models/Task";
+import { useSheets } from "@/contexts/SheetsContext";
 
 interface SectionCardProps {
   sectionName: string;
@@ -20,6 +21,7 @@ export default function SectionCard({
   sectionId,
   setSelectedTask
 }: SectionCardProps) {
+  const { open } = useSheets();
   return (
     <View className="bg-light-bg rounded-xl mr-4 p-4 w-80 shadow-lg min-h-96">
       <View className="flex-row justify-between items-center mb-4 pb-3 border-b border-gray-300">
@@ -30,7 +32,7 @@ export default function SectionCard({
               <Text className="text-white text-xs font-bold">{taskCount}</Text>
             </View>
           </View>
-          <TouchableOpacity className="p-1">
+          <TouchableOpacity className="p-1" onPress={() => open("sectionMenu")}>
             <Text className="text-xl text-gray-600 font-bold">⋯</Text>
           </TouchableOpacity>
         </View>
