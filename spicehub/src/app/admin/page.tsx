@@ -43,6 +43,7 @@ export default function Admin() {
   const [users, setUsers] = useState<UserInfo[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [unapprovedUsers, setUnapprovedUsers] = useState<UserInfo[]>([]);
+  const [BackendUrl, setBackendUrl] = useState("");
 
   async function handleUserEdit() 
   {
@@ -89,19 +90,21 @@ export default function Admin() {
       console.error("Fetch failed: "+err)
       toast("Error", {description: "Assigning roles returned error: "+ err, className: "bg-red-500"})
       return;
-    }
+    } 
     
-
+    setRefresh(!refresh)
   }
 
 
   useEffect(() => {
     const fetchUsers = async () => {
       const backend = await getBackendUrl();
+      
       if (!backend) {
         console.error("No backend URL found");
         return;
       }
+      setBackendUrl(backend)
       const token = getCookie("accessToken");
 
       const res = await fetch(`${backend}/api/user/getAll`, {
@@ -225,6 +228,7 @@ export default function Admin() {
                   >
                     <div className="flex items-center gap-3">
                       <Avatar>
+                        <AvatarImage src={`${BackendUrl}/api/user/${user.id}/avatar`} alt={`${user.firstName} ${user.lastName}`}></AvatarImage>
                         <AvatarFallback>{user.firstName[0]}</AvatarFallback>
                         {/* <AvatarImage
                           src={`https://ui-avatars.com/api/?name=${user.name
@@ -276,7 +280,7 @@ export default function Admin() {
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="birthday">Data urodzenia</Label>
-                            <Input id="birthday" defaultValue={currentUser?.birthday}/>
+                            <Input id="birthday" type="date" defaultValue={currentUser?.birthday}/>
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="user-roles">Role</Label>

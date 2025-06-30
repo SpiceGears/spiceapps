@@ -21,6 +21,7 @@ import {
   TaskStatus,
   Section as SectionModel,
 } from "@/models/Task";
+import { toast } from "sonner";
 
 export type NewTaskPayload = { sectionId: string, 
   name: string
@@ -222,6 +223,29 @@ export function TaskList({
     // const toDel = sections.find((s) => s.id === id)?.tasks.map((t) => t.id);
     // setSections((s) => s.filter((x) => x.id !== id));
     // if (toDel?.length && onDeleteTasks) onDeleteTasks(toDel);
+    const fetchDelete = async () => 
+      {
+        const backend = await getBackendUrl();
+        if (!backend) throw new Error("No backend?")
+        const at = getCookie("accessToken");
+        if (!at) throw new Error("No access token!")
+          
+        const res = await fetch(`${backend}/api/project/${projectId}/${id}/deleteSection`, 
+          {
+            method: "DELETE",
+            headers: {Authorization: at}
+          })
+        if (res.ok) {
+          setRefresh(!refresh);
+          return;
+        }
+        else 
+        {
+          throw new Error("Fetch failed: "+await res.text())
+        }
+      }
+    
+    fetchDelete().catch(e => {toast("Błąd", {description: "Nie można usunąć sekcji: "+ e})})
   };
   const handleAddSection = async () => {
     try {

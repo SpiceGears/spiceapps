@@ -21,7 +21,7 @@ export function ActivitySidebar() {
           Aktywność w projekcie
         </h3>
       </div>
-      <div className="p-4 flex-1">
+      <div className="p-4 flex-1 overflow-y-scroll max-h-[95vh]">
         {/* <StatusUpdate
           update={ctx.events[0]}
         /> */}

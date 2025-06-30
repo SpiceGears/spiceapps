@@ -19,6 +19,7 @@ export async function middleware(request: NextRequest) {
     let at = cookieStore.get("accessToken");
     if (at) {
         //console.log("AT FOUND")
+        try {
         let res = await fetch(backend + "/api/user/getInfo", 
             {
                 cache: 'no-store',
@@ -36,9 +37,14 @@ export async function middleware(request: NextRequest) {
                 return NextResponse.redirect(new URL('/unapproved', request.url));
             }
             else return NextResponse.next(); 
+        }}
+        catch 
+        {
+            return NextResponse.redirect(new URL('/maintanance?code='+encodeURI("BACKEND is offline, try again later"), request.url))
         }
     }
-    let res = await fetch(backend+"/api/auth/generateAccess", 
+    
+    try{let res = await fetch(backend+"/api/auth/generateAccess", 
         {
             method: "POST",
             cache: 'no-store',
@@ -55,7 +61,12 @@ export async function middleware(request: NextRequest) {
         resp.cookies.set("accessToken", await res.text());
         return resp;
     }
-    return NextResponse.redirect(new URL('/maintanance?error=impossible', request.url))
+    return NextResponse.redirect(new URL('/maintanance?code=impossible', request.url))
+}
+    catch 
+        {
+            return NextResponse.redirect(new URL('/maintanance?code='+encodeURI("BACKEND is offline, try again later"), request.url))
+        }
 }
 
 export const config = {
