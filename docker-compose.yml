@@ -28,7 +28,7 @@ services:
         source: ./spicehub_avatars
         target: /var/spicehub_avatars/
       - type: bind
-        source: ./spicehub_init
+        source: ./spicehub_init     #Backend will preload databse with files inside this, ex. roles.json, users.json
         target: /etc/spicehub/preload/
     depends_on:
       - db
