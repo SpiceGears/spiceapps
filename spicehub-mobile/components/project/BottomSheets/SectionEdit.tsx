@@ -17,32 +17,29 @@ import { useSheets } from "@/contexts/SheetsContext";
 
 export interface SectionEditProps {
   onSheetChange: (idx: number) => void;
-  initialName?: string;
-  initialDescription?: string;
-  onSave: (name: string, description: string) => void;
+  oldName: string;
+  onSave: (name: string) => void;
 }
 
 export default function SectionEdit({
   onSheetChange,
-  initialName,
-  initialDescription,
+  oldName,
   onSave,
 }: SectionEditProps) {
   const { register, close } = useSheets();
-  const [name, setName] = useState(initialName!);
-  const [description, setDescription] = useState(initialDescription!);
+  const [name, setName] = useState<string>("");
 
-  const snapPoints = useMemo(() => ["50%"], []);
+  const snapPoints = useMemo(() => ["30%"], []);
 
   function handleSave() {
-    onSave(name.trim(), description.trim());
+    onSave(name.trim());
     close("sectionEdit");
   }
 
   return (
     <BottomSheetModal
       ref={register("sectionEdit")}
-      index={0}
+      index={1}
       snapPoints={snapPoints}
       onChange={onSheetChange}
       enablePanDownToClose
@@ -63,34 +60,19 @@ export default function SectionEdit({
           keyboardShouldPersistTaps="handled"
         >
           <Text className="text-xl font-semibold mb-6 text-center">
-            Edit Project
+            Edytuj sekcję
           </Text>
 
           {/* PROJECT NAME */}
           <Text className="text-sm font-medium text-gray-700 mb-1">
-            Project Name
+            Nazwa sekcji
           </Text>
           <BottomSheetTextInput
             className="bg-white border border-[#1976d2] rounded-md px-4 py-2 mb-4 text-base"
-            placeholder="Enter project name"
+            placeholder="Wpisz nową nazwę sekcji"
             placeholderTextColor="#888"
             value={name}
             onChangeText={setName}
-          />
-
-          {/* DESCRIPTION */}
-          <Text className="text-sm font-medium text-gray-700 mb-1">
-            Description
-          </Text>
-          <BottomSheetTextInput
-            className="bg-white border border-[#1976d2] rounded-md px-4 py-2 mb-6 text-base"
-            placeholder="Enter description"
-            placeholderTextColor="#888"
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            textAlignVertical="top"
-            style={{ height: 100 }}
           />
 
           {/* ACTIONS */}
@@ -99,13 +81,13 @@ export default function SectionEdit({
               className="px-4 py-2 mr-4"
               onPress={() => close("projectEdit")}
             >
-              <Text className="text-[#1976d2]">Cancel</Text>
+              <Text className="text-[#1976d2]">Anuluj</Text>
             </Pressable>
             <Pressable
               className="bg-[#1976d2] px-4 py-2 rounded-md"
               onPress={handleSave}
             >
-              <Text className="text-white">Save</Text>
+              <Text className="text-white">Zapisz</Text>
             </Pressable>
           </View>
         </BottomSheetScrollView>

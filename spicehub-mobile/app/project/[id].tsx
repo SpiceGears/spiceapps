@@ -27,6 +27,7 @@ import SectionMenu from '@/components/project/BottomSheets/SectionMenu'
 import DeleteSection from '@/components/project/BottomSheets/DeleteSection'
 import { useSheets } from '@/contexts/SheetsContext'
 import SectionCreate from '@/components/project/BottomSheets/CreateSection'
+import SectionEdit from '@/components/project/BottomSheets/SectionEdit'
 
 export default function ProjectScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -193,31 +194,6 @@ export default function ProjectScreen() {
     }
   };
 
-  const editSection = async (sectionId: string, newName: string) => {
-    try {
-      const token = await SecureStore.getItemAsync("accessToken");
-      if (!token) return;
-      const res = await fetch(
-        `${BackendUrl}/api/project/${id}/${sectionId}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token,
-          },
-          body: JSON.stringify({ name: newName }),
-        }
-      );
-      if (!res.ok) throw new Error(await res.text());
-      const updated: Section = await res.json();
-      setSectionsData((prev) =>
-        prev.map((s) => (s.id === sectionId ? updated : s))
-      );
-    } catch (e: any) {
-      Alert.alert("Error", e.message);
-    }
-  };
-
   const handleSectionCreate = async (name: string) => {
     try {
       const token = await SecureStore.getItemAsync("accessToken");
@@ -231,6 +207,25 @@ export default function ProjectScreen() {
         body: JSON.stringify({ name: name })
       });
       if (!res.ok) throw new Error(await res.text());
+      fetchSections();
+    } catch (e: any) {
+      Alert.alert("Error", e.message);
+    }
+  }
+
+  const handleSectionEdit = async (name: string) => {
+    try {
+      const token = await SecureStore.getItemAsync("accessToken");
+      if (!token) return;
+      const res = await fetch(`${BackendUrl}/api/project/${id}/${pendingSectionId}/edit`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({ name: name })
+      });
+      if(!res.ok) throw new Error(await res.text());
       fetchSections();
     } catch (e: any) {
       Alert.alert("Error", e.message);
@@ -321,6 +316,13 @@ export default function ProjectScreen() {
           }}
           initialName="Nowa sekcja"
           onSave={handleSectionCreate}
+        />
+        <SectionEdit
+          onSheetChange={(idx: number) => {
+            console.log("project edit sheet moved to index", idx);
+          }}
+          oldName={pendingSectionId}
+          onSave={handleSectionEdit}
         />
         <Navigation
           currentTab={activeTab}
