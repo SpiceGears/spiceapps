@@ -1,0 +1,92 @@
+[
+  {
+    "name": "Mechanicy",
+    "roleId": "6d656368-0000-0000-0000-de0000000001",
+    "scopes": [],
+    "department": 1
+  },
+  {
+    "name": "Programiści",
+    "roleId": "70726f67-0000-0000-0000-de0000000002",
+    "scopes": [],
+    "department": 2
+  },
+  {
+    "name": "Social Media",
+    "roleId": "6d747220-0000-0000-0000-de0000000003",
+    "scopes": [],
+    "department": 3
+  },
+  {
+    "name": "Marketing",
+    "roleId": "6d61726b-0000-0000-0000-de0000000004",
+    "scopes": [],
+    "department": 4
+  },
+  {
+    "name": "Zarządzanie",
+    "roleId": "65786563-0000-0000-0000-de0000000006",
+    "scopes": [],
+    "department": 6
+  },
+  {
+    "name": "Mentorzy",
+    "roleId": "6d6e7472-0000-0000-0000-de0000000010",
+    "scopes": [],
+    "department": 10
+  },
+  {
+    "name": "Kanclerz",
+    "roleId": "6368616e-aaaa-aaaa-aaaa-a00000000001",
+    "scopes": [],
+    "department": 0
+  },
+  {
+    "name": "Kapitan Działu",
+    "roleId": "63617074-aaaa-aaaa-aaaa-a00000000002",
+    "scopes": [],
+    "department": 0
+  },
+  {
+    "name": "Wicekapitan Działu",
+    "roleId": "76696365-aaaa-aaaa-aaaa-a00000000003",
+    "scopes": [],
+    "department": 0
+  },
+  {
+    "name": "00",
+    "roleId": "00000000-0000-0000-0000-acca00000000",
+    "scopes": [],
+    "department": 0
+  },
+  {
+    "name": "01",
+    "roleId": "00000000-0000-0000-0000-acca00000001",
+    "scopes": [],
+    "department": 0
+  },
+  {
+    "name": "02",
+    "roleId": "00000000-0000-0000-0000-acca00000002",
+    "scopes": [],
+    "department": 0
+  },
+  {
+    "name": "03",
+    "roleId": "00000000-0000-0000-0000-acca00000003",
+    "scopes": [],
+    "department": 0
+  },
+  {
+    "name": "04",
+    "roleId": "00000000-0000-0000-0000-acca00000004",
+    "scopes": [],
+    "department": 0
+  },
+  {
+    "name": "05",
+    "roleId": "00000000-0000-0000-0000-acca00000005",
+    "scopes": [],
+    "department": 0
+  }
+]

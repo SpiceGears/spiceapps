@@ -7,11 +7,13 @@ using SpiceAPI;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using SpiceAPI.Services;
+using Newtonsoft.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var prodenv = Environment.GetEnvironmentVariable("PRODUCTION");
 
+//create logger for debugging etc.
 Log.Logger = new LoggerConfiguration().MinimumLevel.Information().WriteTo.Console(outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}").CreateLogger();
 
 string ConnectionString = $"{Environment.GetEnvironmentVariable("CONSTRING")}";
@@ -30,6 +32,7 @@ try
 }
 catch (Exception)
 {
+    //on failure, fall back to SQLite
     builder.Services.AddDbContext<DataContext>(options => options.UseSqlite("Filename=debug_database.db"));
     Log.Warning("Using SQLITE because of POSTGRES INIT ERROR");
 }
@@ -37,17 +40,17 @@ catch (Exception)
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
-        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles; //must be ignore cycles, otherwise there will be mismatch between API and frontend
         options.JsonSerializerOptions.WriteIndented = true; // Optional: For better readability
     });
 
-builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql());
+builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql()); //this line is duplicated for DB to migrate properly to target_db (POSTGRES in this case)
 //builder.Services.AddDbContext<DataContext>(options => options.UseSqlite("Filename=debug_database.db"));
-builder.Services.AddSignalR();
-// Add services to the container.
+builder.Services.AddSignalR(); //required for real-time notifications
+
 builder.Services.AddControllers(); // Ensure this line is present
 
-if (string.IsNullOrWhiteSpace(prodenv) || prodenv != "true")
+if (string.IsNullOrWhiteSpace(prodenv) || prodenv != "true") //disable swagger if in production
 {
     builder.Services.AddEndpointsApiExplorer();
     builder.Services.AddSwaggerGen(c =>
@@ -71,14 +74,14 @@ if (string.IsNullOrWhiteSpace(prodenv) || prodenv != "true")
     Log.Logger.Warning($"{prodenv}");
 }
 
-//cors shit so it works anywhere
+//cors stuff so it works anywhere
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("F-off", policy =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
-              .AllowAnyMethod(); // Needed if using cookies/tokens in requests
+              .AllowAnyMethod(); 
     });
 });
 
@@ -89,7 +92,7 @@ builder.Services.AddScoped<Token>();
 builder.Services.AddScoped<NotificationHelper>();
 //builder.Services.AddScoped<FileContext>();
 
-// Load additional configuration from appsettings.Secret.json
+// Load additional configuration from appsettings.Secret.json (if any)
 builder.Configuration.AddJsonFile("appsettings.Secret.json", optional: true, reloadOnChange: true);
 
 var app = builder.Build();
@@ -97,11 +100,10 @@ app.UseCors("F-off");
 
 
 
-// Configure the HTTP request pipeline.
 
 
 
-
+//swagger setup, disabled in production
 if (string.IsNullOrWhiteSpace(prodenv) || prodenv != "true")
 {
     app.UseSwagger();
@@ -112,6 +114,8 @@ if (string.IsNullOrWhiteSpace(prodenv) || prodenv != "true")
     Log.Logger.Warning("Swagger is enabled!!!");
 }
 
+
+
 //
 //DB SETUP
 //
@@ -121,7 +125,7 @@ await db.Database.MigrateAsync();
 
 
 Guid supremeRoleId = new Guid("EEEEEEEE-EEEE-EEEE-EEEE-EEEEEEEEEEEE");
-if (await db.Roles.FindAsync(supremeRoleId) == null) 
+if (await db.Roles.FindAsync(supremeRoleId) == null) //create root-admin role
 {
     Role su = new Role();
     su.Name = "Dominatum";
@@ -139,6 +143,13 @@ if (await db.Roles.FindAsync(supremeRoleId) == null)
 
 if (await db.Users.FindAsync(supremeRoleId) == null) 
 {
+    var pass = "qwerty";
+    if (File.Exists("/etc/spicehub/preload/sudo.pas"))
+    {
+        pass = File.ReadLines("/etc/spicehub/preload/sudo.pas").First();
+    }
+
+    //create root user
     User user = new User() { BirthDay = DateOnly.Parse("2001-09-11"),
         Coin = 0,
         CreatedAt = DateTime.UtcNow,
@@ -149,7 +160,7 @@ if (await db.Users.FindAsync(supremeRoleId) == null)
         Id = supremeRoleId,
         IsApproved = true,
         LastLogin = DateTime.UtcNow,
-        Password = scope.GetService<Crypto>().Hash("qwerty"),
+        Password = scope.GetService<Crypto>().Hash(pass),
         Roles = new List<Role>()
     };
     user.Roles.Add(await db.Roles.FindAsync(supremeRoleId));
@@ -165,8 +176,20 @@ else {
     Log.Information(Newtonsoft.Json.JsonConvert.SerializeObject(user.GetAllPermissions(db)));
 }
 
+/// ROLE PRELOADER
+{
+    if (File.Exists("/etc/spicehub/preload/roles.json"))
+    {
+        var fd = await File.ReadAllBytesAsync("/etc/spicehub/preload/roles.json");
+        List<Role> roles = System.Text.Json.JsonSerializer.Deserialize<List<Role>>(fd);
 
-
+        foreach (Role role in roles)
+        {
+            var existing = await db.Roles.FirstOrDefaultAsync(r => r.RoleId == role.RoleId);
+            if (existing == null) { await db.Roles.AddAsync(role); }
+        }
+    }
+}
 
 
 app.UseHttpsRedirection();
