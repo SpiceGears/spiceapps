@@ -7,7 +7,7 @@ import {
   Users,
   User,
 } from "lucide-react";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -21,6 +21,8 @@ import { format, isBefore, addDays } from "date-fns";
 import { pl } from "date-fns/locale";
 import TaskEditDialog from "./TaskEditDialog";
 import { Task, Section, TaskStatus } from "@/models/Task";
+import { projectContext } from "@/app/spicelab/project/[id]/projectContext";
+import React from "react";
 
 interface TaskCardProps {
   task: Task;
@@ -100,6 +102,8 @@ export function TaskCard({
   const [isDragging, setIsDragging] = useState(false);
   const [isEditingTask, setIsEditingTask] = useState(false);
 
+  const ctx = useContext(projectContext);
+
   const handleDragStart = (e: React.DragEvent) => {
     setIsDragging(true);
     onDragStart(e, task.id);
@@ -123,7 +127,12 @@ export function TaskCard({
       <div className="flex items-center gap-1">
         <Users className="h-4 w-4 text-gray-400 mr-1" />
         <span className="text-xs text-gray-700 dark:text-gray-300">
-          {task.assignedUsers.join(", ")}
+          {task.assignedUsers.map((user) => 
+            {
+              return (<React.Fragment key={user}>
+                {ctx.users.find(u => u.id == user)?.firstName + " " + ctx.users.find(u => u.id == user)?.lastName}
+              </React.Fragment>)
+            })}
         </span>
       </div>
     );

@@ -76,8 +76,6 @@ public class ProjectUpdateEntry
             case StatusUpdateType.SectionDelete:
                 break;
             case StatusUpdateType.TaskAdd:
-                if (await db.STasks.FirstOrDefaultAsync(t => t.Id == task) == null) return false;
-                if (task == null) return false;
                 break;
             case StatusUpdateType.TaskEdit:
                 if (await db.STasks.FirstOrDefaultAsync(t => t.Id == task) == null) return false;

@@ -60,6 +60,8 @@ namespace SpiceAPI.Controllers
             sect.Id = Guid.NewGuid();
             sect.Name = crs.Name;
             await db.taskSections.AddAsync(sect);
+
+            await ProjectUpdateEntry.AddEvent(db, $"Utworzono sekcję", $"{user.FirstName} utworzył nową sekcję zadań {sect.Name}", StatusUpdateType.SectionAdd, proj, user.Id, null, new(), proj.Status);
             await db.SaveChangesAsync();
             return Ok(sect);
         }
@@ -88,6 +90,7 @@ namespace SpiceAPI.Controllers
             if (sect == null) return NotFound("Section not found");
 
             proj.Sections.Remove(sect);
+            await ProjectUpdateEntry.AddEvent(db, $"Usunięto sekcję {sect.Name}", $"{user.FirstName} usunął sekcję zadań {sect.Name}", StatusUpdateType.SectionDelete, proj, user.Id, null, new(), proj.Status);
             await db.SaveChangesAsync();
             return Ok();
         }
@@ -116,6 +119,7 @@ namespace SpiceAPI.Controllers
             TaskSection? sect = proj.Sections.FirstOrDefault(s => s.Id == sid);
             if (sect == null) return NotFound("Section not found");
             sect.Name = crs.Name;
+            await ProjectUpdateEntry.AddEvent(db, $"Zmienono nazwę sekcji na {sect.Name}", $"{user.FirstName} zmienił nazwę sekcji na {sect.Name}", StatusUpdateType.SectionEdit, proj, user.Id, null, new(), proj.Status);
             await db.SaveChangesAsync();
             return Ok(sect);
         }

@@ -114,7 +114,7 @@ namespace SpiceAPI.Controllers
 
             await db.STasks.AddAsync(task);
 
-            await ProjectUpdateEntry.AddEvent(db, "Utworzono zadanie", $"{user.FirstName} dodał zadanie {task.Name}",
+            await ProjectUpdateEntry.AddEvent(db, $"Utworzono zadanie {task.Name}", $"{user.FirstName} dodał zadanie {task.Name}",
             StatusUpdateType.TaskAdd, proj, user.Id, task.Id, [], proj.Status);
             await db.SaveChangesAsync();
             return Ok(task);
@@ -161,7 +161,7 @@ namespace SpiceAPI.Controllers
             task.Priority = body.Priority;
             task.DeadlineDate = body.DeadlineDate;
 
-            await ProjectUpdateEntry.AddEvent(db, "Zmieniono zadanie", $"{user.FirstName} zmienił zadanie {task.Name}", StatusUpdateType.TaskEdit, proj, user.Id, task.Id, [], proj.Status);
+            await ProjectUpdateEntry.AddEvent(db, $"Zmieniono zadanie {task.Name}", $"{user.FirstName} zmienił zadanie {task.Name}", StatusUpdateType.TaskEdit, proj, user.Id, task.Id, [], proj.Status);
 
             await db.SaveChangesAsync();
             return Ok(task);
@@ -214,7 +214,7 @@ namespace SpiceAPI.Controllers
 
             task.Section = section;
             task.SectionId = section.Id;
-            await ProjectUpdateEntry.AddEvent(db, "Przeniesiono zadanie", $"{user.Id} przeniósł zadanie {task.Name} do sekcji {section.Name}", StatusUpdateType.TaskMoveToSection, proj, user.Id, task.Id, [], proj.Status);
+            await ProjectUpdateEntry.AddEvent(db, $"Przeniesiono zadanie {task.Name}", $"{user.Id} przeniósł zadanie {task.Name} do sekcji {section.Name}", StatusUpdateType.TaskMoveToSection, proj, user.Id, task.Id, [], proj.Status);
             await db.SaveChangesAsync();
             return Ok(task);
         }
@@ -241,12 +241,17 @@ namespace SpiceAPI.Controllers
             if (task == null) { return NotFound("Couldn't find the task of UUID specified"); }
 
             task.Status = body;
-            if (body == STaskStatus.Finished) 
+            if (body == STaskStatus.Finished)
             {
                 task.Finished = DateTime.UtcNow;
+                await ProjectUpdateEntry.AddEvent(db, $"Zadanie ukończone: {task.Name}", $"{user.Id} oznaczył zadanie {task.Name} jako {body}", StatusUpdateType.TaskStatusUpdate, proj, user.Id, task.Id, [], proj.Status);
+                await db.SaveChangesAsync();
             }
-            await ProjectUpdateEntry.AddEvent(db, "Zmieniono status zadania", $"{user.Id} oznaczył zadanie {task.Name} jako {body}", StatusUpdateType.TaskStatusUpdate, proj, user.Id, task.Id, [], proj.Status);
-            await db.SaveChangesAsync();
+            else
+            {
+                await ProjectUpdateEntry.AddEvent(db, $"Zaktualizowano status zadania {task.Name}", $"{user.Id} oznaczył zadanie {task.Name} jako {body}", StatusUpdateType.TaskStatusUpdate, proj, user.Id, task.Id, [], proj.Status);
+                await db.SaveChangesAsync();
+            }
             
             return Ok(task);
         }
@@ -301,7 +306,7 @@ namespace SpiceAPI.Controllers
             STask? task = db.STasks.FirstOrDefault(t => t.Id == tid);
             if (task == null) { return NotFound("Couldn't find the task of UUID specified"); }
             db.STasks.Remove(task);
-            await ProjectUpdateEntry.AddEvent(db, "Zadanie usunięte", $"{user.Id} usunął zadanie {task.Name}", StatusUpdateType.TaskDelete, proj, user.Id, null, [], proj.Status);
+            await ProjectUpdateEntry.AddEvent(db, $"Zadanie usunięte: {task.Name}", $"{user.Id} usunął zadanie {task.Name}", StatusUpdateType.TaskDelete, proj, user.Id, null, [], proj.Status);
             await db.SaveChangesAsync();
             return Ok();
         }
