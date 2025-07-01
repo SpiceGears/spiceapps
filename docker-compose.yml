@@ -27,6 +27,9 @@ services:
       - type: bind
         source: ./spicehub_avatars
         target: /var/spicehub_avatars/
+      - type: bind
+        source: ./spicehub_init
+        target: /etc/spicehub/preload/
     depends_on:
       - db
     networks:
