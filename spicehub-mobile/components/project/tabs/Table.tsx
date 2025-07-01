@@ -3,6 +3,7 @@ import { SafeAreaView, ScrollView, useWindowDimensions } from "react-native";
 import SectionCard from "../SectionCard";
 import AddSectionCard from "../AddSectionCard";
 import { Section, Task } from "@/models/Task";
+import { useSheets } from "@/contexts/SheetsContext";
 
 // Extended interface to include the combined data
 interface ExtendedSection extends Section {
@@ -17,9 +18,10 @@ export interface TasksTabProps {
 }
 
 export default function TasksTab({ sectionsData, setSelectedTask, onOpenSectionMenu }: TasksTabProps) {
-    const { height } = useWindowDimensions();
+  const { height } = useWindowDimensions();
+  const { open } = useSheets();
   const handleAddSection = () => {
-    console.log("Add section pressed");
+    open("createSection");
   };
 
   return (

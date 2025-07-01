@@ -18,31 +18,28 @@ import { useSheets } from "@/contexts/SheetsContext";
 export interface CreateSectionProps {
   onSheetChange: (idx: number) => void;
   initialName?: string;
-  initialDescription?: string;
-  onSave: (name: string, description: string) => void;
+  onSave: (name: string) => void;
 }
 
 export default function SectionCreate({
   onSheetChange,
-  initialName,
-  initialDescription,
+  initialName = 'Nowa sekcja',
   onSave,
 }: CreateSectionProps) {
   const { register, close } = useSheets();
   const [name, setName] = useState(initialName!);
-  const [description, setDescription] = useState(initialDescription!);
 
-  const snapPoints = useMemo(() => ["50%"], []);
+  const snapPoints = useMemo(() => ["30%"], []);
 
   function handleSave() {
-    onSave(name.trim(), description.trim());
+    onSave(name.trim());
     close("createSection");
   }
 
   return (
     <BottomSheetModal
       ref={register("createSection")}
-      index={0}
+      index={1}
       snapPoints={snapPoints}
       onChange={onSheetChange}
       enablePanDownToClose
@@ -76,21 +73,6 @@ export default function SectionCreate({
             placeholderTextColor="#888"
             value={name}
             onChangeText={setName}
-          />
-
-          {/* DESCRIPTION */}
-          <Text className="text-sm font-medium text-gray-700 mb-1">
-            Description
-          </Text>
-          <BottomSheetTextInput
-            className="bg-white border border-[#1976d2] rounded-md px-4 py-2 mb-6 text-base"
-            placeholder="Enter description"
-            placeholderTextColor="#888"
-            value={description}
-            onChangeText={setDescription}
-            multiline
-            textAlignVertical="top"
-            style={{ height: 100 }}
           />
 
           {/* ACTIONS */}

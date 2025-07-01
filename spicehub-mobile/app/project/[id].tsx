@@ -26,6 +26,7 @@ import { Button } from 'react-native-paper'
 import SectionMenu from '@/components/project/BottomSheets/SectionMenu'
 import DeleteSection from '@/components/project/BottomSheets/DeleteSection'
 import { useSheets } from '@/contexts/SheetsContext'
+import SectionCreate from '@/components/project/BottomSheets/CreateSection'
 
 export default function ProjectScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -51,60 +52,58 @@ export default function ProjectScreen() {
     });
   }, [sectionsData, tasksData]);
 
-  useEffect(() => {
-    async function fetchProject() {
-      try {
-        const token = await SecureStore.getItemAsync('accessToken')
-        if (!token) return
-
-        const res = await fetch(`${BackendUrl}/api/project/${id}`, {
-          method: 'GET',
-          headers: { Authorization: token },
-        })
-        if (!res.ok) throw new Error(await res.text())
-        setProject(await res.json())
-      } catch (e: any) {
-        Alert.alert('Error', e.message || e.toString())
-      }
+  const fetchTasks = async () => {
+    try {
+      const token = await SecureStore.getItemAsync("accessToken");
+      if (!token) return;
+      const res = await fetch(`${BackendUrl}/api/project/${id}/getTasks`, {
+        method: "GET",
+        headers: { Authorization: token }
+      })
+      if (!res.ok) throw new Error(await res.text());
+      setTasksData(await res.json());
+    } catch (e: any) {
+      Alert.alert('Error', e.message || e.toString());
     }
-    fetchProject()
-  }, [id])
+  }
+
+  async function fetchProject() {
+    try {
+      const token = await SecureStore.getItemAsync('accessToken')
+      if (!token) return
+
+      const res = await fetch(`${BackendUrl}/api/project/${id}`, {
+        method: 'GET',
+        headers: { Authorization: token },
+      })
+      if (!res.ok) throw new Error(await res.text())
+      setProject(await res.json())
+    } catch (e: any) {
+      Alert.alert('Error', e.message || e.toString())
+    }
+  }
+
+  const fetchSections = async () => {
+    try {
+      const token = await SecureStore.getItemAsync("accessToken");
+      if (!token) return;
+      const res = await fetch(`${BackendUrl}/api/project/${id}/getSections`, {
+        method: "GET",
+        headers: { Authorization: token }
+      })
+      if (!res.ok) throw new Error(await res.text());
+      setSectionsData(await res.json());
+    } catch (e: any) {
+      Alert.alert('Error', e.message || e.toString()) // Fixed: e.text() to e.message
+    }
+  }
 
   useEffect(() => {
-    const fetchSections = async () => {
-      try {
-        const token = await SecureStore.getItemAsync("accessToken");
-        if (!token) return;
-        const res = await fetch(`${BackendUrl}/api/project/${id}/getSections`, {
-          method: "GET",
-          headers: { Authorization: token }
-        })
-        if (!res.ok) throw new Error(await res.text());
-        setSectionsData(await res.json());
-      } catch (e: any) {
-        Alert.alert('Error', e.message || e.toString()) // Fixed: e.text() to e.message
-      }
-    }
+    fetchProject();
     fetchSections();
-  }, [id])
+    fetchTasks();
+  }, [id]);
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const token = await SecureStore.getItemAsync("accessToken");
-        if (!token) return;
-        const res = await fetch(`${BackendUrl}/api/project/${id}/getTasks`, {
-          method: "GET",
-          headers: { Authorization: token }
-        })
-        if (!res.ok) throw new Error(await res.text());
-        setTasksData(await res.json());
-      } catch (e: any) {
-        Alert.alert('Error', e.message || e.toString()); // Fixed: e.text() to e.message
-      }
-    }
-    fetchTasks()
-  }, [id])
 
   const onProjectEditSave = async (
     name: string,
@@ -178,7 +177,7 @@ export default function ProjectScreen() {
       const token = await SecureStore.getItemAsync("accessToken");
       if (!token) return;
       const res = await fetch(
-        `${BackendUrl}/api/project/${id}/section/${sectionId}`,
+        `${BackendUrl}/api/project/${id}/${sectionId}/deleteSection`,
         {
           method: "DELETE",
           headers: { Authorization: token },
@@ -199,7 +198,7 @@ export default function ProjectScreen() {
       const token = await SecureStore.getItemAsync("accessToken");
       if (!token) return;
       const res = await fetch(
-        `${BackendUrl}/api/project/${id}/section/${sectionId}`,
+        `${BackendUrl}/api/project/${id}/${sectionId}`,
         {
           method: "PUT",
           headers: {
@@ -219,85 +218,113 @@ export default function ProjectScreen() {
     }
   };
 
-  const handleOpenSectionMenu = (sectionId: string) => {
-    setPendingSectionId(sectionId);
-    open("sectionMenu");
-  };
-
-  const setCurrentTab = (tab: "Overview" | "Table" | "Dashboard") => {
-    setActiveTab(tab)
+  const handleSectionCreate = async (name: string) => {
+    try {
+      const token = await SecureStore.getItemAsync("accessToken");
+      if (!token) return;
+      const res = await fetch(`${BackendUrl}/api/project/${id}/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({ name: name })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      fetchSections();
+    } catch (e: any) {
+      Alert.alert("Error", e.message);
+    }
   }
+
+    const handleOpenSectionMenu = (sectionId: string) => {
+      setPendingSectionId(sectionId);
+      open("sectionMenu");
+    };
+
+    const setCurrentTab = (tab: "Overview" | "Table" | "Dashboard") => {
+      setActiveTab(tab)
+    }
 
     if (!project) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F5F5' }}>
+          <ActivityIndicator size="large" color="#0000ff" />
+          <Text style={{ marginTop: 10, color: '#555' }}>Loading project...</Text>
+        </View>
+      );
+    }
+
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#F5F5F5' }}>
-        <ActivityIndicator size="large" color="#0000ff" />
-        <Text style={{ marginTop: 10, color: '#555' }}>Loading project...</Text>
-      </View>
-    );
-  }
+      <>
+        <ProjectScreenHeader
+          project={project!}
+        />
+        <ScrollView
+          contentContainerStyle={{
+            paddingTop: insets.top + 100,
+          }}
+          className="flex-1 bg-light-bg"
+        >
 
-  return (
-    <>
-      <ProjectScreenHeader
-        project={project!}
-      />
-      <ScrollView
-        contentContainerStyle={{
-          paddingTop: insets.top + 100,
-        }}
-        className="flex-1 bg-light-bg"
-      >
-
-        {activeTab === "Overview" && <OverviewTab project={project!} />}
-        {activeTab === "Table" && <TasksTab sectionsData={combinedSectionsData} setSelectedTask={setSelectedTask} onOpenSectionMenu={handleOpenSectionMenu}/>}
-        {activeTab === "Dashboard" && <Text className='flex-1 bg-white m-8'>…your DashboardTab…</Text>}
-      </ScrollView>
-      <ProjectMenu onSheetChange={(idx: number) => {
-        console.log("project menu sheet moved to index", idx);
-      }} />
-      <ProjectEdit
-        onSheetChange={(idx: number) => {
-          console.log("project edit sheet moved to index", idx);
-        }}
-        initialName={project?.name}
-        initialDescription={project?.description}
-        onSave={onProjectEditSave}
-      />
-      <ProjectDelete
-        onSheetChange={(idx: number) => {
+          {activeTab === "Overview" && <OverviewTab project={project!} />}
+          {activeTab === "Table" && <TasksTab sectionsData={combinedSectionsData} setSelectedTask={setSelectedTask} onOpenSectionMenu={handleOpenSectionMenu} />}
+          {activeTab === "Dashboard" && <Text className='flex-1 bg-white m-8'>…your DashboardTab…</Text>}
+        </ScrollView>
+        <ProjectMenu onSheetChange={(idx: number) => {
+          console.log("project menu sheet moved to index", idx);
+        }} />
+        <ProjectEdit
+          onSheetChange={(idx: number) => {
+            console.log("project edit sheet moved to index", idx);
+          }}
+          initialName={project?.name}
+          initialDescription={project?.description}
+          onSave={onProjectEditSave}
+        />
+        <ProjectDelete
+          onSheetChange={(idx: number) => {
+            console.log("project menu sheet moved to index", idx);
+          }}
+          deleteProject={deleteProject}
+        />
+        <TabSelection onSheetChange={(idx: number) => {
           console.log("project menu sheet moved to index", idx);
         }}
-        deleteProject={deleteProject}
-      />
-      <TabSelection onSheetChange={(idx: number) => {
-        console.log("project menu sheet moved to index", idx);
-      }}
-        setCurrentTab={setCurrentTab}
-      />
-      <TaskMenu onSheetChange={(idx: number) => {
-        console.log("project menu sheet moved to index", idx);
-      }}
-      selectedTask={selectedTask}
-      />
-      <TaskDelete onSheetChange={(idx: number) => {
-        console.log("project menu sheet moved to index", idx);
-      }}
-        deleteTask={deleteTask}
-      />
-      <SectionMenu onSheetChange={(idx: number) => {
-        console.log("project menu sheet moved to index", idx);
-      }}
-      selectedTask={selectedTask}
-      />
-      <DeleteSection onSheetChange={(idx: number) => {
-        console.log("project menu sheet moved to index", idx);
-      }}
-        deleteSection={deleteSection}
-      />
-      <Navigation
-        currentTab={activeTab}
-      />
-    </>
-  )
-}
+          setCurrentTab={setCurrentTab}
+        />
+        <TaskMenu onSheetChange={(idx: number) => {
+          console.log("project menu sheet moved to index", idx);
+        }}
+          selectedTask={selectedTask}
+        />
+        <TaskDelete onSheetChange={(idx: number) => {
+          console.log("project menu sheet moved to index", idx);
+        }}
+          deleteTask={deleteTask}
+        />
+        <SectionMenu onSheetChange={(idx: number) => {
+          console.log("project menu sheet moved to index", idx);
+        }}
+          selectedTask={selectedTask}
+        />
+        <DeleteSection onSheetChange={(idx: number) => {
+          console.log("project menu sheet moved to index", idx);
+        }}
+          deleteSection={() => {
+            deleteSection(pendingSectionId);
+          }}
+        />
+        <SectionCreate
+          onSheetChange={(idx: number) => {
+            console.log("project edit sheet moved to index", idx);
+          }}
+          initialName="Nowa sekcja"
+          onSave={handleSectionCreate}
+        />
+        <Navigation
+          currentTab={activeTab}
+        />
+      </>
+    )
+  }
