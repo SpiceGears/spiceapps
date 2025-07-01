@@ -60,12 +60,12 @@ export default function SectionCreate({
           keyboardShouldPersistTaps="handled"
         >
           <Text className="text-xl font-semibold mb-6 text-center">
-            Edit Project
+            Utwórz sekcję
           </Text>
 
           {/* PROJECT NAME */}
           <Text className="text-sm font-medium text-gray-700 mb-1">
-            Project Name
+            Nazwa sekcji
           </Text>
           <BottomSheetTextInput
             className="bg-white border border-[#1976d2] rounded-md px-4 py-2 mb-4 text-base"
@@ -81,13 +81,13 @@ export default function SectionCreate({
               className="px-4 py-2 mr-4"
               onPress={() => close("projectEdit")}
             >
-              <Text className="text-[#1976d2]">Cancel</Text>
+              <Text className="text-[#1976d2]">Anuluj</Text>
             </Pressable>
             <Pressable
               className="bg-[#1976d2] px-4 py-2 rounded-md"
               onPress={handleSave}
             >
-              <Text className="text-white">Save</Text>
+              <Text className="text-white">Zapisz</Text>
             </Pressable>
           </View>
         </BottomSheetScrollView>

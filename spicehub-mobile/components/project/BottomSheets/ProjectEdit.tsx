@@ -32,7 +32,7 @@ export default function ProjectEdit({
   const [name, setName] = useState(initialName!);
   const [description, setDescription] = useState(initialDescription!);
 
-  const snapPoints = useMemo(() => ["50%"], []);
+  const snapPoints = useMemo(() => ["45%"], []);
 
   function handleSave() {
     onSave(name.trim(), description.trim());
@@ -42,7 +42,7 @@ export default function ProjectEdit({
   return (
     <BottomSheetModal
       ref={register("projectEdit")}
-      index={0}
+      index={1}
       snapPoints={snapPoints}
       onChange={onSheetChange}
       enablePanDownToClose
@@ -63,12 +63,12 @@ export default function ProjectEdit({
           keyboardShouldPersistTaps="handled"
         >
           <Text className="text-xl font-semibold mb-6 text-center">
-            Edit Project
+            Edytuj projekt
           </Text>
 
           {/* PROJECT NAME */}
           <Text className="text-sm font-medium text-gray-700 mb-1">
-            Project Name
+            Nazwa projektu
           </Text>
           <BottomSheetTextInput
             className="bg-white border border-[#1976d2] rounded-md px-4 py-2 mb-4 text-base"
@@ -80,7 +80,7 @@ export default function ProjectEdit({
 
           {/* DESCRIPTION */}
           <Text className="text-sm font-medium text-gray-700 mb-1">
-            Description
+            Opisz projektu
           </Text>
           <BottomSheetTextInput
             className="bg-white border border-[#1976d2] rounded-md px-4 py-2 mb-6 text-base"
@@ -99,13 +99,13 @@ export default function ProjectEdit({
               className="px-4 py-2 mr-4"
               onPress={() => close("projectEdit")}
             >
-              <Text className="text-[#1976d2]">Cancel</Text>
+              <Text className="text-[#1976d2]">Anuluj</Text>
             </Pressable>
             <Pressable
               className="bg-[#1976d2] px-4 py-2 rounded-md"
               onPress={handleSave}
             >
-              <Text className="text-white">Save</Text>
+              <Text className="text-white">Zapisz</Text>
             </Pressable>
           </View>
         </BottomSheetScrollView>
