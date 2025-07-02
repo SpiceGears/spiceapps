@@ -25,7 +25,7 @@ export default function TasksTab({ sectionsData, setSelectedTask, onOpenSectionM
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-light-bg-dark pt-5">
+    <SafeAreaView className="flex-1 bg-light-bg-dark pt-5 mt-3">
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

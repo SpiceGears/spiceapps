@@ -8,3 +8,4 @@ const host = Platform.select({
 });
 
 export const BackendUrl = `http://${host}`;
+// export const BackendUrl = `https://api.team5883.pl`

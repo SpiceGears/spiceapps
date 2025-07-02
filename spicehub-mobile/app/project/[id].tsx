@@ -28,6 +28,7 @@ import DeleteSection from '@/components/project/BottomSheets/DeleteSection'
 import { useSheets } from '@/contexts/SheetsContext'
 import SectionCreate from '@/components/project/BottomSheets/CreateSection'
 import SectionEdit from '@/components/project/BottomSheets/SectionEdit'
+import TaskCreate from '@/components/project/BottomSheets/TaskCreate'
 
 export default function ProjectScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -326,6 +327,12 @@ export default function ProjectScreen() {
         />
         <Navigation
           currentTab={activeTab}
+        />
+        <TaskCreate
+          onSheetChange={(idx: number) => {
+            console.log("project edit sheet moved to index", idx);
+          }}
+          onSave={handleSectionEdit}
         />
       </>
     )
