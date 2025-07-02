@@ -379,7 +379,7 @@ export default function Admin() {
                       </Avatar>
                       <div>
                         <p className="font-medium">{user.firstName} {user.lastName}</p>
-                        <p className="text-sm text-gray-500">Użytkownik</p>
+                        <p className="text-sm text-gray-500">{user.email}</p>
                       </div>
                     </div>
                     <Button
