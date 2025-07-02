@@ -28,7 +28,7 @@ namespace SpiceAPI.Controllers
             User? user = await tc.RetrieveUser(Authorization);
             if (user == null) { return BadRequest("NULL USER"); }
 
-            if (!user.IsApproved && !user.CheckForClaims("roles.list", db))
+            if (!user.IsApproved || !user.CheckForClaims("roles.list", db))
             {
                 return StatusCode(403, "You do not have enough permissions");
             }
@@ -47,12 +47,18 @@ namespace SpiceAPI.Controllers
             User? user = await tc.RetrieveUser(Authorization);
             if (user == null) { return BadRequest("NULL USER"); }
 
-            if (!user.IsApproved && !user.CheckForClaims("roles.manage", db))
+            if (!user.IsApproved || !user.CheckForClaims("roles.manage", db))
             {
                 return StatusCode(403, "You do not have enough permissions");
             }
 
-            await db.Roles.AddAsync(role);
+            Role newRole = new Role();
+            newRole.Name = role.Name;
+            newRole.RoleId = Guid.NewGuid();
+            newRole.Department = role.Department;
+            newRole.Scopes = role.Scopes;
+
+            await db.Roles.AddAsync(newRole);
             await db.SaveChangesAsync();
             return Ok(role);
         }
@@ -67,7 +73,7 @@ namespace SpiceAPI.Controllers
             User? user = await tc.RetrieveUser(Authorization);
             if (user == null) { return BadRequest("NULL USER"); }
 
-            if (!user.IsApproved && !user.CheckForClaims("roles.list", db))
+            if (!user.IsApproved || !user.CheckForClaims("roles.list", db))
             {
                 return StatusCode(403, "You do not have enough permissions");
             }
@@ -89,7 +95,7 @@ namespace SpiceAPI.Controllers
             if (user == null) return BadRequest("NULL USER");
 
             // Check Permissions
-            if (!user.IsApproved && !user.CheckForClaims("roles.manage", db))
+            if (!user.IsApproved || !user.CheckForClaims("roles.manage", db))
             {
                 return StatusCode(403, "You do not have enough permissions");
             }
@@ -131,7 +137,7 @@ namespace SpiceAPI.Controllers
             if (user == null) return BadRequest("NULL USER");
 
             // Check Permissions
-            if (!user.IsApproved && !user.CheckForClaims("roles.manage", db))
+            if (!user.IsApproved || !user.CheckForClaims("roles.manage", db))
             {
                 return StatusCode(403, "You do not have enough permissions");
             }
