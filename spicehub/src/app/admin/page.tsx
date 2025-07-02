@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,12 +22,36 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { RolePicker} from "@/components/admin/RolePicker";
-import { UserInfo } from "@/models/User";
+import { Department, UserInfo } from "@/models/User";
 import { getBackendUrl } from "../serveractions/backend-url";
 import { getCookie } from "typescript-cookie";
 import { Switch } from "@/components/ui/switch";
 import { Role } from "@/models/User";
 import { toast, ToastClassnames } from "sonner";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const departmentScopeRec: Record<Department, string | null> = 
+  {
+    [Department.NaDr]: null,
+    [Department.Executive]: "department.executive",
+    [Department.Marketing]: "department.marketing",
+    [Department.Mechanics]: "department.mechanics",
+    [Department.Mentor]: null,
+    [Department.Programmers]: "department.programmers",
+    [Department.SocialMedia]: "department.socialmedia"
+  }
+
+const selectDepartmentString: Record<string, Department> = 
+{
+  "mech": Department.Mechanics,
+  "prog": Department.Programmers,
+  "mtr": Department.SocialMedia,
+  "mark": Department.Marketing,
+  "exec": Department.Executive,
+  "ment": Department.Mentor,
+
+  "nadr": Department.NaDr
+}
 
 
 export default function Admin() {
@@ -37,6 +61,7 @@ export default function Admin() {
   const [isDeletingRole, setIsDeletingRole] = useState(false);
   const [isEditingUser, setIsEditingUser] = useState(false);
   const [currentRole, setCurrentRole] = useState<Role | null>(null);
+  const [currentScopes, setCurrentScopes] = useState<string[]>();
   const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
   const [assignedRoles, setAssignedRoles] = useState<string[]>([]);
   const [refresh, setRefresh] = useState(false);
@@ -45,6 +70,15 @@ export default function Admin() {
   const [unapprovedUsers, setUnapprovedUsers] = useState<UserInfo[]>([]);
   const [BackendUrl, setBackendUrl] = useState("");
 
+
+
+
+  //role edit dialog
+  const roleName = useRef<HTMLInputElement | null>(null);
+  const roleNameCreate = useRef<HTMLInputElement | null>(null);
+
+  const [roleDepartment, setRoleDepartment] = useState<Department>(Department.NaDr);
+  
   async function handleUserEdit() 
   {
     const backend = await getBackendUrl();
@@ -93,6 +127,107 @@ export default function Admin() {
     } 
     
     setRefresh(!refresh)
+  }
+
+  async function handleRoleEdit(role: Role, currentRoleId: string) 
+  {
+    const backend = await getBackendUrl();
+    if (!backend) throw new Error("No backend!");
+    const at = getCookie("accessToken");
+    if (!at) throw new Error("No access token!");
+
+    const res = await fetch(`${backend}/api/roles/${currentRoleId}`, 
+      {
+        method: 'PUT',
+        headers: {Authorization: at, "Content-Type": "application/json"},
+        body: JSON.stringify(role)
+      })
+    if (res.ok) 
+      {
+        setRefresh(!refresh)
+        toast("Zapisano rolę!", {description: `Zmieniono ustawienia roli ${role.name}`})
+      }
+      else 
+      {
+        toast("Role editing failed!", {description: `Cannot edit role: ${await res.text()}`})
+      }
+  }
+
+  async function handleRoleCreate(name: string) 
+  {
+    const backend = await getBackendUrl();
+    if (!backend) throw new Error("No backend!");
+    const at = getCookie("accessToken");
+    if (!at) throw new Error("No access token!");
+
+    let role: Role = 
+    {
+      roleId: "00000000-0000-0000-0000-00000000000e",
+      name: name,
+      scopes: [],
+      department: roleDepartment,
+    }
+
+    const res = await fetch(`${backend}/api/roles/create`, 
+      {
+        method: 'POST',
+        headers: {Authorization: at, "Content-Type": "application/json"},
+        body: JSON.stringify(role)
+      })
+    if (res.ok) 
+      {
+        setRefresh(!refresh)
+        toast("Utworzono rolę!", {description: `Nowa rola została dodana`})
+      }
+      else 
+      {
+        toast("Role editing failed!", {description: `Cannot edit role: ${await res.text()}`})
+      }
+  }
+
+  async function handleRoleDelete(roleId: string) 
+  {
+    const backend = await getBackendUrl();
+    if (!backend) throw new Error("No backend!");
+    const at = getCookie("accessToken");
+    if (!at) throw new Error("No access token!");
+    const res = await fetch(`${backend}/api/roles/${roleId}`, 
+      {
+        method: 'DELETE',
+        headers: {Authorization: at, "Content-Type": "application/json"},
+      })
+    if (res.ok) 
+      {
+        setRefresh(!refresh)
+        toast("Usunięto rolę!", {description: `Rola została usunięta`})
+      }
+      else 
+      {
+        toast("Role editing failed!", {description: `Cannot edit role: ${await res.text()}`})
+      }
+  }
+
+  async function approveUser(userId: string) 
+  {
+    const backend = await getBackendUrl();
+    if (!backend) throw new Error("No backend!");
+    const at = getCookie("accessToken");
+    if (!at) throw new Error("No access token!");
+
+    const res = await fetch(`${backend}/api/user/${userId}/approve`, 
+      {
+        method: 'PUT',
+        headers: {Authorization: at, "Content-Type": "application/json"},
+      })
+    if (res.ok) 
+      {
+        setRefresh(!refresh)
+        toast("Zatwierdzono!", {description: `${unapprovedUsers?.find(u => u.id == userId)?.firstName} może rozpocząć pracę!`})
+      }
+      else 
+      {
+        toast("Zatwierdzenie zawiodło", {description: `Cannot approve user: ${await res.text()}`})
+      }
   }
 
 
@@ -212,6 +347,12 @@ export default function Admin() {
       </div>
 
       <div className="w-[48rem] p-6 overflow-auto">
+        
+        
+        
+        
+        
+        
         {activeTab === "members" && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -344,6 +485,13 @@ export default function Admin() {
           </div>
         )}
 
+
+
+
+
+
+
+
         {activeTab === "roles" && (
           <div className="space-y-6">
             <div className="flex justify-between items-center border-b pb-4">
@@ -358,7 +506,7 @@ export default function Admin() {
             <div>
               {roles.map((role) => (
                 <div
-                  key={role.name}
+                  key={role.roleId}
                   className="flex items-center justify-between p-4 hover:bg-gray-100 dark:hover:bg-gray-800 border-b border-gray-200 dark:border-gray-700"
                 >
                   <div className="flex items-center gap-3">
@@ -384,6 +532,7 @@ export default function Admin() {
                         <DropdownMenuItem
                           onClick={() => {
                             setCurrentRole(role);
+                            setCurrentScopes(role.scopes);
                             setIsEditingRole(true);
                           }}
                         >
@@ -415,7 +564,7 @@ export default function Admin() {
                 }
               }}
             >
-              <DialogContent className="sm:max-w-md">
+              <DialogContent className="sm:max-w-md max-h-[95vh] overflow-y-scroll">
                 <DialogHeader>
                   <DialogTitle>Edytuj rolę: {currentRole?.name}</DialogTitle>
                   <DialogDescription>
@@ -430,23 +579,65 @@ export default function Admin() {
                       id="role-name"
                       defaultValue={currentRole?.name}
                       className="w-full"
+                      ref={roleName}
                     />
                   </div>
+                  <Select onValueChange={value => 
+                    {
+                      let depart = selectDepartmentString[value];
+                      setRoleDepartment(depart)
+                    }}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Wybierz dział" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Dział</SelectLabel>
+                        <SelectItem value="nadr">Nie należy</SelectItem>
+                        <SelectItem value="mech">Mechanicy</SelectItem>
+                        <SelectItem value="prog">Programiści</SelectItem>
+                        <SelectItem value="mtr">Social Media</SelectItem>
+                        <SelectItem value="mark">Marketing</SelectItem>
+                        <SelectItem value="exec">Zarządzanie</SelectItem>
+                        <SelectItem value="ment">Mentorat</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
 
                   <div className="space-y-2">
                     <Label>Uprawnienia</Label>
                     <Card className="p-4">
                       <div className="space-y-4">
                         {[
-                          { key: "projects.show", label: "Dostęp do projektów ogólnie" },
+                          { key: "projects.show", label: "Dostęp do projektów" },
                           { key: "projects.add", label: "Dodawanie i edycja projektów" },
                           { key: "projects.delete", label: "Usuwanie projektów" },
+                          { key: "tasks.add", label: "Dodawanie i edycja zadań" },
+                          { key: "tasks.override", label: "Edycja zadań innych użytkowników" },
+                          
                           { key: "roles.list", label: "Wyświetlanie listy ról" },
                           { key: "roles.manage", label: "Zarządzanie rolami" },
                           { key: "roles.assign", label: "Ustawianie ról" },
-                          { key: "tasks.add", label: "Dodawanie i edycja zadań" },
-                          { key: "tasks.override", label: "Edycja zadań innych użytkowników" },
+
+                          { key: departmentScopeRec[Department.Mechanics] ?? "", label: "Dział: Mechanicy" },
+                          { key: departmentScopeRec[Department.Programmers] ?? "", label: "Dział: Programiści" },
+                          { key: departmentScopeRec[Department.SocialMedia] ?? "", label: "Dział: Social Media" },
+                          { key: departmentScopeRec[Department.Marketing] ?? "", label: "Dział: Marketing" },
+                          { key: departmentScopeRec[Department.Executive] ?? "", label: "Dział: Zarządzanie" },
+
+                          { key: "level.01", label: "Ranga: 01" },
+                          { key: "level.02", label: "Ranga: 02" },
+                          { key: "level.03", label: "Ranga: 03" },
+                          { key: "level.04", label: "Ranga: 04" },
+                          { key: "level.05", label: "Ranga: 05" },
+
+                          { key: "department.captain", label: "Rola: Kapitan działu" },
+                          { key: "department.vicecaptain", label: "Rola: Wicekapitan działu" },
+                          { key: "department.chancellor", label: "Rola: Kanclerz" },
+
+                          
                           { key: "users.unapproved", label: "Wyświetlanie i zatwierdzanie niezatwierdzonych użytkowników" },
+                          { key: "file.override", label: "Nadpisywanie plików innych"},
                           { key: "admin", label: "Uprawnienia administratora (wszystkie akcje dozwolone)" },
                         ].map((permission) => (
                             <div
@@ -455,8 +646,18 @@ export default function Admin() {
                             >
                               <span>{permission.label}</span>
                               <Switch
-                              checked={currentRole?.scopes?.includes(permission.key) ?? false}
-                              // onCheckedChange={...}
+                              checked={currentScopes?.includes(permission.key) ?? false}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setCurrentScopes((prev) =>
+                                    prev ? [...prev, permission.key] : [permission.key]
+                                  );
+                                } else {
+                                  setCurrentScopes((prev) =>
+                                    prev ? prev.filter((i) => i !== permission.key) : []
+                                  );
+                                }
+                              }}
                               id={`perm-${permission.key}`}
                               />
                             </div>
@@ -473,6 +674,14 @@ export default function Admin() {
                   <Button
                     onClick={() => {
                       // tu by była logika zapisu
+                      let role: Role = 
+                      {
+                        roleId: currentRole?.roleId ?? "",
+                        name: roleName.current?.value ?? "Rola",
+                        scopes: currentScopes ?? [],
+                        department: roleDepartment
+                      }
+                      handleRoleEdit(role, currentRole?.roleId ?? "undefined");
                       setIsEditingRole(false);
                       setCurrentRole(null);
                     }}
@@ -483,7 +692,10 @@ export default function Admin() {
               </DialogContent>
             </Dialog>
 
-            <Dialog
+           
+           
+           
+           <Dialog
               open={isAddingRole}
               onOpenChange={(open) => {
                 setIsAddingRole(open);
@@ -502,11 +714,33 @@ export default function Admin() {
                     <Label htmlFor="role-name">Nazwa roli</Label>
                     <Input
                       id="role-name"
+                      ref={roleNameCreate}
                       defaultValue={currentRole?.name}
                       className="w-full"
                     />
                   </div>
                 </div>
+                <Select onValueChange={value => 
+                    {
+                      let depart = selectDepartmentString[value];
+                      setRoleDepartment(depart)
+                    }}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Wybierz dział" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Dział</SelectLabel>
+                        <SelectItem value="nadr">Nie należy</SelectItem>
+                        <SelectItem value="mech">Mechanicy</SelectItem>
+                        <SelectItem value="prog">Programiści</SelectItem>
+                        <SelectItem value="mtr">Social Media</SelectItem>
+                        <SelectItem value="mark">Marketing</SelectItem>
+                        <SelectItem value="exec">Zarządzanie</SelectItem>
+                        <SelectItem value="ment">Mentorat</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
 
                 <DialogFooter className="sm:justify-between">
                   <Button variant="outline" onClick={() => { setIsAddingRole(false) }}>
@@ -515,6 +749,9 @@ export default function Admin() {
                   <Button
                     onClick={() => {
                       // tu by była logika zapisu
+                      let e = roleNameCreate.current?.value
+                      if (!e) e = "Nowa rola";
+                      handleRoleCreate(e);
                       setIsAddingRole(false);
                     }}
                   >
@@ -525,6 +762,8 @@ export default function Admin() {
               </DialogContent>
             </Dialog>
 
+            
+            
             <Dialog
               open={isDeletingRole}
               onOpenChange={setIsDeletingRole}
@@ -543,6 +782,7 @@ export default function Admin() {
                   </Button>
                   <Button
                     onClick={() => {
+                      handleRoleDelete(currentRole?.roleId ?? "null");
                       setIsDeletingRole(false);
                       setCurrentRole(null);
                     }}
@@ -555,6 +795,15 @@ export default function Admin() {
             </Dialog>
           </div>
         )}
+
+
+
+
+
+
+
+
+
         {activeTab === "approvals" && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -592,10 +841,11 @@ export default function Admin() {
                       <Button
                         variant="default"
                         size="sm"
-                        onClick={() =>
+                        onClick={() =>{
+                          approveUser(user.id);
                           setUnapprovedUsers((prev) =>
                             prev.filter((u) => u.id !== user.id)
-                          )
+                          )}
                         }
                       >
                         Zatwierdź
