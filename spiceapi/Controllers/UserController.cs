@@ -288,7 +288,7 @@ namespace SpiceAPI.Controllers
 
             if (!user.IsApproved) return StatusCode(403, "Not enough permissions");
             
-            var users = await db.Users.ToListAsync();
+            var users = await db.Users.Include(u => u.Roles).ToListAsync();
             List<UserInfo> ui = new List<UserInfo>();
             foreach (var u in users)
             {

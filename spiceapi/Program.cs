@@ -171,13 +171,21 @@ if (await db.Users.FindAsync(supremeRoleId) == null)
     Log.Logger.Warning("Created an Super User of login: ", user.Email);
 }
 else {
-    User user = await db.Users.FindAsync(supremeRoleId);
+    User user = await db.Users.Include(u => u.Roles).FirstOrDefaultAsync(u => u.Id == supremeRoleId);
+    if (user.Roles.FirstOrDefault(r => r.RoleId == supremeRoleId) == null) 
+    {
+        var role = await db.Roles.FindAsync(supremeRoleId);
+        role.Users.Add(user);
+        user.Roles.Add(role);
+        await db.SaveChangesAsync();
+        Log.Logger.Warning("Supremium lost dominatum role, reassigning");
+    }
     Log.Logger.Information("Super User exists, it's login is: ", user.Email); 
     Log.Information(Newtonsoft.Json.JsonConvert.SerializeObject(user.GetAllPermissions(db)));
 }
 
-/// ROLE PRELOADER
-{
+/// ROLE PRELOADER (DO NOT USE, IT IS BROKEN)
+/*{
     if (File.Exists("/etc/spicehub/preload/roles.json"))
     {
         var fd = await File.ReadAllBytesAsync("/etc/spicehub/preload/roles.json");
@@ -186,10 +194,20 @@ else {
         foreach (Role role in roles)
         {
             var existing = await db.Roles.FirstOrDefaultAsync(r => r.RoleId == role.RoleId);
-            if (existing == null) { await db.Roles.AddAsync(role); }
+            if (existing == null) {
+                Role nr = new Role()
+                {
+                    RoleId = role.RoleId,
+                    Name = role.Name,
+                    Scopes = role.Scopes ?? new List<string>(),
+                    Department = role.Department,
+                };
+                //db.Roles.Add(nr);
+            }
         }
+        //await db.SaveChangesAsync();
     }
-}
+}*/
 
 
 app.UseHttpsRedirection();
