@@ -84,12 +84,6 @@ export function TaskSection({
     }
   }, [isEditing]);
 
-  // Auto-edit mode for new sections
-  useEffect(() => {
-    if (name === "Nowa kolumna") {
-      setIsEditing(true);
-    }
-  }, [name]);
 
   const handleStartEditing = () => {
     setEditingName(name);

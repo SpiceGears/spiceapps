@@ -7,6 +7,16 @@ import {
   Users,
   User,
 } from "lucide-react";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@/components/ui/avatar";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { useContext, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -113,31 +123,70 @@ export function TaskCard({
     setIsDragging(false);
   };
 
-  // For demo: just show user IDs
-  const renderAssignedUsers = () => {
-    if (!task.assignedUsers || task.assignedUsers.length === 0) {
-      return (
-        <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
-          <User className="h-4 w-4" />
-          <span className="text-xs">Nieprzypisane</span>
-        </div>
-      );
-    }
+const renderAssignedUsers = () => {
+  const assigned = task.assignedUsers || [];
+
+  // 0 users → Unassigned
+  if (assigned.length === 0) {
     return (
-      <div className="flex items-center gap-1">
-        <Users className="h-4 w-4 text-gray-400 mr-1" />
-        <span className="text-xs text-gray-700 dark:text-gray-300">
-          {task.assignedUsers.map((user) => 
-            {
-              return (<React.Fragment key={user}>
-                {ctx.users.find(u => u.id == user)?.firstName + " " + ctx.users.find(u => u.id == user)?.lastName}
-              </React.Fragment>)
-            })}
-        </span>
+      <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
+        <Avatar className="h-4 w-4">
+          <AvatarFallback>
+            <User className="h-4 w-4" />
+          </AvatarFallback>
+        </Avatar>
+        <span className="text-xs">Nieprzypisane</span>
       </div>
     );
-  };
+  }
 
+
+  // more than 2 users → avatars only, overlapped + tooltip listing all names
+return (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <div className="flex items-center -space-x-2 cursor-pointer">
+        {assigned.map((userId) => {
+          const user = ctx.users.find((u) => u.id === userId);
+          const initials = user
+            ? `${user.firstName[0]}${user.lastName[0]}`
+            : "";
+          return (
+            <Avatar
+              key={userId}
+              className="h-6 w-6 ring-2 ring-white dark:ring-gray-800"
+            >
+              {user?.avatarSet && (
+                <AvatarImage
+                  src={undefined}
+                  alt={`${user.firstName} ${user.lastName}`}
+                />
+              )}
+              <AvatarFallback>{initials}</AvatarFallback>
+            </Avatar>
+          );
+        })}
+      </div>
+    </TooltipTrigger>
+    <TooltipContent side="top" align="center" className="max-w-xs">
+      <div className="flex flex-col space-y-1">
+        {assigned.map((userId) => {
+          const user = ctx.users.find((u) => u.id === userId);
+          if (!user) return null;
+          return (
+            <span
+              key={userId}
+              className="text-sm text-gray-200 dark:text-gray-800"
+            >
+              {user.firstName} {user.lastName}
+            </span>
+          );
+        })}
+      </div>
+    </TooltipContent>
+  </Tooltip>
+);
+};
   return (
     <div
       className={`group relative border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 min-h-[160px] ${
