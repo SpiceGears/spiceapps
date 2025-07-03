@@ -193,9 +193,8 @@ export default function ProjectPage({
           className="flex flex-col flex-1"
         >
           {/* HEADER + TABS LIST */}
-          <div className="px-4 sm:px-6 lg:px-8 py-4 border-b border-gray-200 dark:border-gray-700">
-            {/* Title + actions */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-y-3">
+<div className="px-4 sm:px-6 lg:px-8 py-4 border-b border-gray-200 dark:border-gray-700">
+  <div className="flex flex-col items-start gap-y-2">
               <div className="flex items-center gap-2">
                 <Folder className="h-6 w-6 text-gray-500 dark:text-gray-400" />
 
@@ -314,9 +313,9 @@ export default function ProjectPage({
             </div>
 
             {/* Activity sidebar (hidden on small) */}
-            <aside className="hidden md:block w-full md:w-80 lg:w-96 border-l border-gray-200 dark:border-gray-700 overflow-auto p-4 sm:p-6">
+
               <ActivitySidebar />
-            </aside>
+
           </div>
 
           {/* Edit dialog */}
