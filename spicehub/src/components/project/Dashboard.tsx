@@ -1,11 +1,11 @@
 // components/project/Dashboard.tsx
 "use client"
 
+import { useMemo } from "react"
 import {
   TrendingUp,
   Clock,
   AlertCircle,
-  Users,
   Calendar as CalendarIcon,
 } from "lucide-react"
 import { format } from "date-fns"
@@ -28,90 +28,156 @@ const getPriorityColor = (priority: string) => {
   }
 }
 
-export default function Dashboard({ project, tasks }: { project: Project; tasks: Task[] }) {
-  // Count how many tasks have status = 1 (Finished)
-  const completedTasks = tasks.filter((task) => task.status === 1).length;
-  const completionPercentage = Math.round(
-    (completedTasks / tasks.length) * 100
-  );
+export default function Dashboard({
+  project,
+  tasks,
+}: {
+  project: Project
+  tasks: Task[]
+}) {
+  const now = useMemo(() => new Date(), [])
+  const completed = tasks.filter((t) => t.status === 1).length
+  const total = tasks.length || 1
+  const pct = Math.round((completed / total) * 100)
 
   return (
-    <div className="p-6 h-full w-full">
-      <div className="w-full max-w-7xl mx-auto space-y-6">
+    <div className="px-2 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-4 sm:py-6 md:py-8 h-full w-full">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900">
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4
+                     gap-4 sm:gap-6 md:gap-8"
+        >
+          {/* Progress */}
+          <div
+            className="border border-gray-200 dark:border-gray-700 rounded-lg
+                       p-4 sm:p-6 bg-white dark:bg-gray-900"
+          >
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <h3
+                className="text-xs sm:text-sm md:text-base font-medium
+                           text-gray-700 dark:text-gray-300"
+              >
                 Postęp projektu
               </h3>
               <TrendingUp className="h-4 w-4 text-gray-500 dark:text-gray-400" />
             </div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {completionPercentage}%
+            <div
+              className="text-2xl sm:text-3xl md:text-4xl font-bold
+                         text-gray-900 dark:text-gray-100"
+            >
+              {pct}%
             </div>
             <div className="mt-2">
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+              <div
+                className="w-full bg-gray-200 dark:bg-gray-700
+                           rounded-full h-2"
+              >
                 <div
                   className="bg-blue-600 h-2 rounded-full"
-                  style={{ width: `${completionPercentage}%` }}
+                  style={{ width: `${pct}%` }}
                 />
               </div>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-              {completedTasks} z {tasks.length} zadań ukończonych
+            <p
+              className="text-xs sm:text-sm md:text-base text-gray-500
+                         dark:text-gray-400 mt-2"
+            >
+              {completed} z {tasks.length} zadań ukończonych
             </p>
           </div>
 
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900">
+          {/* To Do */}
+          <div
+            className="border border-gray-200 dark:border-gray-700 rounded-lg
+                       p-4 sm:p-6 bg-white dark:bg-gray-900"
+          >
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <h3
+                className="text-xs sm:text-sm md:text-base font-medium
+                           text-gray-700 dark:text-gray-300"
+              >
                 Zadania do zrobienia
               </h3>
               <Clock className="h-4 w-4 text-gray-500 dark:text-gray-400" />
             </div>
-            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {tasks.length - completedTasks}
+            <div
+              className="text-2xl sm:text-3xl md:text-4xl font-bold
+                         text-gray-900 dark:text-gray-100"
+            >
+              {tasks.length - completed}
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p
+              className="text-xs sm:text-sm md:text-base text-gray-500
+                         dark:text-gray-400 mt-2"
+            >
               Pozostałe zadania
             </p>
           </div>
 
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-6 bg-white dark:bg-gray-900">
+          {/* Overdue */}
+          <div
+            className="border border-gray-200 dark:border-gray-700 rounded-lg
+                       p-4 sm:p-6 bg-white dark:bg-gray-900"
+          >
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <h3
+                className="text-xs sm:text-sm md:text-base font-medium
+                           text-gray-700 dark:text-gray-300"
+              >
                 Zadania przeterminowane
               </h3>
               <AlertCircle className="h-4 w-4 text-red-500" />
             </div>
-            <div className="text-2xl font-bold text-red-600">
-              {tasks.filter(task => task.deadlineDate && new Date(task.deadlineDate) < new Date() && task.status !== 1).length}
+            <div
+              className="text-2xl sm:text-3xl md:text-4xl font-bold
+                         text-red-600"
+            >
+              {
+                tasks.filter(
+                  (t) =>
+                    t.deadlineDate &&
+                    new Date(t.deadlineDate) < now &&
+                    t.status !== 1
+                ).length
+              }
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p
+              className="text-xs sm:text-sm md:text-base text-gray-500
+                         dark:text-gray-400 mt-2"
+            >
               Wymagają uwagi
             </p>
           </div>
         </div>
 
-        {/* Main Dashboard Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Main Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Upcoming Deadlines */}
-          <div className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900">
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <div
+            className="border border-gray-200 dark:border-gray-700 rounded-lg
+                       bg-white dark:bg-gray-900 flex flex-col"
+          >
+            <div
+              className="p-4 sm:p-6 border-b border-gray-200
+                         dark:border-gray-700"
+            >
+              <h3
+                className="text-lg sm:text-xl md:text-2xl font-medium
+                           text-gray-900 dark:text-gray-100 flex items-center gap-2"
+              >
                 <CalendarIcon className="h-5 w-5" />
                 Nadchodzące terminy
               </h3>
             </div>
-            <div className="p-6">
+            <div className="p-4 sm:p-6 overflow-y-auto max-h-[360px]">
               <div className="space-y-4">
                 {tasks
                   .filter(
-                    (task) =>
-                      task.deadlineDate &&
-                      new Date(task.deadlineDate) > new Date() &&
-                      task.status !== 1
+                    (t) =>
+                      t.deadlineDate &&
+                      new Date(t.deadlineDate) > now &&
+                      t.status !== 1
                   )
                   .sort(
                     (a, b) =>
@@ -119,74 +185,104 @@ export default function Dashboard({ project, tasks }: { project: Project; tasks:
                       new Date(b.deadlineDate!).getTime()
                   )
                   .slice(0, 5)
-                  .map((deadline) => (
+                  .map((dl) => (
                     <div
-                      key={deadline.id}
-                      className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                      key={dl.id}
+                      className="flex flex-col sm:flex-row items-start
+                                 sm:items-center justify-between p-3 sm:p-4
+                                 border border-gray-200 dark:border-gray-700
+                                 rounded-lg hover:bg-gray-50
+                                 dark:hover:bg-gray-800/50"
                     >
-                      <div className="flex-1">
-                        <p className="font-medium text-sm text-gray-900 dark:text-gray-100">
-                          {deadline.name}
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className="text-sm sm:text-base font-medium
+                                     text-gray-900 dark:text-gray-100 truncate"
+                        >
+                          {dl.name}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {Array.isArray(deadline.assignedUsers) && deadline.assignedUsers.length === 1 ? (
+                        <p
+                          className="text-xs sm:text-sm text-gray-500
+                                     dark:text-gray-400 truncate mt-1"
+                        >
+                          {Array.isArray(dl.assignedUsers) &&
+                          dl.assignedUsers.length === 1 ? (
                             <span className="flex items-center gap-2">
                               {(() => {
-                                const user = useUserById(deadline.assignedUsers[0]);
+                                const u = useUserById(
+                                  dl.assignedUsers[0]
+                                )
                                 return (
                                   <>
                                     <Avatar className="h-5 w-5">
                                       <AvatarFallback>
-                                        {user?.data?.firstName?.[0]}
-                                        {user?.data?.lastName?.[0]}
+                                        {u?.data?.firstName?.[0]}
+                                        {u?.data?.lastName?.[0]}
                                       </AvatarFallback>
                                     </Avatar>
-                                    <span>
-                                      {user?.data?.firstName} {user?.data?.lastName}
+                                    <span className="truncate">
+                                      {u?.data?.firstName}{" "}
+                                      {u?.data?.lastName}
                                     </span>
                                   </>
-                                );
+                                )
                               })()}
                             </span>
-                          ) : Array.isArray(deadline.assignedUsers) && deadline.assignedUsers.length > 1 ? (
+                          ) : Array.isArray(dl.assignedUsers) &&
+                            dl.assignedUsers.length > 1 ? (
                             <span className="flex -space-x-2">
-                              {deadline.assignedUsers.slice(0, 3).map((userId, idx) => {
-                                const user = useUserById(userId);
+                              {dl.assignedUsers.slice(0, 3).map((id) => {
+                                const u = useUserById(id)
                                 return (
-                                  <Avatar key={userId} className="h-5 w-5 border-2 border-white dark:border-gray-900">
+                                  <Avatar
+                                    key={id}
+                                    className="h-5 w-5 border-2 border-white
+                                               dark:border-gray-900"
+                                  >
                                     <AvatarFallback>
-                                      {user?.data?.firstName?.[0]}
-                                      {user?.data?.lastName?.[0]}
+                                      {u?.data?.firstName?.[0]}
+                                      {u?.data?.lastName?.[0]}
                                     </AvatarFallback>
                                   </Avatar>
-                                );
+                                )
                               })}
-                              {deadline.assignedUsers.length > 3 && (
-                                <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                                  +{deadline.assignedUsers.length - 3}
+                              {dl.assignedUsers.length > 3 && (
+                                <span
+                                  className="ml-2 text-xs text-gray-500
+                                             dark:text-gray-400"
+                                >
+                                  +{dl.assignedUsers.length - 3}
                                 </span>
                               )}
                             </span>
                           ) : (
-                            <span className="text-xs text-gray-400">Brak przypisanych</span>
+                            <span className="text-xs text-gray-400">
+                              Brak przypisanych
+                            </span>
                           )}
                         </p>
                       </div>
-                      {/* <div className="flex items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className={getPriorityColor(project.)}
-                    >
-                      {deadline.priority === "high"
-                        ? "Wysoki"
-                        : deadline.priority === "medium"
-                        ? "Średni"
-                        : "Niski"}
-                    </Badge>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {format(new Date(deadline.dueDate), "dd MMM")}
-                    </span>
-                  </div> */}
+                      {/*
+                      <div className="mt-2 sm:mt-0 flex-shrink-0
+                                      flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={getPriorityColor(dl.priority)}
+                        >
+                          {dl.priority === "high"
+                            ? "Wysoki"
+                            : dl.priority === "medium"
+                            ? "Średni"
+                            : "Niski"}
+                        </Badge>
+                        <span
+                          className="text-xs sm:text-sm text-gray-500
+                                     dark:text-gray-400"
+                        >
+                          {format(new Date(dl.deadlineDate!), "dd MMM")}
+                        </span>
+                      </div>
+                      */}
                     </div>
                   ))}
               </div>

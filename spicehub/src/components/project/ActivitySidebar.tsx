@@ -13,7 +13,7 @@ import { Activity, Clock, ChevronRight } from "lucide-react"
 
 export function ActivitySidebar() {
   const ctx = useContext(projectContext);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   // Safe date formatting function
   const formatSafeDate = (dateValue: any): string => {
