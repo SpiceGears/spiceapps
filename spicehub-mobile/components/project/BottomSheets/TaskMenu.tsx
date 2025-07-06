@@ -25,7 +25,7 @@ export default function TaskMenu({ onSheetChange }: TaskMenuProps) {
   // helper to run your action then dismiss
   const handleItemPress = (action: () => void) => {
     action();
-    close("projectSettings");
+    close("taskMenu");
   };
 
   return (

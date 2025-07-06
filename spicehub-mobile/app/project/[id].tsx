@@ -5,7 +5,7 @@ import {
   Text,
 } from 'react-native'
 import { useEffect, useState, useMemo } from 'react'
-import { Section, Task } from '@/models/Task'
+import { Section, Task, TaskStatus } from '@/models/Task'
 import { BackendUrl } from '@/Constants/backend'
 import * as SecureStore from 'expo-secure-store'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -105,7 +105,6 @@ export default function ProjectScreen() {
     fetchSections();
     fetchTasks();
   }, [id]);
-
 
   const onProjectEditSave = async (
     name: string,
@@ -233,6 +232,42 @@ export default function ProjectScreen() {
     }
   }
 
+  const handleTaskCreate = async (
+    name: string,
+    description?: string,
+    priority?: number,
+    status?: TaskStatus,
+    deadlineDate?: Date | undefined,
+    selectedSection?: string
+  ) => {
+    try {
+      const token = await SecureStore.getItemAsync("accessToken");
+      const sectionId = selectedSection;
+      if (!token) return;
+      const res = await fetch(`${BackendUrl}/api/project/${id}/${sectionId}/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({
+          name,
+          description,
+          priority,
+          status,
+          deadlineDate,
+          assignedUsers: [],
+          dependencies: []
+        })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      fetchTasks();
+      setSelectedTask(null);
+    } catch (e: any) {
+      Alert.alert("Error", e.message);
+    }
+  }
+
     const handleOpenSectionMenu = (sectionId: string) => {
       setPendingSectionId(sectionId);
       open("sectionMenu");
@@ -332,7 +367,8 @@ export default function ProjectScreen() {
           onSheetChange={(idx: number) => {
             console.log("project edit sheet moved to index", idx);
           }}
-          onSave={handleSectionEdit}
+          onSave={handleTaskCreate}
+          sections={sectionsData}
         />
       </>
     )
