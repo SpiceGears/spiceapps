@@ -8,9 +8,12 @@ import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
+import AvatarGetSet from "./avatarGetSet";
+import { useUserData } from "@/hooks/userData";
 
 export default function SettingsPage() {
   const router = useRouter();
+  const user = useUserData();  
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -40,12 +43,16 @@ export default function SettingsPage() {
 
           <TabsContent value="profile">
             <div className="space-y-4">
+            <div className="space-y-4">
               <Label htmlFor="username">Nazwa użytkownika</Label>
               <Input id="username" />
 
               <Label htmlFor="bio">Opis</Label>
               <Input id="bio" />
               <Button className="mt-4">Zapisz zmiany</Button>
+            </div>
+            <hr className="border-gray-700" />
+            <AvatarGetSet user={user.data}/>
             </div>
           </TabsContent>
 
