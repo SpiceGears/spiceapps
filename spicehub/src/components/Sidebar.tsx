@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import Link from "next/link"
-import { Home, Terminal, TestTube, Folder, Plus, X } from "lucide-react"
+import { Home, Terminal, TestTube, Folder, Plus, X, HardDrive } from "lucide-react"
 import { Button } from "./ui/button"
 import { usePathname } from "next/navigation"
 
@@ -18,8 +18,9 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
 
   const navItems = React.useMemo(
     () => [
-      { href: "/dashboard", icon: Home, label: "SpiceHub" },
+      { href: "/dashboard", icon: Home, label: "Strona główna" },
       { href: "/spicelab", icon: TestTube, label: "SpiceLab" },
+      { href: "/drive", icon: HardDrive, label: "Dysk" },
       ...(pathname.startsWith("/spicelab")
         ? [{ href: "/spicelab/project", icon: Folder, label: "Projekty" }]
         : []),

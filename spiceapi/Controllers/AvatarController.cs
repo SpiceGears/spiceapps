@@ -29,7 +29,7 @@ namespace SpiceAPI.Controllers {
             User? user = await tc.RetrieveUser(token);
             if (user == null) return NotFound("NULL USER");
 
-            if (user.Id == id) return StatusCode(403, "You cannot change avatar of other users");
+            if (user.Id != id) return StatusCode(403, "You cannot change avatar of other users");
 
             if (file.ContentType != "image/jpeg") return BadRequest("Avatars must be JPEG type");
 

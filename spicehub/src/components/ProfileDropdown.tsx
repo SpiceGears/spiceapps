@@ -14,9 +14,12 @@ import { Badge } from "./ui/badge";
 import { getCookie } from "typescript-cookie";
 import { getBackendUrl } from "@/app/serveractions/backend-url";
 import { Department, Role, UserInfo } from "@/models/User";
+import { Skeleton } from "./ui/skeleton";
 
 export default function ProfileDropdown() {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [backendUrl, setBURL] = useState<string>("");
   let [userData, setUserData] = useState<UserInfo>({
     firstName: "Jan",
     lastName: "Kowalski",
@@ -33,12 +36,15 @@ export default function ProfileDropdown() {
   })
 
   useEffect(() => {
+    setLoading(true);
     let at = getCookie("accessToken");
     if (!at) { console.error("Cookie error, no Access Token found"); return; }
 
     const fetchData = async (at: string) => {
       const backend = await getBackendUrl();
+
       if (!backend) { console.error("no backend, skipping..."); return; }
+            setBURL(backend)
       const res = await fetch(backend + "/api/user/getInfo",
         {
           method: "GET",
@@ -53,6 +59,7 @@ export default function ProfileDropdown() {
         console.log(userinfo);
         setUserData(userinfo)
       }
+      setLoading(false);
     }
     fetchData(at).then();
     return () => {
@@ -70,11 +77,18 @@ export default function ProfileDropdown() {
           variant="ghost"
           className="flex items-center space-x-2 text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 focus-visible:ring-0 focus-visible:ring-offset-0"
         >
-          <img
-            src={`https://ui-avatars.com/api/?name=${userData.firstName}+${userData.lastName}&background=random&color=fff`}
-            alt={`${userData.firstName} ${userData.lastName}`}
-            className="w-8 h-8 rounded-full" // Adjusted size to w-8 h-8
-          />
+          {!loading && <>
+            {!userData.avatarSet && <img
+              src={`https://ui-avatars.com/api/?name=${userData.firstName}+${userData.lastName}&background=random&color=fff`}
+              alt={`${userData.firstName} ${userData.lastName}`}
+              className="w-8 h-8 rounded-full" // Adjusted size to w-8 h-8
+            />}
+            {userData.avatarSet && <img
+              src={`${backendUrl}/api/user/${userData.id}/avatar`}
+              alt={`${userData.firstName} ${userData.lastName}`}
+              className="w-8 h-8 rounded-full" // Adjusted size to w-8 h-8
+            />}
+          </>} {loading && <Skeleton className="w-8 h-8 rounded-full"></Skeleton>}
           <ChevronDown
             className={`ml-2 h-4 w-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
           />
