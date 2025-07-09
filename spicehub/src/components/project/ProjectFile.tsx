@@ -155,6 +155,25 @@ export default function ProjectFile({ project }: ProjectFileProps) {
     }
   }
 
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(false);
+  };
+
+  const handleDrop = (event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(false);
+    const files = event.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFiles(files);
+    }
+  }
+
   return (
     <>
       <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-8">
