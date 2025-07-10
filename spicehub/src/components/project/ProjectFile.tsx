@@ -1,6 +1,6 @@
 import { getBackendUrl } from "@/app/serveractions/backend-url";
 import { Upload } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner";
 import { getCookie } from "typescript-cookie";
 import { SFile, FilePerms } from "@/models/SFile";
@@ -21,7 +21,7 @@ export default function ProjectFile({ project }: ProjectFileProps) {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([]);
   const [files, setFiles] = useState<SFile[]>([]);
   const [isDragOver, setIsDragOver] = useState<boolean>(false);
-  const fileInputRef = useState<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const fetchFiles = async () => {
     try {
@@ -174,6 +174,10 @@ export default function ProjectFile({ project }: ProjectFileProps) {
     }
   }
 
+  const handleClick = () => {
+    fileInputRef.current?.click();
+  }
+
   return (
     <>
       <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-8">
@@ -181,10 +185,10 @@ export default function ProjectFile({ project }: ProjectFileProps) {
       </h2>
       <div
         className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 mt-4 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-        onClick={() => {
-          const fileInput = document.getElementById("file-upload")
-          if (fileInput) fileInput.click()
-        }}
+        onClick={handleClick}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
       >
         <div className="h-14 w-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
           <Upload className="h-6 w-6 text-gray-500 dark:text-gray-400" />
@@ -196,6 +200,7 @@ export default function ProjectFile({ project }: ProjectFileProps) {
           Przeciągnij i upuść pliki lub kliknij, aby dodać
         </p>
         <input
+          ref={fileInputRef}
           id="file-upload"
           type="file"
           className="hidden"
