@@ -5,7 +5,7 @@ namespace SpiceAPI.Models
     public class SFile
     {
         [Key]
-        public Guid Id;
+        public Guid Id { get; set; }
 
         public string Name { get; set; }
         public string Description { get; set; }
