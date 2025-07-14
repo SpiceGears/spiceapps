@@ -2,12 +2,19 @@ import { getBackendUrl } from "@/app/serveractions/backend-url";
 import {
   Loader2,
   Upload,
-  File,
+  File as FileIcon,
   FileText,
   Music,
-  Video,
-  Image,
+  MoreVertical,
+  Download,
+  Trash,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { getCookie } from "typescript-cookie";
@@ -27,232 +34,153 @@ interface FilePreviewProps {
   files: SFile[];
 }
 
-const getFileUrl = async (fileId: string) => {
+async function getFileUrl(id: string): Promise<string|undefined> {
   try {
     const backend = await getBackendUrl();
-    if (!backend) {
-      toast.error("Error", { description: "SpiceHub is offline" });
-      return;
-    }
+    if (!backend) throw new Error();
     const token = getCookie("accessToken");
-    if (!token) {
-      toast.error("Error", {
-        description:
-          "An unknown error occurred. Please try again later.",
-      });
-      return;
-    }
-
-    const url = `${backend}/files/download/${fileId}`;
-    const response = await fetch(url, {
+    if (!token) throw new Error();
+    const res = await fetch(`${backend}/files/download/${id}`, {
       headers: { Authorization: token },
     });
-    if (!response.ok) {
-      toast.error("Error", {
-        description: "Failed to fetch file URL",
-      });
-      return;
-    }
-
-    const blob = await response.blob();
+    if (!res.ok) throw new Error();
+    const blob = await res.blob();
     return URL.createObjectURL(blob);
-  } catch (error) {
-    toast.error("Error", {
-      description:
-        "An unknown error occurred. Please try again later.",
-    });
+  } catch {
+    toast.error("Błąd", { description: "Nie udało się pobrać pliku." });
   }
-};
-
-const getFileType = (
-  fileName: string
-): "image" | "video" | "audio" | "pdf" | "docx" | "other" => {
-  const extension = fileName.split(".").pop()?.toLowerCase();
-  const imageExtensions = [
-    "jpg",
-    "jpeg",
-    "png",
-    "gif",
-    "bmp",
-    "webp",
-    "svg",
-  ];
-  const videoExtensions = [
-    "mp4",
-    "avi",
-    "mov",
-    "wmv",
-    "flv",
-    "webm",
-    "mkv",
-  ];
-  const audioExtensions = [
-    "mp3",
-    "wav",
-    "ogg",
-    "flac",
-    "aac",
-    "m4a",
-  ];
-  const pdfExtensions = ["pdf"];
-  const docxExtensions = ["docx", "doc"];
-
-  if (imageExtensions.includes(extension || "")) return "image";
-  if (videoExtensions.includes(extension || "")) return "video";
-  if (audioExtensions.includes(extension || "")) return "audio";
-  if (pdfExtensions.includes(extension || "")) return "pdf";
-  if (docxExtensions.includes(extension || "")) return "docx";
-  return "other";
-};
-
-interface SingleFilePreviewProps {
-  file: SFile;
 }
 
-const SingleFilePreview = ({ file }: SingleFilePreviewProps) => {
-  const [url, setUrl] = useState<string | null>(null);
-  const [urlError, setUrlError] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
+function getFileType(name: string) {
+  const ext = name.split(".").pop()?.toLowerCase() || "";
+  if (["jpg","jpeg","png","gif","bmp","webp","svg"].includes(ext)) return "image";
+  if (["mp4","avi","mov","wmv","flv","webm","mkv"].includes(ext)) return "video";
+  if (["mp3","wav","ogg","flac","aac","m4a"].includes(ext)) return "audio";
+  if (ext === "pdf") return "pdf";
+  if (["doc","docx"].includes(ext)) return "docx";
+  return "other";
+}
+
+const SingleFilePreview = ({ file }: { file: SFile }) => {
+  const [url, setUrl] = useState<string|null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    const loadUrl = async () => {
-      try {
-        setLoading(true);
-        const fileUrl = await getFileUrl(file.id);
-        if (fileUrl) {
-          setUrl(fileUrl);
-        } else {
-          setUrlError(true);
-        }
-      } catch {
-        setUrlError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadUrl();
+    (async () => {
+      setLoading(true);
+      const u = await getFileUrl(file.id);
+      if (u) setUrl(u);
+      else setError(true);
+      setLoading(false);
+    })();
   }, [file.id]);
 
-  if (loading) {
-    return (
-      <div className="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
-      </div>
-    );
-  }
+  const handleDownload = () => {
+    if (!url) return;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = file.name;
+    a.click();
+  };
 
-  if (urlError || !url) {
-    return (
-      <div className="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-lg flex flex-col items-center justify-center">
-        <File className="h-12 w-12 text-gray-400 mb-2" />
-        <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-          {file.name}
-        </p>
-        <p className="text-xs text-red-500 mt-1">
-          Failed to load
-        </p>
-      </div>
-    );
-  }
+  const type = getFileType(file.name);
 
-  const fileType = getFileType(file.name);
+  return (
+    <div className="relative flex flex-col bg-white dark:bg-gray-800 
+                    rounded-lg shadow-lg overflow-hidden group">
+      {/* Dropdown */}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="absolute top-2 right-2 p-1 rounded-full 
+                       bg-white dark:bg-gray-700 
+                       opacity-0 group-hover:opacity-100 
+                       transition"
+          >
+            <MoreVertical size={18} />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={handleDownload}>
+            <Download size={16} className="mr-2" />
+            Pobierz
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => {}}>
+            <Trash size={16} className="mr-2" />
+            Usuń
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-  const renderPreview = () => {
-    switch (fileType) {
-      case "image":
-        return (
-          <div className="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-            <img
-              src={url}
-              alt={file.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        );
-      case "video":
-        return (
-          <div className="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
-            <video
-              controls
-              className="w-full h-full object-cover"
-              preload="metadata"
-            >
+      {/* Preview pane */}
+      <div className="h-80 bg-gray-100 dark:bg-gray-700 
+                      flex items-center justify-center overflow-hidden">
+        {loading ? (
+          <Loader2 className="animate-spin text-gray-500" />
+        ) : error || !url ? (
+          <FileIcon size={48} className="text-gray-500" />
+        ) : type === "image" ? (
+          <img
+            src={url}
+            alt={file.name}
+            className="object-cover w-full h-full"
+          />
+        ) : type === "video" ? (
+          <video
+            controls
+            className="object-cover w-full h-full"
+            preload="metadata"
+          >
+            <source src={url} />
+          </video>
+        ) : type === "audio" ? (
+          <div className="flex flex-col items-center">
+            <Music size={48} />
+            <audio controls className="mt-2 w-full">
               <source src={url} />
-              Your browser does not support the video tag.
-            </video>
-          </div>
-        );
-      case "audio":
-        return (
-          <div className="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-lg flex flex-col items-center justify-center p-4">
-            <Music className="h-12 w-12 text-gray-400 mb-4" />
-            <audio controls className="w-full">
-              <source src={url} />
-              Your browser does not support audio.
             </audio>
           </div>
-        );
-      case "pdf":
-        return (
-          <div className="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-            <FileText className="h-12 w-12 text-red-500 mb-2" />
-            <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-              PDF Document
-            </p>
+        ) : type === "pdf" ? (
+          <div className="flex flex-col items-center">
+            <FileText size={48} className="text-red-500" />
             <a
               href={url}
               target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-blue-500 hover:text-blue-600 mt-1"
+              rel="noreferrer"
+              className="mt-2 text-sm text-blue-600 hover:underline"
             >
-              Open PDF
+              Otwórz PDF
             </a>
           </div>
-        );
-      case "docx":
-        return (
-          <div className="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-            <FileText className="h-12 w-12 text-blue-500 mb-2" />
-            <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-              Word Document
+        ) : type === "docx" ? (
+          <div className="flex flex-col items-center">
+            <FileText size={48} className="text-blue-600" />
+            <p className="mt-2 text-sm text-gray-900 dark:text-gray-100">
+              Word Dokument
             </p>
-            <a
-              href={url}
-              download={file.name}
-              className="text-xs text-blue-500 hover:text-blue-600 mt-1"
+            <button
+              onClick={handleDownload}
+              className="mt-2 text-sm text-blue-600 hover:underline"
             >
-              Download
-            </a>
+              Pobierz
+            </button>
           </div>
-        );
-      default:
-        return (
-          <div className="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-            <File className="h-12 w-12 text-gray-400 mb-2" />
-            <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-              {file.name}
-            </p>
-            <a
-              href={url}
-              download={file.name}
-              className="text-xs text-blue-500 hover:text-blue-600 mt-1"
-            >
-              Download
-            </a>
+        ) : (
+          <div className="flex flex-col items-center">
+            <FileIcon size={48} className="text-gray-500" />
           </div>
-        );
-    }
-  };
+        )}
+      </div>
 
-  return (
-    <div className="space-y-2">
-      {renderPreview()}
-      <div className="px-2">
-        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+      {/* Meta */}
+      <div className="p-4 bg-white dark:bg-gray-800 border-t 
+                      border-gray-200 dark:border-gray-700">
+        <p className="font-semibold text-gray-900 dark:text-gray-100 truncate">
           {file.name}
         </p>
         {file.description && (
-          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+          <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 truncate">
             {file.description}
           </p>
         )}
@@ -263,265 +191,136 @@ const SingleFilePreview = ({ file }: SingleFilePreviewProps) => {
 
 const FilePreview = ({ files }: FilePreviewProps) => {
   if (!files.length) return null;
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
-      {files.map((file) => (
-        <SingleFilePreview key={file.id} file={file} />
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 
+                    lg:grid-cols-3 xl:grid-cols-3 gap-8 mt-8">
+      {files.map((f) => (
+        <SingleFilePreview key={f.id} file={f} />
       ))}
     </div>
   );
 };
 
-export default function ProjectFile({
-  project,
-}: ProjectFileProps) {
-  const [uploadingFiles, setUploadingFiles] = useState<
-    UploadingFile[]
-  >([]);
+export default function ProjectFile({ project }: ProjectFileProps) {
+  const [uploading, setUploading] = useState<UploadingFile[]>([]);
   const [files, setFiles] = useState<SFile[]>([]);
-  const [isDragOver, setIsDragOver] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [drag, setDrag] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const fetchFiles = async () => {
     try {
-      const backend = await getBackendUrl();
-      if (!backend) {
-        toast.error("Error", { description: "SpiceHub is offline" });
-        return;
-      }
-      const token = getCookie("accessToken");
-      if (!token) {
-        toast.error("Error", {
-          description:
-            "An unknown error occurred. Please try again later.",
-        });
-        return;
-      }
-      const url = `${backend}/files/folders/getFiles`;
-      const response = await fetch(url, {
+      const b = await getBackendUrl();
+      if (!b) throw new Error();
+      const token = getCookie("accessToken") || "";
+      const res = await fetch(`${b}/files/folders/getFiles`, {
         headers: {
           Authorization: token,
-          FolderPath: `proj-${project?.id}`,
+          FolderPath: `proj-${project.id}`,
         },
       });
-      if (!response.ok) {
-        const errorData = await response.json();
-        toast.error("Błąd", {
-          description:
-            errorData.message ||
-            "Nie udało się pobrać plików",
-        });
-        return;
-      }
-      const data = await response.json();
-      setFiles(data || []);
+      if (!res.ok) throw await res.json();
+      setFiles(await res.json());
     } catch {
-      toast.error("Błąd", {
-        description: "Nie udało się pobrać plików",
-      });
+      toast.error("Błąd", { description: "Nie udało się pobrać plików." });
     }
   };
 
   useEffect(() => {
     fetchFiles();
-  }, [project?.id]);
+  }, [project.id]);
 
   const uploadFile = async (file: File) => {
-    setUploadingFiles((prev) => [
-      ...prev,
-      { file, status: "uploading" },
-    ]);
-
+    setUploading((u) => [...u, { file, status: "uploading" }]);
     try {
-      const backend = await getBackendUrl();
-      if (!backend) {
-        toast.error("Error", { description: "SpiceHub is offline" });
-        throw new Error("No backend");
-      }
+      const b = await getBackendUrl();
+      const token = getCookie("accessToken") || "";
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("name", file.name);
+      fd.append("description", "Plik przesłany przez użytkownika");
+      fd.append("tags", "projectFile");
+      fd.append("scopes", "");
+      fd.append("perm", String(FilePerms.readExternal));
+      fd.append("ownerWriteOnly", "false");
+      fd.append("folderPath", `proj-${project.id}`);
 
-      const token = getCookie("accessToken");
-      if (!token) {
-        toast.error("Error", {
-          description:
-            "An unknown error occurred. Please try again later.",
-        });
-        throw new Error("No token");
-      }
-
-      const fileData: ArrayBuffer = await file.arrayBuffer();
-
-      const name = file.name;
-      const description = "Plik przesłany przez użytkownika";
-      const tags = ["projectFile"];
-      const scopes: string[] = [];
-      const perm = FilePerms.readExternal;
-      const ownerWriteOnly = false;
-      const folder = `proj-${project?.id}`;
-
-      const response = await fetch(`${backend}/files/create`, {
+      const res = await fetch(`${b}/files/create`, {
         method: "POST",
-        headers: {
-          Authorization: token,
-          "Content-Type": "application/octet-stream",
-          Name: name,
-          Description: description,
-          Tags: JSON.stringify(tags),
-          Scopes: JSON.stringify(scopes),
-          Perm: String(perm),
-          OwnerWriteOnly: String(ownerWriteOnly),
-          FolderPath: folder,
-        },
-        body: fileData,
+        headers: { Authorization: token },
+        body: fd,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        toast.error("Błąd", {
-          description:
-            errorData.message || "Nie udało się przesłać pliku",
-        });
-        return;
-      }
-
-      setUploadingFiles((prev) =>
-        prev.filter((f) => f.file !== file)
-      );
+      if (!res.ok) throw await res.json();
+      toast.success("Sukces", { description: `${file.name} przesłany` });
       fetchFiles();
-      toast.success("Sukces", {
-        description: `Plik "${file.name}" został przesłany pomyślnie`,
-      });
     } catch {
-      setUploadingFiles((prev) =>
-        prev.filter((f) => f.file !== file)
-      );
-      toast.error("Błąd", {
-        description: "Nie udało się przesłać pliku",
-      });
+      toast.error("Błąd", { description: "Nie udało się przesłać pliku." });
+    } finally {
+      setUploading((u) => u.filter((x) => x.file !== file));
     }
   };
 
-  const handleFiles = (filesList: FileList) => {
-    const fileArray = Array.from(filesList);
-    const newFiles = fileArray.filter((file) => {
-      const dup = uploadingFiles.some(
-        (f) => f.file.name === file.name
-      );
-      if (dup) {
-        toast.error("Błąd", {
-          description: `Plik "${file.name}" jest już w trakcie przesyłania`,
-        });
-      }
-      return !dup;
-    });
-    if (!newFiles.length) {
-      toast.error("Błąd", {
-        description: "Nie udało się dodać plików",
-      });
-      return;
-    }
-    newFiles.forEach(uploadFile);
-  };
-
-  const handleFileSelect = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    if (e.target.files) handleFiles(e.target.files);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    if (e.dataTransfer.files)
-      handleFiles(e.dataTransfer.files);
-  };
-
-  const handleClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const renderUploadingFiles = () => {
-    if (!uploadingFiles.length) return null;
-    return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mt-4">
-        {uploadingFiles.map((u, i) => (
-          <div key={i} className="space-y-2">
-            <div className="w-full h-48 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin text-gray-500 mb-2" />
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Uploading {u.file.name}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const hasFiles = files.length > 0;
+  const handleFiles = (fls: FileList) =>
+    Array.from(fls).forEach(uploadFile);
 
   return (
     <>
-      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-8">
+      <h2 className="text-2xl font-bold mt-8 dark:text-gray-100">
         Pliki
       </h2>
+
       <div
-        className={`flex gap-4 mt-4 ${
-          hasFiles ? "flex-col lg:flex-row" : ""
-        }`}
+        className={`mt-6 p-8 h-48 border-2 border-dashed rounded-lg
+                    flex flex-col items-center justify-center
+                    transition-colors cursor-pointer
+                    ${
+                      drag
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                        : "border-gray-300 dark:border-gray-600"
+                    }`}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDrag(false);
+          if (e.dataTransfer.files) handleFiles(e.dataTransfer.files);
+        }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDrag(true);
+        }}
+        onDragLeave={(e) => {
+          e.preventDefault();
+          setDrag(false);
+        }}
+        onClick={() => inputRef.current?.click()}
       >
-        <div
-          className={`border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg ${
-            hasFiles
-              ? "lg:w-80 lg:h-80 p-4 flex-shrink-0"
-              : "p-8"
-          } flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors ${
-            isDragOver
-              ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-              : ""
-          }`}
-          onClick={handleClick}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-        >
-          <div className="h-14 w-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-            <Upload className="h-6 w-6 text-gray-500 dark:text-gray-400" />
-          </div>
-          <p className="text-gray-700 dark:text-gray-300 text-center">
-            {hasFiles
-              ? "Dodaj więcej plików"
-              : "Tutaj możesz dodać pliki do projektu."}
-          </p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-1">
-            Przeciągnij i upuść pliki lub kliknij, aby dodać
-          </p>
-          <input
-            ref={fileInputRef}
-            id="file-upload"
-            type="file"
-            className="hidden"
-            multiple
-            onChange={handleFileSelect}
-          />
-        </div>
-        {hasFiles && (
-          <div className="flex-1">
-            <FilePreview files={files} />
-          </div>
-        )}
+        <Upload size={36} className="text-gray-500 dark:text-gray-400" />
+        <p className="mt-2 text-lg text-gray-700 dark:text-gray-300 text-center">
+          Przeciągnij i upuść lub kliknij, aby dodać pliki
+        </p>
+        <input
+          ref={inputRef}
+          type="file"
+          className="hidden"
+          multiple
+          onChange={(e) => e.target.files && handleFiles(e.target.files)}
+        />
       </div>
-      {renderUploadingFiles()}
+
+      {files.length > 0 && <FilePreview files={files} />}
+
+      {uploading.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 
+                        lg:grid-cols-3 xl:grid-cols-3 gap-8 mt-8">
+          {uploading.map((u, i) => (
+            <div
+              key={i}
+              className="h-80 bg-gray-100 dark:bg-gray-700
+                         rounded-lg flex items-center justify-center"
+            >
+              <Loader2 className="animate-spin text-gray-500" />
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 }

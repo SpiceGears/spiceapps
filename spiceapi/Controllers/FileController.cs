@@ -119,59 +119,66 @@ namespace SpiceAPI.Controllers
             public bool OwnerWriteOnly { get; set; }
         }
 
-        [HttpPost("create")]
-        [DisableRequestSizeLimit]
-        public async Task<IActionResult> StreamUpload(
-    [FromHeader(Name = "Name")] string name,
-    [FromHeader(Name = "Description")] string description,
-    [FromHeader(Name = "Tags")] string? tagsCsv,
-    [FromHeader(Name = "Scopes")] string? scopesCsv,
-    [FromHeader(Name = "Perm")] FilePerm perm,
-    [FromHeader] string? FolderPath,
-    [FromHeader(Name = "OwnerWriteOnly")] bool ownerWriteOnly,
-    [FromHeader(Name = "Authorization")] string? Authorization)
-        {
-            var headers = new FileHeaders
-            {
-                Name = name,
-                Description = description,
-                Tags = tagsCsv != null ? tagsCsv.Split(',').ToList() : new List<String>(),
-                Scopes = scopesCsv != null ? scopesCsv.Split(',').ToList() : new List<String>(),
-                Perm = perm,
-                OwnerWriteOnly = ownerWriteOnly
-            };
-            if (Authorization == null) { return Unauthorized("Provide access token"); }
-            bool isValid = tc.VerifyToken(Authorization);
-            if (!isValid) { return StatusCode(403, "Invalid Token"); }
+[HttpPost("create")]
+[DisableRequestSizeLimit]
+[Consumes("multipart/form-data")]
+public async Task<IActionResult> StreamUpload(
+    [FromForm(Name = "file")] IFormFile file,
+    [FromForm(Name = "name")] string name,
+    [FromForm(Name = "description")] string description,
+    [FromForm(Name = "tags")] string? tagsCsv,
+    [FromForm(Name = "scopes")] string? scopesCsv,
+    [FromForm(Name = "perm")] FilePerm perm,
+    [FromForm(Name = "folderPath")] string? folderPath,
+    [FromForm(Name = "ownerWriteOnly")] bool ownerWriteOnly,
+    [FromHeader(Name = "Authorization")] string? authorization)
+{
+    // 1) Auth
+    if (authorization == null)
+        return Unauthorized("Provide access token");
+    if (!tc.VerifyToken(authorization))
+        return Forbid("Invalid token");
+    var user = await tc.RetrieveUser(authorization);
+    if (user == null) return BadRequest("NULL USER");
+    if (!user.IsApproved)
+        return Forbid("You must be approved to do this");
 
-            User? user = await tc.RetrieveUser(Authorization);
-            if (user == null) return BadRequest("NULL USER");
-            if (!user.IsApproved) return StatusCode(403, "You must be approved to do this");
+    // 2) Parse metadata
+    var tags   = string.IsNullOrWhiteSpace(tagsCsv)   ? new List<string>() : tagsCsv.Split(',').ToList();
+    var scopes = string.IsNullOrWhiteSpace(scopesCsv) ? new List<string>() : scopesCsv.Split(',').ToList();
 
-            Guid id = Guid.NewGuid();
+    // 3) Build storage path
+    var id = Guid.NewGuid();
+    var safeFolder = string.IsNullOrWhiteSpace(folderPath)
+        ? ""
+        : folderPath.TrimStart('/', '\\');
+    if (safeFolder.Contains("..")) return Forbid("Invalid folderPath");
+    var fullFolder = Path.Combine(StoragePath, safeFolder);
+    Directory.CreateDirectory(fullFolder);
+    var outPath = Path.Combine(fullFolder, id.ToString());
 
-            var path = string.IsNullOrWhiteSpace(FolderPath) ? "" : FolderPath.TrimStart('/', '\\');
-            if (path.Contains("../") || path.Contains("..\\") || path.Contains("..")) return StatusCode(403, "Invalid characters");
+    // 4) Save the file stream
+    await using (var fs = new FileStream(outPath, FileMode.Create))
+    await using (var fileStream = file.OpenReadStream())
+        await fileStream.CopyToAsync(fs);
 
-            path = Path.Combine(StoragePath, path);
+    // 5) Persist metadata
+    var entity = new SFile(
+        id,
+        name,
+        description,
+        tags,
+        outPath,
+        scopes,
+        perm,
+        user.Id,
+        ownerWriteOnly
+    );
+    await db.Files.AddAsync(entity);
+    await db.SaveChangesAsync();
 
-            Directory.CreateDirectory(path);
-
-            var filePath = Path.Combine(path, $"{id}");
-
-            using var stream = new FileStream(filePath, FileMode.Create);
-            await Request.Body.CopyToAsync(stream);
-
-            SFile file = new SFile(id,headers.Name, headers.Description,
-                headers.Tags, filePath, headers.Scopes,
-                headers.Perm, user.Id, headers.OwnerWriteOnly
-                );
-
-            await db.Files.AddAsync(file);
-            await db.SaveChangesAsync();
-
-            return Ok(file);
-        }
+    return Ok(entity);
+}
 
 
 

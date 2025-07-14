@@ -11,9 +11,9 @@ interface ProjectOverviewProps {
 
 export function ProjectOverview({ project }: ProjectOverviewProps) {
   return (
-    <div className="p-6 h-full w-full">
+    <div className="p-4 h-full w-full">
       <div className="space-y-4 text-left flex flex-col items-center">
-        <div className="w-full max-w-2xl">
+        <div className="w-full max-w-4xl">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             Opis projektu
           </h2>
