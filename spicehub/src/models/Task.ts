@@ -6,6 +6,13 @@ export enum TaskStatus
     Problem = 2,
 }
 
+export enum TaskPriority
+{
+    Low = 1,
+    Medium = 2,
+    High = 3
+}
+
 export interface Section 
 {
     id: string;
@@ -19,13 +26,13 @@ export interface Task
     scopesRequired: string[]
     dependencies: string[]
     status: TaskStatus
-    priority: Number
+    priority: TaskPriority
     name: string
     description: string
-    percentage: Number
+    percentage: number
     created: Date
     creator: string
     deadlineDate: Date
     sectionId: string
-    finished: Date | undefined | null | unknown
+    finished: Date 
 }

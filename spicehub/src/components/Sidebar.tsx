@@ -65,17 +65,17 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
             </Button>
           </div>
 
-          {pathname.startsWith("/spicelab") && (
-            <Link href="/spicelab/newProject">
-              <Button
-                variant="default"
-                className="w-full flex items-center justify-center gap-2"
-              >
-                <Plus className="h-5 w-5" />
-                <span>Nowy Projekt</span>
-              </Button>
-            </Link>
-          )}
+            {pathname.startsWith("/spicelab") && (
+              <Link href="/spicelab/newProject">
+                <Button
+                  variant="default"
+                  className="w-full flex items-center justify-center gap-2 rounded-full"
+                >
+                  <Plus className="h-5 w-5" />
+                  <span>Nowy Projekt</span>
+                </Button>
+              </Link>
+            )}
 
           <nav className="space-y-4">
             {navItems.map((item) => (
