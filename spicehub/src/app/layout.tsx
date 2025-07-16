@@ -42,11 +42,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {/* global toaster */}
-          <Toaster
-            className="border-gray-200 dark:border-gray-700
-                       bg-white dark:bg-gray-900 text-black dark:text-white
-                       shadow-md"
-          />
+          <Toaster />
 
           {/* wrap all pages in our AppLayout */}
           {children}
