@@ -116,23 +116,9 @@ export default function ProjectPage({
   const handleStatusUpdate = (status: string) =>
     router.push(`/spicelab/project/${id}/statusUpdate?status=${status}`)
 
-  const toggleTaskCompletion = (tid: string) =>
-    setTasks((t) =>
-      t.map((x) =>
-        x.id === tid
-          ? {
-              ...x,
-              status:
-                x.status === TaskStatus.Finished
-                  ? TaskStatus.OnTrack
-                  : TaskStatus.Finished,
-              finished:
-                x.status === TaskStatus.Finished ? undefined : new Date(),
-              percentage: x.status === TaskStatus.Finished ? 0 : 100,
-            }
-          : x
-      )
-    )
+  const toggleTaskCompletion = (tid: string) => {
+    
+  }
 
   const updateTaskStatus = (tid: string, ns: Task["status"]) =>
     setTasks((t) => t.map((x) => (x.id === tid ? { ...x, status: ns } : x)))
