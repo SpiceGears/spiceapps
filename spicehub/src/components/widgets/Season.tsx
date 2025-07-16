@@ -1,7 +1,7 @@
 import { Calendar, Bot, Globe, ExternalLink, Moon } from 'lucide-react';
 
 interface SeasonCardProps {
-  program?: 'FRC' | 'FGC';
+  program?: string;
   seasonName?: string;
   seasonYear?: number;
   kickoffDate?: string;
@@ -34,7 +34,7 @@ const SeasonCard = ({
         <div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
             <ProgramIcon className="text-blue-600 h-5 w-5" />
-            {program} {isOffseason ? 'Offseason' : `Season ${seasonYear}`}
+            {program} {isOffseason ? 'Offseason' : `${seasonYear}`}
           </h2>
 
           {isOffseason ? (
@@ -64,7 +64,7 @@ const SeasonCard = ({
           rel="noopener noreferrer"
           className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
         >
-          Details <ExternalLink className="h-4 w-4" />
+          Więcej <ExternalLink className="h-4 w-4" />
         </a>
       )}
     </div>
