@@ -410,29 +410,39 @@ public async Task<IActionResult> StreamUpload(
             [FromHeader] string? Authorization,
             [FromHeader] string? FolderPath)
         {
-            if (Authorization == null) return Unauthorized("Provide access token to view directories");
-            bool isValid = tc.VerifyToken(Authorization);
-            if (!isValid) { return StatusCode(403, "Invalid Token"); }
+            if (Authorization == null)
+                return Unauthorized("Provide access token to view directories");
+            if (!tc.VerifyToken(Authorization))
+                return StatusCode(403, "Invalid Token");
 
-            User? user = await tc.RetrieveUser(Authorization);
+            var user = await tc.RetrieveUser(Authorization);
             if (user == null) return NotFound("NULL USER");
 
-            var path = string.IsNullOrWhiteSpace(FolderPath) ? "" : FolderPath.TrimStart('/', '\\');
-            if (path.Contains("../") || path.Contains("..\\") || path.Contains("..")) return StatusCode(403, "Invalid characters");
+            var subpath = string.IsNullOrWhiteSpace(FolderPath)
+                ? ""
+                : FolderPath.TrimStart('/', '\\');
+            if (subpath.Contains("../") || subpath.Contains("..\\"))
+                return StatusCode(403, "Invalid characters");
 
-            path = Path.Combine(StoragePath, path);
-            string[] dirs = Directory.GetFiles(path);
+            var fullPath = Path.Combine(StoragePath, subpath);
+            if (!Directory.Exists(fullPath))
+                return Ok(new List<SFile>());
 
-            List<string> properdirs = new List<String>();
+            var guids = Directory.GetFiles(fullPath)
+                .Select(Path.GetFileName)
+                .Select(name =>
+                {
+                    if (Guid.TryParse(name, out var g))
+                        return (Guid?)g;
+                    return null;
+                })
+                .Where(g => g.HasValue)
+                .Select(g => g!.Value)
+                .ToArray();
 
-            foreach (var item in dirs)
-            {
-                properdirs.Add(Path.GetFileName(item));
-            }
-
-            Guid[] ids = properdirs.Select(Guid.Parse).ToArray();
-
-            var files = await db.Files.Where(f => ids.Contains(f.Id)).ToListAsync();
+            var files = await db.Files
+                .Where(f => guids.Contains(f.Id))
+                .ToListAsync();
 
             return Ok(files);
         }

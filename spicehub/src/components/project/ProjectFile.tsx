@@ -34,7 +34,7 @@ interface FilePreviewProps {
   files: SFile[];
 }
 
-async function getFileUrl(id: string): Promise<string|undefined> {
+async function getFileUrl(id: string): Promise<string | undefined> {
   try {
     const backend = await getBackendUrl();
     if (!backend) throw new Error();
@@ -53,16 +53,16 @@ async function getFileUrl(id: string): Promise<string|undefined> {
 
 function getFileType(name: string) {
   const ext = name.split(".").pop()?.toLowerCase() || "";
-  if (["jpg","jpeg","png","gif","bmp","webp","svg"].includes(ext)) return "image";
-  if (["mp4","avi","mov","wmv","flv","webm","mkv"].includes(ext)) return "video";
-  if (["mp3","wav","ogg","flac","aac","m4a"].includes(ext)) return "audio";
+  if (["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg"].includes(ext)) return "image";
+  if (["mp4", "avi", "mov", "wmv", "flv", "webm", "mkv"].includes(ext)) return "video";
+  if (["mp3", "wav", "ogg", "flac", "aac", "m4a"].includes(ext)) return "audio";
   if (ext === "pdf") return "pdf";
-  if (["doc","docx"].includes(ext)) return "docx";
+  if (["doc", "docx"].includes(ext)) return "docx";
   return "other";
 }
 
 const SingleFilePreview = ({ file }: { file: SFile }) => {
-  const [url, setUrl] = useState<string|null>(null);
+  const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -106,7 +106,7 @@ const SingleFilePreview = ({ file }: { file: SFile }) => {
             <Download size={16} className="mr-2" />
             Pobierz
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={() => {}}>
+          <DropdownMenuItem onSelect={() => { }}>
             <Trash size={16} className="mr-2" />
             Usuń
           </DropdownMenuItem>
@@ -207,23 +207,43 @@ export default function ProjectFile({ project }: ProjectFileProps) {
   const [drag, setDrag] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const fetchFiles = async () => {
-    try {
-      const b = await getBackendUrl();
-      if (!b) throw new Error();
-      const token = getCookie("accessToken") || "";
-      const res = await fetch(`${b}/files/folders/getFiles`, {
+const fetchFiles = async () => {
+  try {
+    const backendUrl = await getBackendUrl();
+    if (!backendUrl) throw new Error("No backend URL");
+
+    const token = getCookie("accessToken") || "";
+    const res = await fetch(
+      `${backendUrl}/files/folders/getFiles`,
+      {
         headers: {
           Authorization: token,
           FolderPath: `proj-${project.id}`,
         },
-      });
-      if (!res.ok) throw await res.json();
-      setFiles(await res.json());
-    } catch {
-      toast.error("Błąd", { description: "Nie udało się pobrać plików." });
+      }
+    );
+
+    // If your API returns 500 when no files:
+    if (res.status === 500) {
+      setFiles([]);
+      return;
     }
-  };
+
+    if (!res.ok) {
+      // real errors
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Unknown error");
+    }
+
+    // 200 with a real payload (possibly an empty array)
+    const files = await res.json();
+    setFiles(files);
+  } catch (e) {
+    toast.error("Błąd", {
+      description: "Nie udało się pobrać plików.",
+    });
+  }
+};
 
   useEffect(() => {
     fetchFiles();
@@ -272,11 +292,10 @@ export default function ProjectFile({ project }: ProjectFileProps) {
         className={`mt-6 p-8 h-48 border-2 border-dashed rounded-lg
                     flex flex-col items-center justify-center
                     transition-colors cursor-pointer
-                    ${
-                      drag
-                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                        : "border-gray-300 dark:border-gray-600"
-                    }`}
+                    ${drag
+            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+            : "border-gray-300 dark:border-gray-600"
+          }`}
         onDrop={(e) => {
           e.preventDefault();
           setDrag(false);
