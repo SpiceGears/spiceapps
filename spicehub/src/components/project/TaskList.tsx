@@ -151,36 +151,61 @@ export function TaskList({
     e.dataTransfer.setData("text/plain", taskId);
     e.dataTransfer.effectAllowed = "move";
   };
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-  };
-  const handleDrop = (
-    e: React.DragEvent,
-    newSectionId: string,
-    dropZone: HTMLElement
-  ) => {
-    e.preventDefault();
-    // const taskId = e.dataTransfer.getData("text/plain");
-    // const fromSec = sections.find(
-    //   (s) => Array.isArray(s.tasks) && s.tasks.some((t) => t.id === taskId)
-    // );
-    // if (taskId && fromSec) {
-    //   onMoveToSection(taskId, newSectionId);
-    //   setSections((secs) =>
-    //     secs.map((sec) => {
-    //       const oldTasks = Array.isArray(sec.tasks) ? sec.tasks : [];
-    //       let newTasks = oldTasks.filter((t) => t.id !== taskId);
-    //       if (sec.id === newSectionId) {
-    //         const moved = (fromSec.tasks || []).filter((t) => t.id === taskId);
-    //         newTasks = [...newTasks, ...moved];
-    //       }
-    //       return { ...sec, tasks: newTasks };
-    //     })
-    //   );
-    // }
-    // dropZone.classList.remove("drag-over");
-  };
+const handleDragOver = (e: React.DragEvent) => {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "move";
+};
+  const handleDrop = async (
+  e: React.DragEvent,
+  newSectionId: string,
+  dropZone: HTMLElement
+) => {
+  e.preventDefault();
+  const taskId = e.dataTransfer.getData("text/plain");
+  
+  if (!taskId) return;
+  
+  // Find the task being moved
+  const task = tasks.find(t => t.id === taskId);
+  if (!task || task.sectionId === newSectionId) {
+    dropZone.classList.remove("drag-over");
+    return;
+  }
+  
+  try {
+    // Update backend first
+    const backend = await getBackendUrl();
+    const token = getCookie("accessToken");
+    
+    const response = await fetch(`${backend}/api/project/${projectId}/${taskId}/moveTo`, {
+      method: "PUT",
+      headers: {
+        ...(token ? { Authorization: token } : {}),
+        "SectionId": newSectionId, // Pass SectionId as header
+      },
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to move task: ${errorText}`);
+    }
+    
+    // Get the updated task from response
+    const updatedTask = await response.json();
+    
+    // Update local state with the updated task
+    onMoveToSection(taskId, newSectionId);
+    
+    // Optional: Show success message
+    toast.success("Task moved successfully");
+    
+  } catch (error) {
+    console.error("Error moving task:", error);
+    toast.error("Failed to move task");
+  }
+  
+  dropZone.classList.remove("drag-over");
+};
   const handleDragEnter = (e: React.DragEvent) => {
     e.currentTarget.classList.add("drag-over");
   };

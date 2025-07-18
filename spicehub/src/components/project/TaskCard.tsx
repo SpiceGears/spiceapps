@@ -6,6 +6,7 @@ import {
   Trash2Icon,
   Users,
   User,
+  Check,
 } from "lucide-react";
 import {
   Avatar,
@@ -113,6 +114,7 @@ export function TaskCard({
   const [isEditingTask, setIsEditingTask] = useState(false);
 
   const ctx = useContext(projectContext);
+  const isCompleted = task.status === TaskStatus.Finished;
 
   const handleDragStart = (e: React.DragEvent) => {
     setIsDragging(true);
@@ -123,77 +125,81 @@ export function TaskCard({
     setIsDragging(false);
   };
 
-const renderAssignedUsers = () => {
-  const assigned = task.assignedUsers || [];
+  const handleToggleCompletion = () => {
+    onToggleCompletion(task.id);
+  };
 
-  // 0 users → Unassigned
-  if (assigned.length === 0) {
+  const renderAssignedUsers = () => {
+    const assigned = task.assignedUsers || [];
+
+    // 0 users → Unassigned
+    if (assigned.length === 0) {
+      return (
+        <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
+          <Avatar className="h-4 w-4">
+            <AvatarFallback>
+              <User className="h-4 w-4" />
+            </AvatarFallback>
+          </Avatar>
+          <span className="text-xs">Nieprzypisane</span>
+        </div>
+      );
+    }
+
+    // more than 2 users → avatars only, overlapped + tooltip listing all names
     return (
-      <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500">
-        <Avatar className="h-4 w-4">
-          <AvatarFallback>
-            <User className="h-4 w-4" />
-          </AvatarFallback>
-        </Avatar>
-        <span className="text-xs">Nieprzypisane</span>
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex items-center -space-x-2 cursor-pointer">
+            {assigned.map((userId) => {
+              const user = ctx.users.find((u) => u.id === userId);
+              const initials = user
+                ? `${user.firstName[0]}${user.lastName[0]}`
+                : "";
+              return (
+                <Avatar
+                  key={userId}
+                  className="h-6 w-6 ring-2 ring-white dark:ring-gray-800"
+                >
+                  {user?.avatarSet && (
+                    <AvatarImage
+                      src={undefined}
+                      alt={`${user.firstName} ${user.lastName}`}
+                    />
+                  )}
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+              );
+            })}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="top" align="center" className="max-w-xs">
+          <div className="flex flex-col space-y-1">
+            {assigned.map((userId) => {
+              const user = ctx.users.find((u) => u.id === userId);
+              if (!user) return null;
+              return (
+                <span
+                  key={userId}
+                  className="text-sm text-gray-200 dark:text-gray-800"
+                >
+                  {user.firstName} {user.lastName}
+                </span>
+              );
+            })}
+          </div>
+        </TooltipContent>
+      </Tooltip>
     );
-  }
+  };
 
-
-  // more than 2 users → avatars only, overlapped + tooltip listing all names
-return (
-  <Tooltip>
-    <TooltipTrigger asChild>
-      <div className="flex items-center -space-x-2 cursor-pointer">
-        {assigned.map((userId) => {
-          const user = ctx.users.find((u) => u.id === userId);
-          const initials = user
-            ? `${user.firstName[0]}${user.lastName[0]}`
-            : "";
-          return (
-            <Avatar
-              key={userId}
-              className="h-6 w-6 ring-2 ring-white dark:ring-gray-800"
-            >
-              {user?.avatarSet && (
-                <AvatarImage
-                  src={undefined}
-                  alt={`${user.firstName} ${user.lastName}`}
-                />
-              )}
-              <AvatarFallback>{initials}</AvatarFallback>
-            </Avatar>
-          );
-        })}
-      </div>
-    </TooltipTrigger>
-    <TooltipContent side="top" align="center" className="max-w-xs">
-      <div className="flex flex-col space-y-1">
-        {assigned.map((userId) => {
-          const user = ctx.users.find((u) => u.id === userId);
-          if (!user) return null;
-          return (
-            <span
-              key={userId}
-              className="text-sm text-gray-200 dark:text-gray-800"
-            >
-              {user.firstName} {user.lastName}
-            </span>
-          );
-        })}
-      </div>
-    </TooltipContent>
-  </Tooltip>
-);
-};
   return (
     <div
       className={`group relative border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all duration-200 min-h-[160px] ${
         isDragging
           ? "opacity-30 scale-95 shadow-2xl ring-2 ring-blue-400 ring-opacity-50"
           : ""
-      }`}
+      } ${isCompleted ? "bg-green-50 dark:bg-green-900/10" : ""}`}
     >
       {/* Drag Handle */}
       <div
@@ -213,14 +219,35 @@ return (
 
       {/* Card Content */}
       <div className="flex items-start gap-4 p-5 pl-12">
-        {/* No checkbox, but you can add one for "finished" */}
+        {/* Completion Checkbox */}
+        <div className="flex-shrink-0 pt-1">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleToggleCompletion}
+                className={`flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all duration-200 ${
+                  isCompleted
+                    ? "bg-green-500 border-green-500 text-white hover:bg-green-600 hover:border-green-600"
+                    : "border-gray-300 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20"
+                }`}
+                title={isCompleted ? "Oznacz jako niezakończone" : "Oznacz jako ukończone"}
+              >
+                {isCompleted && <Check className="h-3 w-3" />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              {isCompleted ? "Oznacz jako niezakończone" : "Oznacz jako ukończone"}
+            </TooltipContent>
+          </Tooltip>
+        </div>
+
         <div className="flex-1 min-w-0 space-y-3">
           {/* Header with title and menu */}
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <h4
-                className={`font-medium text-base leading-tight ${
-                  task.status === TaskStatus.Finished
+                className={`font-medium text-base leading-tight transition-all duration-200 ${
+                  isCompleted
                     ? "line-through text-gray-500 dark:text-gray-400"
                     : "text-gray-900 dark:text-gray-100"
                 }`}
@@ -228,7 +255,11 @@ return (
                 {task.name}
               </h4>
               {task.description && (
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+                <p className={`text-sm mt-2 line-clamp-2 transition-all duration-200 ${
+                  isCompleted
+                    ? "text-gray-400 dark:text-gray-500"
+                    : "text-gray-600 dark:text-gray-400"
+                }`}>
                   {task.description}
                 </p>
               )}

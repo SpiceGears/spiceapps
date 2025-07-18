@@ -36,6 +36,7 @@ import { UserInfo } from "@/models/User"
 import { getCookie } from "typescript-cookie"
 import { getBackendUrl } from "@/app/serveractions/backend-url"
 import { projectContext } from "./projectContext"
+import { toast } from "sonner"
 
 export default function ProjectPage({
   params,
@@ -118,15 +119,80 @@ export default function ProjectPage({
   const handleStatusUpdate = (status: string) =>
     router.push(`/spicelab/project/${id}/statusUpdate?status=${status}`)
 
-  const toggleTaskCompletion = (tid: string) => {
+const toggleTaskCompletion = async (tid: string) => {
+  try {
+    // Find the current task
+    const currentTask = tasks.find(t => t.id === tid);
+    if (!currentTask) {
+      console.error("Task not found");
+      return;
+    }
 
+    // Determine new status - toggle between Finished and OnTrack
+    const newStatus = currentTask.status === TaskStatus.Finished 
+      ? TaskStatus.OnTrack 
+      : TaskStatus.Finished;
+
+    // Get backend URL and auth token
+    const backend = await getBackendUrl();
+    const token = getCookie("accessToken");
+    
+    if (!backend || !token) {
+      throw new Error("Missing backend URL or auth token");
+    }
+
+    // Make API call
+    const response = await fetch(`${backend}/api/project/${id}/${tid}/updateStatus`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token,
+      },
+      body: JSON.stringify(newStatus),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to update task status: ${errorText}`);
+    }
+
+    // Get updated task from response
+    const updatedTask = await response.json();
+
+    // Update local state
+    setTasks(currentTasks => 
+      currentTasks.map(task => 
+        task.id === tid 
+          ? { ...task, status: newStatus, finished: updatedTask.finished }
+          : task
+      )
+    );
+
+    // Show success message
+    const message = newStatus === TaskStatus.Finished 
+      ? "Zadanie oznaczone jako ukończone"
+      : "Zadanie oznaczone jako w trakcie";
+    
+    toast.success(message);
+
+  } catch (error) {
+    console.error("Error toggling task completion:", error);
+    toast.error("Nie udało się zaktualizować statusu zadania");
   }
+};
 
   const updateTaskStatus = (tid: string, ns: Task["status"]) =>
     setTasks((t) => t.map((x) => (x.id === tid ? { ...x, status: ns } : x)))
 
-  const moveTaskToSection = (tid: string, sec: string) =>
-    setTasks((t) => t.map((x) => (x.id === tid ? { ...x, section: sec } : x)))
+const moveTaskToSection = (tid: string, newSectionId: string) => {
+  setTasks((currentTasks) => 
+    currentTasks.map((task) => 
+      task.id === tid 
+        ? { ...task, sectionId: newSectionId }
+        : task
+    )
+  );
+};
 
   const deleteTasksById = (ids: string[]) =>
     setTasks((t) => t.filter((x) => !ids.includes(x.id)))
