@@ -52,10 +52,10 @@ export default function ProjectPage({
   const [events, setEvents] = useState<ProjectUpdateEntry[]>([])
   const [refresh, setRefresh] = useState(false)
   const [isEditingProject, setIsEditingProject] = useState(false)
-
   const [loadingProject, setLoadingProject] = useState(true)
   const [loadingTasks, setLoadingTasks] = useState(true)
-  const loading = loadingProject || loadingTasks
+  const [loadingEvents, setLoadingEvents] = useState(true)
+  const loading = loadingProject || loadingTasks || loadingEvents
 
   const now = useMemo(() => new Date(), [])
 
@@ -84,6 +84,7 @@ export default function ProjectPage({
 
       // Tasks, Users, Events in parallel
       setLoadingTasks(true)
+      setLoadingEvents(true)
       try {
         const [tRes, uRes, eRes] = await Promise.all([
           fetch(`${base}/api/project/${id}/getTasks`, {
@@ -106,6 +107,7 @@ export default function ProjectPage({
         console.error(e)
       } finally {
         setLoadingTasks(false)
+        setLoadingEvents(false)
       }
     }
 
@@ -117,7 +119,7 @@ export default function ProjectPage({
     router.push(`/spicelab/project/${id}/statusUpdate?status=${status}`)
 
   const toggleTaskCompletion = (tid: string) => {
-    
+
   }
 
   const updateTaskStatus = (tid: string, ns: Task["status"]) =>
@@ -300,7 +302,11 @@ export default function ProjectPage({
 
             {/* Activity sidebar (hidden on small) */}
 
-              <ActivitySidebar />
+              <ActivitySidebar 
+                events={events}
+                users={users}
+                loading={loadingEvents}
+              />
 
           </div>
 
