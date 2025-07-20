@@ -1,14 +1,8 @@
-// app/project/[id]/page.tsx
 "use client"
 
-import { useState, useEffect, useMemo, use } from "react"
+import { useState, useEffect, use } from "react"
 import { useRouter } from "next/navigation"
-import {
-  Folder,
-  ChevronDown,
-  Pen,
-  Plus,
-} from "lucide-react"
+import { Folder, ChevronDown, Pen } from "lucide-react"
 import {
   Tabs,
   TabsList,
@@ -46,7 +40,7 @@ export default function ProjectPage({
   const { id } = use(params)
   const router = useRouter()
 
-  // State
+  // --- Data state
   const [project, setProject] = useState<Project>()
   const [tasks, setTasks] = useState<Task[]>([])
   const [users, setUsers] = useState<UserInfo[]>([])
@@ -58,9 +52,13 @@ export default function ProjectPage({
   const [loadingEvents, setLoadingEvents] = useState(true)
   const loading = loadingProject || loadingTasks || loadingEvents
 
-  const now = useMemo(() => new Date(), [])
+  // --- Sidebar toggle
+  const [collapsed, setCollapsed] = useState(false)
 
-  // Fetch data
+  // reserve right‐padding on desktop only when sidebar open
+  const contentPadding = collapsed ? "" : "lg:pr-96 xl:pr-[400px]"
+
+  // --- Fetch all
   useEffect(() => {
     const at = getCookie("accessToken")
     if (!at) return
@@ -69,7 +67,7 @@ export default function ProjectPage({
       const base = await getBackendUrl()
       if (!base) throw new Error("Missing BACKEND_URL")
 
-      // Project
+      // project
       setLoadingProject(true)
       try {
         const res = await fetch(`${base}/api/project/${id}`, {
@@ -83,7 +81,7 @@ export default function ProjectPage({
         setLoadingProject(false)
       }
 
-      // Tasks, Users, Events in parallel
+      // tasks/users/updates
       setLoadingTasks(true)
       setLoadingEvents(true)
       try {
@@ -115,143 +113,125 @@ export default function ProjectPage({
     fetchAll()
   }, [id, refresh])
 
-  // Handlers
+  // --- Handlers
   const handleStatusUpdate = (status: string) =>
     router.push(`/spicelab/project/${id}/statusUpdate?status=${status}`)
 
-const toggleTaskCompletion = async (tid: string) => {
-  try {
-    // Find the current task
-    const currentTask = tasks.find(t => t.id === tid);
-    if (!currentTask) {
-      console.error("Task not found");
-      return;
-    }
+  const toggleTaskCompletion = async (tid: string) => {
+    try {
+      const t = tasks.find((x) => x.id === tid)
+      if (!t) return
+      const newStatus =
+        t.status === TaskStatus.Finished
+          ? TaskStatus.OnTrack
+          : TaskStatus.Finished
 
-    // Determine new status - toggle between Finished and OnTrack
-    const newStatus = currentTask.status === TaskStatus.Finished 
-      ? TaskStatus.OnTrack 
-      : TaskStatus.Finished;
+      const base = await getBackendUrl()
+      const token = getCookie("accessToken")
+      if (!base || !token) throw new Error("Missing config")
 
-    // Get backend URL and auth token
-    const backend = await getBackendUrl();
-    const token = getCookie("accessToken");
-    
-    if (!backend || !token) {
-      throw new Error("Missing backend URL or auth token");
-    }
-
-    // Make API call
-    const response = await fetch(`${backend}/api/project/${id}/${tid}/updateStatus`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token,
-      },
-      body: JSON.stringify(newStatus),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to update task status: ${errorText}`);
-    }
-
-    // Get updated task from response
-    const updatedTask = await response.json();
-
-    // Update local state
-    setTasks(currentTasks => 
-      currentTasks.map(task => 
-        task.id === tid 
-          ? { ...task, status: newStatus, finished: updatedTask.finished }
-          : task
+      const res = await fetch(
+        `${base}/api/project/${id}/${tid}/updateStatus`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+          body: JSON.stringify(newStatus),
+        }
       )
-    );
+      if (!res.ok) throw new Error(await res.text())
+      const updated = await res.json()
 
-    // Show success message
-    const message = newStatus === TaskStatus.Finished 
-      ? "Zadanie oznaczone jako ukończone"
-      : "Zadanie oznaczone jako w trakcie";
-    
-    toast.success(message);
-
-  } catch (error) {
-    console.error("Error toggling task completion:", error);
-    toast.error("Nie udało się zaktualizować statusu zadania");
+      setTasks((lst) =>
+        lst.map((x) =>
+          x.id === tid
+            ? { ...x, status: newStatus, finished: updated.finished }
+            : x
+        )
+      )
+      toast.success(
+        newStatus === TaskStatus.Finished
+          ? "Zadanie oznaczone jako ukończone"
+          : "Zadanie oznaczone jako w trakcie"
+      )
+    } catch {
+      toast.error("Nie udało się zaktualizować statusu zadania")
+    }
   }
-};
 
   const updateTaskStatus = (tid: string, ns: Task["status"]) =>
-    setTasks((t) => t.map((x) => (x.id === tid ? { ...x, status: ns } : x)))
-
-const moveTaskToSection = (tid: string, newSectionId: string) => {
-  setTasks((currentTasks) => 
-    currentTasks.map((task) => 
-      task.id === tid 
-        ? { ...task, sectionId: newSectionId }
-        : task
+    setTasks((lst) =>
+      lst.map((x) => (x.id === tid ? { ...x, status: ns } : x))
     )
-  );
-};
+
+  const moveTaskToSection = (tid: string, newSectionId: string) =>
+    setTasks((lst) =>
+      lst.map((x) =>
+        x.id === tid ? { ...x, sectionId: newSectionId } : x
+      )
+    )
 
   const deleteTasksById = (ids: string[]) =>
-    setTasks((t) => t.filter((x) => !ids.includes(x.id)))
+    setTasks((lst) => lst.filter((x) => !ids.includes(x.id)))
 
   const createTask = async (data: NewTaskPayload) => {
-    const base = await getBackendUrl()
-    const at = getCookie("accessToken")
-    if (!base || !at) throw new Error("Missing config")
+    try {
+      const base = await getBackendUrl()
+      const token = getCookie("accessToken")
+      if (!base || !token) throw new Error("Missing config")
 
-    const body = {
-      assignedUsers: data.assignedUsers,
-      name: data.name,
-      description: data.description,
-      dependencies: data.dependencies,
-      percentage: data.percentage,
-      status: data.status,
-      priority: data.priority,
-      deadlineDate: data.deadlineDate,
-    }
-    const res = await fetch(
-      `${base}/api/project/${project?.id ?? id}/${data.sectionId}/create`,
-      {
-        method: "POST",
-        headers: { Authorization: at, "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+      const body = {
+        assignedUsers: data.assignedUsers,
+        name: data.name,
+        description: data.description,
+        dependencies: data.dependencies,
+        percentage: data.percentage,
+        status: data.status,
+        priority: data.priority,
+        deadlineDate: data.deadlineDate,
       }
-    )
-    if (!res.ok) {
-      console.error(await res.text())
-    } else {
+
+      const res = await fetch(
+        `${base}/api/project/${id}/${data.sectionId}/create`,
+        {
+          method: "POST",
+          headers: { Authorization: token, "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }
+      )
+      if (!res.ok) throw new Error(await res.text())
       const newT = (await res.json()) as Task
-      setTasks((t) => [...t, newT])
-      setRefresh((r) => !r)
+      setTasks((lst) => [...lst, newT])
+      setRefresh((f) => !f)
+    } catch (e) {
+      console.error(e)
     }
   }
 
   return (
     <projectContext.Provider
-      value={{
-        project,
-        tasks,
-        events,
-        users,
-        loading,
-        refresh,
-        setRefresh,
-      }}
+      value={{ project, tasks, events, users, loading, refresh, setRefresh }}
     >
-      <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900">
+      <div className="flex flex-col h-screen overflow-hidden bg-white dark:bg-gray-900">
         <Tabs
           defaultValue="przeglad"
-          className="flex flex-col flex-1"
+          className="flex flex-col flex-1 overflow-hidden"
         >
-          {/* HEADER + TABS LIST */}
-<div className="px-4 sm:px-6 lg:px-8 py-4 border-b border-gray-200 dark:border-gray-700">
-  <div className="flex flex-col items-start gap-y-2">
+          {/* HEADER + TABS */}
+          <div
+            className={`
+              flex-shrink-0
+              px-4 sm:px-6 lg:px-8 py-4
+              border-b border-gray-200 dark:border-gray-700
+              transition-all duration-300
+              ${contentPadding}
+            `}
+          >
+            <div className="flex flex-col gap-y-2">
               <div className="flex items-center gap-2">
                 <Folder className="h-6 w-6 text-gray-500 dark:text-gray-400" />
-
                 {loadingProject ? (
                   <Skeleton className="h-6 w-32" />
                 ) : (
@@ -259,7 +239,6 @@ const moveTaskToSection = (tid: string, newSectionId: string) => {
                     {project?.name || "Nieznany projekt"}
                   </span>
                 )}
-
                 <DropdownMenu modal={false}>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -283,7 +262,6 @@ const moveTaskToSection = (tid: string, newSectionId: string) => {
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
-
                 <Button
                   variant="outline"
                   size="sm"
@@ -293,8 +271,6 @@ const moveTaskToSection = (tid: string, newSectionId: string) => {
                   Ustaw status
                 </Button>
               </div>
-
-              {/* Tabs triggers */}
               <div className="overflow-x-auto">
                 <TabsList className="flex space-x-2">
                   <TabsTrigger value="przeglad">Przegląd</TabsTrigger>
@@ -305,10 +281,15 @@ const moveTaskToSection = (tid: string, newSectionId: string) => {
             </div>
           </div>
 
-          {/* MAIN + ACTIVITY SIDEBAR */}
-          <div className="flex flex-1 flex-col md:flex-row overflow-hidden">
-            {/* Main content */}
-            <div className="flex-1 overflow-auto p-4 sm:p-6">
+          {/* MAIN + SIDEBAR */}
+          <div className="flex flex-1 overflow-hidden">
+            <main
+              className={`
+      flex-1 overflow-auto no-scrollbar p-4 sm:p-6
+      transition-all duration-300
+      ${contentPadding}
+              `}
+            >
               <TabsContent value="przeglad" className="h-full w-full">
                 {loadingProject ? (
                   <div className="space-y-4">
@@ -326,10 +307,7 @@ const moveTaskToSection = (tid: string, newSectionId: string) => {
                 {loadingTasks ? (
                   <div className="space-y-3">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center space-x-4"
-                      >
+                      <div key={i} className="flex items-center space-x-4">
                         <Skeleton className="h-4 w-4 rounded-full" />
                         <Skeleton className="h-4 w-full" />
                       </div>
@@ -354,39 +332,31 @@ const moveTaskToSection = (tid: string, newSectionId: string) => {
                 {loading ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {Array.from({ length: 3 }).map((_, i) => (
-                      <Skeleton
-                        key={i}
-                        className="h-24 w-full rounded-md"
-                      />
+                      <Skeleton key={i} className="h-24 w-full rounded-md" />
                     ))}
                   </div>
                 ) : (
                   <Dashboard project={project!} tasks={tasks} />
                 )}
               </TabsContent>
-            </div>
+            </main>
 
-            {/* Activity sidebar (hidden on small) */}
-
-              <ActivitySidebar 
-                events={events}
-                users={users}
-                loading={loadingEvents}
-              />
-
+            <ActivitySidebar
+              events={events}
+              users={users}
+              loading={loadingEvents}
+              collapsed={collapsed}
+              setCollapsed={setCollapsed}
+            />
           </div>
-
-          {/* Edit dialog */}
-          <ProjectEditDialog
-            project={project}
-            isOpen={isEditingProject}
-            onClose={() => setIsEditingProject(false)}
-            onSave={(updated) => {
-              console.log("Saved:", updated)
-              setIsEditingProject(false)
-            }}
-          />
         </Tabs>
+
+        <ProjectEditDialog
+          project={project}
+          isOpen={isEditingProject}
+          onClose={() => setIsEditingProject(false)}
+          onSave={() => setIsEditingProject(false)}
+        />
       </div>
     </projectContext.Provider>
   )

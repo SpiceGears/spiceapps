@@ -6,6 +6,9 @@ import Link from "next/link"
 import { Home, Terminal, TestTube, Folder, Plus, X, HardDrive } from "lucide-react"
 import { Button } from "./ui/button"
 import { usePathname } from "next/navigation"
+import { UserInfo } from "@/models/User"
+import { getBackendUrl } from "@/app/serveractions/backend-url"
+import { getCookie } from "typescript-cookie"
 
 interface SidebarProps {
   isOpen: boolean
@@ -14,22 +17,49 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
   const pathname = usePathname()
-  const userData = { isAdmin: true }
+  const [userData, setUserData] = React.useState<UserInfo | null>(null)
 
-  const navItems = React.useMemo(
-    () => [
-      { href: "/dashboard", icon: Home, label: "Strona główna" },
-      { href: "/spicelab", icon: TestTube, label: "SpiceLab" },
-      { href: "/drive", icon: HardDrive, label: "Dysk" },
-      ...(pathname.startsWith("/spicelab")
-        ? [{ href: "/spicelab/project", icon: Folder, label: "Projekty" }]
-        : []),
-      ...(userData.isAdmin
-        ? [{ href: "/admin", icon: Terminal, label: "Admin" }]
-        : []),
-    ],
-    [pathname]
-  )
+  React.useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const backend = await getBackendUrl()
+        const accessToken = getCookie("accessToken")
+
+        if (!backend ||!accessToken) return
+        const res = await fetch(`${backend}/api/user/getInfo`, {
+          method: "GET",
+          headers: {
+            Authorization: accessToken,
+            "Content-Type": "application/json",
+          },
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setUserData(data)
+        }
+        else {
+          console.error("Failed to fetch user data")
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error)
+      }
+    }
+    fetchUser()
+})
+
+const navItems = React.useMemo(
+  () => [
+    { href: "/dashboard", icon: Home, label: "Strona główna" },
+    { href: "/spicelab", icon: TestTube, label: "SpiceLab" },
+    { href: "/spicelab/project", icon: Folder, label: "Projekty" },
+    ...(userData?.roles.some(role => 
+      ['Dominatum', 'Kanclerz', 'Kapitan Działu'].includes(role.name)
+    )
+      ? [{ href: "/admin", icon: Terminal, label: "Admin" }]
+      : []),
+  ],
+  [pathname, userData]
+)
 
   return (
     <>
@@ -65,17 +95,15 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
             </Button>
           </div>
 
-            {pathname.startsWith("/spicelab") && (
-              <Link href="/spicelab/newProject">
-                <Button
-                  variant="default"
-                  className="w-full flex items-center justify-center gap-2 rounded-full"
-                >
-                  <Plus className="h-5 w-5" />
-                  <span>Nowy Projekt</span>
-                </Button>
-              </Link>
-            )}
+          <Link href="/spicelab/newProject">
+            <Button
+              variant="default"
+              className="w-full flex items-center justify-center gap-2 rounded-full"
+            >
+              <Plus className="h-5 w-5" />
+              <span>Nowy Projekt</span>
+            </Button>
+          </Link>
 
           <nav className="space-y-4">
             {navItems.map((item) => (
@@ -107,7 +135,6 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
         `}
       >
         <div className="flex-1 flex flex-col p-4 space-y-6 overflow-y-auto">
-          {pathname.startsWith("/spicelab") && (
             <Link href="/spicelab/newProject">
               <Button
                 variant="default"
@@ -120,7 +147,6 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
                 {isOpen && <span>Nowy Projekt</span>}
               </Button>
             </Link>
-          )}
 
           <nav className="flex-1 flex flex-col space-y-3">
             {navItems.map((item) => (

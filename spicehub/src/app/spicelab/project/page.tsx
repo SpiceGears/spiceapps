@@ -3,18 +3,9 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import {
-  Folder,
-  Plus,
-  Search,
-  Filter,
-  ChevronRight,
-  User,
-  Calendar,
-} from "lucide-react"
+import { Folder, Plus, Search, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -22,14 +13,16 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
+import Link from "next/link"
 import { getBackendUrl } from "@/app/serveractions/backend-url"
 import { getCookie } from "typescript-cookie"
-import { Project, ProjectStatus } from "@/models/Project"
+import {
+  Project,
+  ProjectStatus,
+  ProjectUpdateEntry,
+} from "@/models/Project"
 import ProjectCard from "@/components/project/ProjectCard"
-import { TaskStatus } from "@/models/Task"
 import { ProjectCardSkeleton } from "@/components/project/ProjectCardSkeleton"
-import Link from "next/link"
 
 // Helper to format dates
 function formatDate(dateString?: string | Date) {
@@ -43,10 +36,7 @@ function formatDate(dateString?: string | Date) {
   })
 }
 
-const statusConfig: Record<
-  ProjectStatus,
-  { label: string; color: string }
-> = {
+const statusConfig: Record<ProjectStatus, { label: string; color: string }> = {
   [ProjectStatus.Healthy]: {
     label: "Aktywny",
     color: "bg-green-100 text-green-800",
@@ -65,12 +55,24 @@ const statusConfig: Record<
   },
   [ProjectStatus.Abandoned]: {
     label: "Porzucony",
-    color: "bg-gray-500 bg-white-400"
-  }
+    color: "bg-gray-100 text-gray-800",
+  },
 }
+
+// **Explicit** array of statuses:
+const statusOptions: ProjectStatus[] = [
+  ProjectStatus.Healthy,
+  ProjectStatus.Finished,
+  ProjectStatus.Delayed,
+  ProjectStatus.Endangered,
+  ProjectStatus.Abandoned,
+]
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
+  const [eventsByProject, setEventsByProject] = useState<
+    Record<string, ProjectUpdateEntry[]>
+  >({})
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<"all" | ProjectStatus>(
     "all"
@@ -78,12 +80,14 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
+  // 1) Fetch project list
   useEffect(() => {
     async function fetchProjects() {
       const backend = await getBackendUrl()
       const token = getCookie("accessToken")
       if (!backend || !token) return
 
+      setLoading(true)
       try {
         const res = await fetch(`${backend}/api/project`, {
           headers: {
@@ -92,28 +96,67 @@ export default function ProjectsPage() {
           },
         })
         if (!res.ok) throw new Error("Fetch failed")
-        const data = (await res.json()) as Project[]
-        setProjects(data)
+        setProjects((await res.json()) as Project[])
       } catch (e) {
         console.error(e)
       } finally {
         setLoading(false)
       }
     }
-
     fetchProjects()
   }, [])
 
+  // 2) Fetch updates for each project
+  useEffect(() => {
+    if (projects.length === 0) return
+
+    async function fetchAllEvents() {
+      const backend = await getBackendUrl()
+      const token = getCookie("accessToken")
+      if (!backend || !token) return
+
+      try {
+        const entries = await Promise.all(
+          projects.map(async (p) => {
+            try {
+              const res = await fetch(
+                `${backend}/api/project/${p.id}/updates`,
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: token,
+                  },
+                }
+              )
+              if (!res.ok) return [p.id, []] as const
+              const arr = (await res.json()) as ProjectUpdateEntry[]
+              return [p.id, arr] as const
+            } catch {
+              return [p.id, []] as const
+            }
+          })
+        )
+        setEventsByProject(Object.fromEntries(entries))
+      } catch (e) {
+        console.error(e)
+      }
+    }
+
+    fetchAllEvents()
+  }, [projects])
+
+  // Filter projects
   const filtered = projects.filter((p) => {
+    const q = searchQuery.toLowerCase()
     const matchesSearch =
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase())
+      p.name.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q)
     const matchesStatus =
-      statusFilter === "all" || p.status == statusFilter
+      statusFilter === "all" || p.status === statusFilter
     return matchesSearch && matchesStatus
   })
 
-  function handleClick(id: string) {
+  const handleClick = (id: string) => {
     router.push(`/spicelab/project/${id}`)
   }
 
@@ -131,6 +174,7 @@ export default function ProjectsPage() {
               className="pl-10"
             />
           </div>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="gap-2">
@@ -146,9 +190,7 @@ export default function ProjectsPage() {
                 Wszystkie
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              {(
-                Object.keys(statusConfig) as unknown as ProjectStatus[]
-              ).map((st) => (
+              {statusOptions.map((st) => (
                 <DropdownMenuItem
                   key={st}
                   onClick={() => setStatusFilter(st)}
@@ -170,11 +212,14 @@ export default function ProjectsPage() {
         ) : filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((p) => (
-              <ProjectCard key={p.id} project={p}></ProjectCard>
+              <ProjectCard
+                key={p.id}
+                project={p}
+                events={eventsByProject[p.id] || []}
+              />
             ))}
           </div>
         ) : (
-          // Empty State
           <div className="text-center py-20">
             <Folder className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">Brak projektów</h3>

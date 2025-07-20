@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { getCookie } from 'typescript-cookie'
 import { getBackendUrl } from '../serveractions/backend-url'
 import {
@@ -28,7 +29,6 @@ import {
 import { Task, TaskPriority, TaskStatus } from '@/models/Task'
 import { Project, ProjectStatus } from '@/models/Project'
 import { UserInfo } from '@/models/User'
-import { get } from 'http'
 
 const getTaskStatusLabel = (status: TaskStatus): string => {
   switch (status) {
@@ -68,7 +68,6 @@ const getTaskPriorityBadge = (prio: TaskPriority): string => {
       return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
   }
 }
-
 
 const getProjectStatusLabel = (st: ProjectStatus): string => {
   switch (st) {
@@ -127,6 +126,7 @@ function StatCard({
 }
 
 export default function HomePage() {
+  const router = useRouter()
   const [user, setUser] = useState<UserInfo | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -171,6 +171,14 @@ export default function HomePage() {
     loadAll()
   }, [])
 
+  // const handleTaskClick = (task: Task) => {
+  //   // Navigate to project that contains this task
+  //   // Assuming task has a projectId field - adjust if different
+  //   if (task.dependencies) {
+  //     router.push(`/spicelab/project/${task.dependencies[0]}`)
+  //   }
+  // }
+
   if (loading)
     return (
       <div className="flex h-screen items-center justify-center">
@@ -203,7 +211,7 @@ export default function HomePage() {
   return (
     <div
       className="
-      min-h-screen p-8
+      min-h-screen p-4 sm:p-6 lg:p-8
       bg-gray-50 text-gray-900
       dark:bg-gray-900 dark:text-gray-100
     "
@@ -218,7 +226,7 @@ export default function HomePage() {
             </AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-3xl font-bold">
+            <h1 className="text-2xl sm:text-3xl font-bold">
               Witaj, {user?.firstName} {user?.lastName}
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -229,7 +237,7 @@ export default function HomePage() {
       </div>
 
       {/* Statystyki */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
         <StatCard
           title="Wszystkie zadania"
           value={tasks.length}
@@ -245,7 +253,7 @@ export default function HomePage() {
       </div>
 
       {/* Główne widgety */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
         {/* Zadania */}
         <Card className="h-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-sm">
           <CardHeader className="flex items-center justify-between pb-0">
@@ -253,14 +261,14 @@ export default function HomePage() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="upcoming" className="space-y-4">
-              <TabsList>
-                <TabsTrigger value="upcoming">
+              <TabsList className="flex w-full grid-cols-3">
+                <TabsTrigger value="upcoming" className="text-xs sm:text-sm">
                   Aktualne ({upcoming.length})
                 </TabsTrigger>
-                <TabsTrigger value="overdue">
+                <TabsTrigger value="overdue" className="text-xs sm:text-sm">
                   Zaległe ({overdue.length})
                 </TabsTrigger>
-                <TabsTrigger value="done">
+                <TabsTrigger value="done" className="text-xs sm:text-sm">
                   Ukończone ({done.length})
                 </TabsTrigger>
               </TabsList>
@@ -287,36 +295,35 @@ export default function HomePage() {
                         {data.map((t) => (
                           <li
                             key={t.id}
+                            // onClick={() => handleTaskClick(t)}
                             className="
                               flex flex-col p-4
                               bg-white dark:bg-gray-900
                               border border-gray-200 dark:border-gray-700
-                              rounded-lg
+                              rounded-lg cursor-pointer
                               hover:bg-gray-50 dark:hover:bg-gray-800
-                              transition
+                              hover:shadow-md
+                              transition-all duration-200
                             "
                           >
                             {/* Nagłówek */}
-                            <div className="flex justify-between items-start">
-                              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-100">
+                            <div className="flex justify-between items-start gap-3">
+                              <div className="flex items-center gap-2 text-gray-700 dark:text-gray-100 min-w-0 flex-1">
                                 {key === 'upcoming' && (
-                                  <Clock className="text-gray-500 dark:text-gray-400" />
+                                  <Clock className="text-gray-500 dark:text-gray-400 flex-shrink-0" size={16} />
                                 )}
                                 {key === 'overdue' && (
-                                  <AlertTriangle className="text-red-500" />
+                                  <AlertTriangle className="text-red-500 flex-shrink-0" size={16} />
                                 )}
                                 {key === 'done' && (
-                                  <CheckCircle className="text-green-500" />
+                                  <CheckCircle className="text-green-500 flex-shrink-0" size={16} />
                                 )}
-                                <span className="font-medium">{t.name}</span>
+                                <span className="font-medium truncate">{t.name}</span>
                               </div>
                               {(key === 'upcoming' || key === 'overdue') && (
-                                <span className="text-xs text-gray-500 dark:text-gray-400">
-                                  Termin:{' '}
+                                <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
                                   {t.deadlineDate
-                                    ? new Date(
-                                        t.deadlineDate
-                                      ).toLocaleDateString()
+                                    ? new Date(t.deadlineDate).toLocaleDateString()
                                     : '-'}
                                 </span>
                               )}
@@ -331,7 +338,7 @@ export default function HomePage() {
                             <div className="mt-3 flex flex-wrap gap-2">
                               <span
                                 className={`
-                                px-2 py-0.5 rounded-full text-xs
+                                px-2 py-0.5 rounded-full text-xs whitespace-nowrap
                                 ${getTaskStatusBadge(t.status)}
                               `}
                               >
@@ -339,7 +346,7 @@ export default function HomePage() {
                               </span>
                               <span
                                 className={`
-                                px-2 py-0.5 rounded-full text-xs
+                                px-2 py-0.5 rounded-full text-xs whitespace-nowrap
                                 ${getTaskPriorityBadge(t.priority)}
                               `}
                               >
@@ -349,12 +356,12 @@ export default function HomePage() {
 
                             {/* Meta */}
                             <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
-                              <span>
+                              <span className="whitespace-nowrap">
                                 Utworzono:{' '}
                                 {new Date(t.created).toLocaleDateString()}
                               </span>
-                              <span>
-                                <Users className="inline-block w-4 h-4" />{' '}
+                              <span className="flex items-center gap-1 whitespace-nowrap">
+                                <Users className="inline-block w-3 h-3" />{' '}
                                 {t.assignedUsers.length}
                               </span>
                             </div>
@@ -389,42 +396,38 @@ export default function HomePage() {
             </Link>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 mt-4">
               {projects.map((p) => (
-                <div
-                  key={p.id}
-                  className="
-                    p-4 bg-white dark:bg-gray-900
-                    border border-gray-200 dark:border-gray-700
-                    rounded-lg shadow-sm hover:shadow
-                    transition
-                  "
-                >
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate">
-                      {p.name}
-                    </h3>
-                    <span
-                      className={`
-                        px-2 py-0.5 rounded-full text-xs
-                        ${getProjectStatusBadge(p.status)}
-                      `}
-                    >
-                      {getProjectStatusLabel(p.status)}
-                    </span>
+                <Link key={p.id} href={`/spicelab/project/${p.id}`}>
+                  <div
+                    className="
+                      p-4 bg-white dark:bg-gray-900
+                      border border-gray-200 dark:border-gray-700
+                      rounded-lg shadow-sm cursor-pointer
+                      hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-800
+                      transition-all duration-200
+                    "
+                  >
+                    {/* Header - responsive layout */}
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                      <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 min-w-0 flex-1">
+                        {p.name}
+                      </h3>
+                      <span
+                        className={`
+                          px-3 py-1 rounded-full text-xs whitespace-nowrap self-start
+                          ${getProjectStatusBadge(p.status)}
+                        `}
+                      >
+                        {getProjectStatusLabel(p.status)}
+                      </span>
+                    </div>
+                    
+                    <p className="mt-3 text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
+                      {p.description}
+                    </p>
                   </div>
-                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
-                    {p.description}
-                  </p>
-                  <div className="mt-4 flex items-center justify-between">
-                    <Link
-                      href={`/projects/${p.id}`}
-                      className="text-sm text-gray-600 dark:text-gray-400 hover:underline"
-                    >
-                      Otwórz
-                    </Link>
-                  </div>
-                </div>
+                </Link>
               ))}
             </div>
           </CardContent>

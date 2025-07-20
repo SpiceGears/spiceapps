@@ -60,14 +60,14 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
         </div>
 
         {/* Center: desktop search only */}
-        <div className="hidden md:block flex-1 mx-4 lg:mx-8 max-w-md">
+        {/* <div className="hidden md:block flex-1 mx-4 lg:mx-8 max-w-md">
           <Searchbar />
-        </div>
+        </div> */}
 
         {/* Right: mobile-search button, notifications, profile */}
         <div className="flex items-center space-x-2 sm:space-x-4">
           {/* show on mobile only */}
-          <Button
+          {/* <Button
             variant="ghost"
             size="icon"
             className="md:hidden text-gray-500 dark:text-gray-400"
@@ -75,9 +75,9 @@ export default function Topbar({ toggleSidebar }: TopbarProps) {
           >
             <SearchIcon className="h-5 w-5" />
             <span className="sr-only">Search</span>
-          </Button>
+          </Button> */}
 
-          <Notifications />
+          {/* <Notifications /> */}
           <ProfileDropdown />
         </div>
       </div>

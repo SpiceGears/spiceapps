@@ -19,56 +19,34 @@ import { Skeleton } from "./ui/skeleton";
 export default function ProfileDropdown() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [backendUrl, setBURL] = useState<string>("");
-  let [userData, setUserData] = useState<UserInfo>({
-    firstName: "Jan",
-    lastName: "Kowalski",
-    id: "00000000-0000-0000-0000-000000000000",
-    email: "test@spicelab.net",
-    roles: [],
-    department: Department.NaDr,
-    birthday: "2024-05-24",
-    coins: 0,
-    createdAt: new Date(),
-    lastLogin: new Date(),
-    isApproved: true,
-    avatarSet: false,
-  })
+  const [userData, setUserData] = useState<UserInfo>();
+  const [backendUrl, setBackendUrl] = useState<string>();
 
   useEffect(() => {
     setLoading(true);
-    let at = getCookie("accessToken");
-    if (!at) { console.error("Cookie error, no Access Token found"); return; }
+    const fetchData = async () => {
+      const url = await getBackendUrl();
+      setBackendUrl(url);
 
-    const fetchData = async (at: string) => {
-      const backend = await getBackendUrl();
-
-      if (!backend) { console.error("no backend, skipping..."); return; }
-            setBURL(backend)
-      const res = await fetch(backend + "/api/user/getInfo",
-        {
-          method: "GET",
-          headers:
-          {
-            Authorization: at,
-          }
-        })
-      if (res.ok) {
-        const json = await res.json();
-        const userinfo: UserInfo = json;
-        console.log(userinfo);
-        setUserData(userinfo)
+      const token = getCookie("accessToken");
+      if (token) {
+        try {
+          const response = await fetch(`${url}/api/user/getInfo`, {
+            headers: {
+              Authorization: token,
+            },
+          });
+          if (!response.ok) throw new Error("Failed to fetch user data");
+          const data: UserInfo = await response.json();
+          setUserData(data);
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
       }
       setLoading(false);
-    }
-    fetchData(at).then();
-    return () => {
-    }
-  }, [])
-
-
-
-
+    };
+    fetchData();
+  }, []); // Empty dependency array means this runs once on mount
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -77,20 +55,29 @@ export default function ProfileDropdown() {
           variant="ghost"
           className="flex items-center space-x-2 text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 focus-visible:ring-0 focus-visible:ring-offset-0"
         >
-          {!loading && <>
-            {!userData.avatarSet && <img
-              src={`https://ui-avatars.com/api/?name=${userData.firstName}+${userData.lastName}&background=random&color=fff`}
-              alt={`${userData.firstName} ${userData.lastName}`}
-              className="w-8 h-8 rounded-full" // Adjusted size to w-8 h-8
-            />}
-            {userData.avatarSet && <img
-              src={`${backendUrl}/api/user/${userData.id}/avatar`}
-              alt={`${userData.firstName} ${userData.lastName}`}
-              className="w-8 h-8 rounded-full" // Adjusted size to w-8 h-8
-            />}
-          </>} {loading && <Skeleton className="w-8 h-8 rounded-full"></Skeleton>}
+          {!loading && (
+            <>
+              {userData?.avatarSet ? ( // Use backendUrl here
+                <img
+                  src={`${getBackendUrl()}/api/user/${userData.id}/avatar`}
+                  alt={`${userData.firstName} ${userData.lastName}`}
+                  className="w-8 h-8 rounded-full"
+                />
+              ) : (
+                // Fallback to ui-avatars.com if avatarSet is false or backendUrl is not yet available
+                <img
+                  src={`https://ui-avatars.com/api/?name=${userData?.firstName}+${userData?.lastName}&background=random&color=fff`}
+                  alt={`${userData?.firstName} ${userData?.lastName}`}
+                  className="w-8 h-8 rounded-full"
+                />
+              )}
+            </>
+          )}
+          {loading && <Skeleton className="w-8 h-8 rounded-full"></Skeleton>}
           <ChevronDown
-            className={`ml-2 h-4 w-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+            className={`ml-2 h-4 w-4 transition-transform duration-200 ${
+              open ? "rotate-180" : ""
+            }`}
           />
         </Button>
       </DropdownMenuTrigger>
@@ -98,11 +85,18 @@ export default function ProfileDropdown() {
         className="w-48 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
         align="end"
       >
-        <DropdownMenuLabel className="text-gray-700 dark:text-gray-100">{userData.firstName} {userData.lastName}
-          {userData.roles.map((val: Role) => {
+        <DropdownMenuLabel className="text-gray-700 dark:text-gray-100">
+          {userData?.firstName} {userData?.lastName}
+          {userData?.roles.map((val: Role) => {
             // Map Department to Badge variant, fallback to "default"
-            const departmentToVariant: Record<Department, 
-              "executive" | "marketing" | "mechanic" | "programmer" | "socialmedia" | "default"
+            const departmentToVariant: Record<
+              Department,
+              | "executive"
+              | "marketing"
+              | "mechanic"
+              | "programmer"
+              | "socialmedia"
+              | "default"
             > = {
               [Department.Executive]: "executive",
               [Department.Marketing]: "marketing",
@@ -123,21 +117,39 @@ export default function ProfileDropdown() {
           })}
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
-        <DropdownMenuItem asChild className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer">
-          <Link href={"/profile/" + userData.id} className="flex items-center w-full text-gray-700 dark:text-gray-100">
+        <DropdownMenuItem
+          asChild
+          className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer"
+        >
+          <Link
+            href={"/profile/" + userData?.id}
+            className="flex items-center w-full text-gray-700 dark:text-gray-100"
+          >
             <User className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-300" />
             <span>Profil</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer">
-          <Link href="/settings" className="flex items-center w-full text-gray-700 dark:text-gray-100">
+        <DropdownMenuItem
+          asChild
+          className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer"
+        >
+          <Link
+            href="/settings"
+            className="flex items-center w-full text-gray-700 dark:text-gray-100"
+          >
             <Cog className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-300" />
             <span>Ustawienia</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
-        <DropdownMenuItem asChild className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer">
-          <Link href="/logout" className="flex items-center w-full text-red-700 dark:text-red-500">
+        <DropdownMenuItem
+          asChild
+          className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer"
+        >
+          <Link
+            href="/logout"
+            className="flex items-center w-full text-red-700 dark:text-red-500"
+          >
             <LogOut className="mr-2 h-4 w-4 text-red-700 dark:text-red-500" />
             <span>Wyloguj się</span>
           </Link>
