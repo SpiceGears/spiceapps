@@ -14,13 +14,14 @@ import { Label } from "@/components/ui/label";
 import { getBackendUrl } from "@/app/serveractions/backend-url";
 import { getCookie } from "typescript-cookie";
 import { Department } from "@/models/User";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function NewProject() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedSubteams, setSelectedSubteams] = useState<Department[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubteamChange = (dept: Department) => {
@@ -29,65 +30,84 @@ export default function NewProject() {
     );
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  // 1) await your server‐action
-  const backend = await getBackendUrl();
-
-  // 2) pull the token
-  const at = getCookie("accessToken");
-  if (!at) {
-    console.error("No access token");
-    return;
-  }
-
-  const departmentScopeRec: Record<Department, string | null> = 
-  {
+  const departmentScopeRec: Record<Department, string | null> = {
     [Department.NaDr]: null,
     [Department.Executive]: "department.executive",
     [Department.Marketing]: "department.marketing",
     [Department.Mechanics]: "department.mechanics",
     [Department.Mentor]: null,
     [Department.Programmers]: "department.programmers",
-    [Department.SocialMedia]: "department.socialmedia"
-  }
-  // 3) convert numeric enum values back to their string names
-  let scopesAsStrings: string[] = [];
-
-  for (const depar of selectedSubteams) 
-  {
-    const str = departmentScopeRec[depar];
-    if (!str) continue;
-    else scopesAsStrings.push(str);
-  }
-
-  
-
-  const payload = {
-    name,      
-    description,        
-    scopes: scopesAsStrings, 
-    status: 0,
-    priority: 0,
+    [Department.SocialMedia]: "department.socialmedia",
   };
 
-  const res = await fetch(`${backend}/api/project/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: at,
-    },
-    body: JSON.stringify(payload),
-  });
+  const departmentLabel: Record<Department, string> = {
+    [Department.NaDr]: "Cała drużyna",
+    [Department.Executive]: "Zarządzanie",
+    [Department.Marketing]: "Marketing",
+    [Department.Mechanics]: "Mechanicy",
+    [Department.Mentor]: "Mentorzy",
+    [Department.Programmers]: "Programiści",
+    [Department.SocialMedia]: "Social Media",
+  };
 
-  if (res.ok) {
-    console.log(await res.json());
-    router.push("/spicelab/project");
-  } else {
-    console.error("Create failed:", res.status, await res.text());
-  }
-};
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const backend = await getBackendUrl();
+
+      const at = getCookie("accessToken");
+      if (!at) {
+        console.error("No access token");
+        return;
+      }
+
+      let scopesAsStrings: string[] = [];
+
+      if (selectedSubteams.length === 0 || selectedSubteams.includes(Department.NaDr)) {
+        const naDrScope = departmentScopeRec[Department.NaDr];
+        if (naDrScope) {
+          scopesAsStrings.push(naDrScope);
+        }
+      } else {
+        for (const depar of selectedSubteams) {
+          const str = departmentScopeRec[depar];
+          if (str) {
+            scopesAsStrings.push(str);
+          }
+        }
+      }
+
+      const payload = {
+        name,
+        description,
+        scopes: scopesAsStrings,
+        status: 0,
+        priority: 0,
+      };
+
+      const res = await fetch(`${backend}/api/project/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: at,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        console.log(await res.json());
+        router.push("/spicelab/project");
+      } else {
+        console.error("Create failed:", res.status, await res.text());
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const enumEntries = Object.entries(Department).filter(
     ([, val]) => typeof val === "number"
@@ -108,6 +128,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             onChange={(e) => setName(e.target.value)}
             required
             placeholder="Wpisz nazwę projektu"
+            disabled={isLoading}
           />
         </div>
         <div>
@@ -121,6 +142,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             rows={4}
             required
             placeholder="Wpisz opis projektu"
+            disabled={isLoading} // Disable textarea while loading
           />
         </div>
         <div>
@@ -133,15 +155,13 @@ const handleSubmit = async (e: React.FormEvent) => {
                 <button
                   type="button"
                   className="w-full border rounded px-3 py-2 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring text-left flex items-center justify-between"
+                  disabled={isLoading}
                 >
                   <span>
                     {selectedSubteams.length === 0
                       ? "Wybierz działy"
-                      : enumEntries
-                          .filter(([_, v]) =>
-                            selectedSubteams.includes(v)
-                          )
-                          .map(([k]) => k)
+                      : selectedSubteams
+                          .map((val) => departmentLabel[val])
                           .join(", ")}
                   </span>
                   <svg
@@ -165,8 +185,9 @@ const handleSubmit = async (e: React.FormEvent) => {
                     key={key}
                     checked={selectedSubteams.includes(val)}
                     onCheckedChange={() => handleSubteamChange(val)}
+                    disabled={isLoading}
                   >
-                    {key}
+                    {departmentLabel[val]}
                   </DropdownMenuCheckboxItem>
                 ))}
               </DropdownMenuContent>
@@ -176,9 +197,13 @@ const handleSubmit = async (e: React.FormEvent) => {
             </small>
           </div>
         </div>
-        <Button type="submit" className="w-full">
-          <Plus className="w-4 h-4 mr-2" />
-          Utwórz projekt
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Plus className="w-4 h-4 mr-2" />
+          )}
+          {isLoading ? "Tworzenie..." : "Utwórz projekt"}
         </Button>
       </form>
     </div>

@@ -117,7 +117,7 @@ export default function ProfileDropdown() {
           })}
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
-        <DropdownMenuItem
+        {/* <DropdownMenuItem
           asChild
           className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer"
         >
@@ -128,7 +128,7 @@ export default function ProfileDropdown() {
             <User className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-300" />
             <span>Profil</span>
           </Link>
-        </DropdownMenuItem>
+        </DropdownMenuItem> */}
         <DropdownMenuItem
           asChild
           className="hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700 cursor-pointer"
