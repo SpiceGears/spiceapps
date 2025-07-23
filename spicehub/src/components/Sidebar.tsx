@@ -45,7 +45,7 @@ export default function Sidebar({ isOpen, toggleSidebar }: SidebarProps) {
       }
     }
     fetchUser()
-})
+}, [])
 
 const navItems = React.useMemo(
   () => [
