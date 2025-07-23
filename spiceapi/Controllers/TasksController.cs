@@ -146,7 +146,7 @@ namespace SpiceAPI.Controllers
             STask? task = db.STasks.FirstOrDefault(t => t.Id == tid);
             if (task == null) { return NotFound("Couldn't find the task of UUID specified"); }
 
-            if (!user.CheckForClaims("tasks.override", db) || user.Id != task.Creator) { return StatusCode(403, "You do not have enough permissions"); }
+            if (!user.CheckForClaims("tasks.override", db) && user.Id != task.Creator) { return StatusCode(403, "You do not have enough permissions"); }
 
             task.AssignedUsers = body.AssignedUsers;
             task.Status = body.Status;
@@ -196,7 +196,7 @@ namespace SpiceAPI.Controllers
             STask? task = db.STasks.FirstOrDefault(t => t.Id == tid);
             if (task == null) { return NotFound("Couldn't find the task of UUID specified"); }
 
-            //if (!user.CheckForClaims("tasks.override", db) || user.Id != task.Creator) { return StatusCode(403, "You do not have enough permissions"); }
+            if (!user.CheckForClaims("tasks.override", db) && user.Id != task.Creator) { return StatusCode(403, "You do not have enough permissions"); }
 
             if (SectionId == null) return BadRequest("You must provide SectionId header");
             Guid sectId = Guid.Empty;
