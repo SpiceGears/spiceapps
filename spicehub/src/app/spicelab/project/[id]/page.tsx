@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
-import { Folder, ChevronDown, Pen, Trash2Icon, Loader2 } from "lucide-react"; // Import Loader2
+import { Folder, ChevronDown, Pen, Trash2Icon, Loader2 } from "lucide-react";
 import {
   Tabs,
   TabsList,
@@ -23,7 +23,7 @@ import { ProjectOverview } from "@/components/project/ProjectOverview";
 import { NewTaskPayload, TaskList } from "@/components/project/TaskList";
 import Dashboard from "@/components/project/Dashboard";
 import { ActivitySidebar } from "@/components/project/ActivitySidebar";
-import { ProjectEditDialog } from "@/components/project/ProjectEditDialog";
+import { ProjectEditDialog } from "@/components/project/ProjectEditDialog"; // No need for specific payload import here
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +33,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"; // Import AlertDialog components
+} from "@/components/ui/alert-dialog";
 import { Task, TaskStatus } from "@/models/Task";
 import { Project, ProjectUpdateEntry } from "@/models/Project";
 import { UserInfo } from "@/models/User";
@@ -50,44 +50,40 @@ export default function ProjectPage({
   const { id } = use(params);
   const router = useRouter();
 
-  // --- Data state
-  const [project, setProject] = useState<Project>();
+  const [project, setProject] = useState<Project | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<UserInfo[]>([]);
   const [events, setEvents] = useState<ProjectUpdateEntry[]>([]);
   const [refresh, setRefresh] = useState(false);
   const [isEditingProject, setIsEditingProject] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false); // New state for delete confirmation
-  const [isDeleting, setIsDeleting] = useState(false); // New state for delete loading
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdatingProject, setIsUpdatingProject] = useState(false);
   const [loadingProject, setLoadingProject] = useState(true);
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const loading = loadingProject || loadingTasks || loadingEvents;
 
-  // --- Sidebar toggle
   const [collapsed, setCollapsed] = useState(false);
-
-  // reserve right‐padding on desktop only when sidebar open
   const contentPadding = collapsed ? "" : "lg:pr-96 xl:pr-[400px]";
 
-  // --- Fetch all
-  useEffect(() => {
-    const at = getCookie("accessToken");
-    if (!at) {
-      // If no access token, redirect to login or show error
-      router.push('/auth/login'); // Example redirect
-      return;
-    }
+  const [backendUrl, setBackendUrl] = useState<string | null>(null);
 
+  useEffect(() => {
     const fetchAll = async () => {
-      const base = await getBackendUrl();
-      if (!base) {
-        toast.error("Brak dostępu do backendu.");
-        // Consider redirecting or showing a global error
+      const at = getCookie("accessToken");
+      if (!at) {
+        router.push("/auth/login");
         return;
       }
 
-      // project
+      const base = await getBackendUrl();
+      if (!base) {
+        toast.error("Brak dostępu do backendu.");
+        return;
+      }
+      setBackendUrl(base);
+
       setLoadingProject(true);
       try {
         const res = await fetch(`${base}/api/project/${id}`, {
@@ -96,10 +92,10 @@ export default function ProjectPage({
         if (!res.ok) {
           if (res.status === 404) {
             toast.error("Projekt nie istnieje.");
-            router.push("/spicelab/project"); // Redirect if project not found
+            router.push("/spicelab/project");
           } else if (res.status === 403) {
             toast.error("Brak uprawnień do widoku projektu.");
-            router.push("/spicelab/project"); // Redirect if unauthorized
+            router.push("/spicelab/project");
           } else {
             throw new Error(`Failed to fetch project: ${res.statusText}`);
           }
@@ -112,7 +108,6 @@ export default function ProjectPage({
         setLoadingProject(false);
       }
 
-      // tasks/users/updates
       setLoadingTasks(true);
       setLoadingEvents(true);
       try {
@@ -151,9 +146,63 @@ export default function ProjectPage({
     };
 
     fetchAll();
-  }, [id, refresh, router]); // Add router to dependency array for clarity
+  }, [id, refresh, router]);
 
-  // --- Handlers
+  // Update Project function: now accepts only editable fields
+  const updateProject = async (editedData: { name: string; description: string }) => {
+    if (!backendUrl || !project) { // Ensure project is not null for its ID and other properties
+      toast.error("Brak dostępu do backendu lub danych projektu.");
+      return;
+    }
+
+    const token = getCookie("accessToken");
+    if (!token) {
+      toast.error("Brak tokena uwierzytelniającego.");
+      return;
+    }
+
+    setIsUpdatingProject(true);
+    try {
+      // Construct the full payload for the API, combining edited data with original project properties
+      const payload = {
+        name: editedData.name,
+        description: editedData.description,
+        scopes: project.scopesRequired, // Use original value
+        status: project.status, // Use original value
+        priority: 0
+      };
+
+      const response = await fetch(
+        `${backendUrl}/api/project/${project.id}/edit`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+          body: JSON.stringify(payload), // Send the constructed payload
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || `Błąd HTTP! Status: ${response.status}`
+        );
+      }
+
+      const result: Project = await response.json();
+      setProject(result);
+      toast.success("Projekt zaktualizowany pomyślnie.");
+    } catch (e: any) {
+      console.error("Błąd podczas aktualizacji projektu:", e.message);
+      toast.error(`Nie udało się zaktualizować projektu: ${e.message}`);
+    } finally {
+      setIsUpdatingProject(false);
+      setIsEditingProject(false);
+    }
+  };
+
   const handleStatusUpdate = (status: string) =>
     router.push(`/spicelab/project/${id}/statusUpdate?status=${status}`);
 
@@ -166,7 +215,7 @@ export default function ProjectPage({
           ? TaskStatus.OnTrack
           : TaskStatus.Finished;
 
-      const base = await getBackendUrl();
+      const base = backendUrl;
       const token = getCookie("accessToken");
       if (!base || !token) throw new Error("Missing config");
 
@@ -201,16 +250,14 @@ export default function ProjectPage({
     }
   };
 
-  // This function now just opens the confirmation dialog
   const handleDeleteClick = () => {
     setShowDeleteConfirm(true);
   };
 
-  // This function executes the actual delete operation
   const confirmDeleteProject = async () => {
-    setIsDeleting(true); // Set deleting state to true
+    setIsDeleting(true);
     try {
-      const base = await getBackendUrl();
+      const base = backendUrl;
       const token = getCookie("accessToken");
       if (!base || !token) throw new Error("Missing config");
 
@@ -228,8 +275,8 @@ export default function ProjectPage({
       console.error("Delete project failed:", error);
       toast.error("Nie udało się usunąć projektu.");
     } finally {
-      setIsDeleting(false); // Reset deleting state
-      setShowDeleteConfirm(false); // Close the dialog
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -248,7 +295,7 @@ export default function ProjectPage({
 
   const createTask = async (data: NewTaskPayload) => {
     try {
-      const base = await getBackendUrl();
+      const base = backendUrl;
       const token = getCookie("accessToken");
       if (!base || !token) throw new Error("Missing config");
 
@@ -274,13 +321,33 @@ export default function ProjectPage({
       if (!res.ok) throw new Error(await res.text());
       const newT = (await res.json()) as Task;
       setTasks((lst) => [...lst, newT]);
-      setRefresh((f) => !f); // Trigger refresh to re-fetch tasks and events
+      setRefresh((f) => !f);
       toast.success("Zadanie utworzone pomyślnie.");
     } catch (e) {
       console.error(e);
       toast.error("Nie udało się utworzyć zadania.");
     }
   };
+
+  if (loadingProject && !project) {
+    return (
+      <div className="flex flex-col h-screen overflow-hidden bg-white dark:bg-gray-900 p-8">
+        <div className="flex items-center gap-2 mb-4">
+          <Skeleton className="h-6 w-8" />
+          <Skeleton className="h-6 w-1/4" />
+          <Skeleton className="h-8 w-24 ml-auto" />
+        </div>
+        <Skeleton className="h-10 w-full mb-8" />
+        <div className="flex-1 overflow-hidden">
+          <Skeleton className="h-full w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return null;
+  }
 
   return (
     <projectContext.Provider
@@ -291,7 +358,6 @@ export default function ProjectPage({
           defaultValue="przeglad"
           className="flex flex-col flex-1 overflow-hidden"
         >
-          {/* HEADER + TABS */}
           <div
             className={`
               flex-shrink-0
@@ -308,7 +374,7 @@ export default function ProjectPage({
                   <Skeleton className="h-6 w-32" />
                 ) : (
                   <span className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
-                    {project?.name || "Nieznany projekt"}
+                    {project.name}
                   </span>
                 )}
                 <DropdownMenu modal={false}>
@@ -317,7 +383,9 @@ export default function ProjectPage({
                       variant="ghost"
                       size="icon"
                       className="ml-1 text-gray-500 dark:text-gray-400"
-                      disabled={loadingProject || isDeleting} // Disable if loading project or deleting
+                      disabled={
+                        loadingProject || isDeleting || isUpdatingProject
+                      }
                     >
                       <ChevronDown className="h-5 w-5" />
                     </Button>
@@ -325,15 +393,19 @@ export default function ProjectPage({
                   <DropdownMenuContent className="bg-white dark:bg-gray-800">
                     <DropdownMenuItem
                       onClick={() => setIsEditingProject(true)}
-                      disabled={loadingProject || isDeleting}
+                      disabled={
+                        loadingProject || isDeleting || isUpdatingProject
+                      }
                     >
                       <Pen className="h-4 w-4 mr-2" />
                       Zmień szczegóły
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={handleDeleteClick} // Calls the function to open confirmation
+                      onClick={handleDeleteClick}
                       className="text-red-600 dark:text-red-500"
-                      disabled={loadingProject || isDeleting}
+                      disabled={
+                        loadingProject || isDeleting || isUpdatingProject
+                      }
                     >
                       <Trash2Icon className="h-4 w-4 mr-2 text-red-600 dark:text-red-500" />
                       Usuń projekt
@@ -349,22 +421,36 @@ export default function ProjectPage({
                   size="sm"
                   className="ml-2 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600"
                   onClick={() => handleStatusUpdate("")}
-                  disabled={loadingProject || isDeleting}
+                  disabled={loadingProject || isDeleting || isUpdatingProject}
                 >
                   Ustaw status
                 </Button>
               </div>
               <div className="overflow-x-auto">
                 <TabsList className="flex space-x-2">
-                  <TabsTrigger value="przeglad" disabled={loading || isDeleting}>Przegląd</TabsTrigger>
-                  <TabsTrigger value="lista" disabled={loading || isDeleting}>Lista</TabsTrigger>
-                  <TabsTrigger value="panel" disabled={loading || isDeleting}>Dashboard</TabsTrigger>
+                  <TabsTrigger
+                    value="przeglad"
+                    disabled={loading || isDeleting || isUpdatingProject}
+                  >
+                    Przegląd
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="lista"
+                    disabled={loading || isDeleting || isUpdatingProject}
+                  >
+                    Lista
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="panel"
+                    disabled={loading || isDeleting || isUpdatingProject}
+                  >
+                    Dashboard
+                  </TabsTrigger>
                 </TabsList>
               </div>
             </div>
           </div>
 
-          {/* MAIN + SIDEBAR */}
           <div className="flex flex-1 overflow-hidden">
             <main
               className={`
@@ -382,7 +468,7 @@ export default function ProjectPage({
                     <Skeleton className="h-4 w-2/3" />
                   </div>
                 ) : (
-                  <ProjectOverview project={project!} />
+                  <ProjectOverview project={project} />
                 )}
               </TabsContent>
 
@@ -419,7 +505,7 @@ export default function ProjectPage({
                     ))}
                   </div>
                 ) : (
-                  <Dashboard project={project!} tasks={tasks} />
+                  <Dashboard project={project} tasks={tasks} />
                 )}
               </TabsContent>
             </main>
@@ -434,29 +520,36 @@ export default function ProjectPage({
           </div>
         </Tabs>
 
-        {/* Project Edit Dialog */}
-        <ProjectEditDialog
-          project={project}
-          isOpen={isEditingProject}
-          onClose={() => setIsEditingProject(false)}
-          onSave={() => setIsEditingProject(false)}
-        />
+        {project && (
+          <ProjectEditDialog
+            project={project}
+            isOpen={isEditingProject}
+            onClose={() => setIsEditingProject(false)}
+            onSave={updateProject}
+          />
+        )}
 
-        {/* Delete Confirmation Dialog */}
-        <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialog
+          open={showDeleteConfirm}
+          onOpenChange={setShowDeleteConfirm}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Czy na pewno chcesz usunąć ten projekt?</AlertDialogTitle>
+              <AlertDialogTitle>
+                Czy na pewno chcesz usunąć ten projekt?
+              </AlertDialogTitle>
               <AlertDialogDescription>
-                Ta akcja jest nieodwracalna. Spowoduje to trwałe usunięcie projektu
-                i wszystkich związanych z nim zadań.
+                Ta akcja jest nieodwracalna. Spowoduje to trwałe usunięcie
+                projektu i wszystkich związanych z nim zadań.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel disabled={isDeleting}>Anuluj</AlertDialogCancel>
+              <AlertDialogCancel disabled={isDeleting || isUpdatingProject}>
+                Anuluj
+              </AlertDialogCancel>
               <AlertDialogAction
                 onClick={confirmDeleteProject}
-                disabled={isDeleting}
+                disabled={isDeleting || isUpdatingProject}
                 className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800"
               >
                 {isDeleting ? (
@@ -469,6 +562,15 @@ export default function ProjectPage({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {isUpdatingProject && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="flex items-center text-white text-lg">
+              <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+              Aktualizowanie projektu...
+            </div>
+          </div>
+        )}
       </div>
     </projectContext.Provider>
   );

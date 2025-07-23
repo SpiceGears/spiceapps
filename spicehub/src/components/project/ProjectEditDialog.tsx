@@ -1,8 +1,6 @@
-// components/project/ProjectEditDialog.tsx
-"use client"
+"use client";
 
-import { useState } from "react"
-import { CalendarIcon } from "lucide-react"
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,45 +8,61 @@ import {
   DialogTitle,
   DialogFooter,
   DialogClose,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Button } from "@/components/ui/button"
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Project } from "@/models/Project"
-import { useUserById } from "@/hooks/userById"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Project } from "@/models/Project"; // No need for ProjectPriority, ProjectStatus if not editable here
+import { useUserById } from "@/hooks/userById";
+
+// Define the exact shape of data the dialog will return
+interface ProjectEditDialogData {
+  name: string;
+  description: string;
+}
 
 interface ProjectEditDialogProps {
-  project?: Project
-  isOpen: boolean
-  onClose: () => void
-  onSave: (project: Project) => void
+  project?: Project;
+  isOpen: boolean;
+  onClose: () => void;
+  // onSave now expects only name and description
+  onSave: (data: ProjectEditDialogData) => void;
 }
 
 const getInitials = (name: string): string => {
-  const parts = name.trim().split(/\s+/).filter(Boolean)
+  const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) {
-    return ""
+    return "";
   }
-  const firstChar  = parts[0][0] ?? ""
-  const secondChar = parts[1]?.[0] ?? ""
-  return (firstChar + secondChar).toUpperCase()
-}
+  const firstChar = parts[0][0] ?? "";
+  const secondChar = parts[1]?.[0] ?? "";
+  return (firstChar + secondChar).toUpperCase();
+};
 
 export function ProjectEditDialog({
   project,
   isOpen,
   onClose,
+  onSave,
 }: ProjectEditDialogProps) {
-  const userId = project?.creator ?? ""
-  const { data, loading, error } = useUserById(userId)
+  const userId = project?.creator ?? "";
+  const { data, loading, error } = useUserById(userId);
 
-  if (!project) return null
+  // Only states for editable fields
+  const [name, setName] = useState(project?.name ?? "");
+  const [description, setDescription] = useState(project?.description ?? "");
+
+  // Update local state if the 'project' prop changes
+  useEffect(() => {
+    if (project) {
+      setName(project.name);
+      setDescription(project.description);
+    }
+  }, [project]);
+
+  if (!project) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -60,11 +74,15 @@ export function ProjectEditDialog({
         <form
           className="space-y-6"
           onSubmit={(e) => {
-            e.preventDefault()
-            onClose()
+            e.preventDefault();
+            // Pass only the edited name and description
+            onSave({
+              name,
+              description,
+            });
+            onClose();
           }}
         >
-          {/* project name */}
           <div className="space-y-1">
             <label
               htmlFor="project-name"
@@ -74,13 +92,13 @@ export function ProjectEditDialog({
             </label>
             <Input
               id="project-name"
-              defaultValue={project.name}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="Wprowadź nazwę projektu"
               className="w-full"
             />
           </div>
 
-          {/* creator info */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -91,28 +109,18 @@ export function ProjectEditDialog({
                   <Skeleton className="h-8 w-8 rounded-full" />
                 ) : (
                   <Avatar className="w-8 h-8">
-                    {/* {data?.avatarUrl ? (
-                      <AvatarImage
-                        src={undefined}
-                        alt={`${data.firstName} ${data.lastName}`}
-                      />
-                    ) : ( */}
-                      <AvatarFallback>
-                        {getInitials(
-                          `${data?.firstName ?? ""} ${data?.lastName ?? ""}`
-                        )}
-                      </AvatarFallback>
-                    {/* )} */}
+                    <AvatarFallback>
+                      {getInitials(
+                        `${data?.firstName ?? ""} ${data?.lastName ?? ""}`
+                      )}
+                    </AvatarFallback>
                   </Avatar>
                 )}
 
-                {/* name */}
                 {loading ? (
                   <Skeleton className="h-4 w-32" />
                 ) : error ? (
-                  <span className="text-sm text-red-500">
-                    Błąd ładowania
-                  </span>
+                  <span className="text-sm text-red-500">Błąd ładowania</span>
                 ) : (
                   <span className="text-sm text-gray-900 dark:text-gray-100">
                     {data?.firstName} {data?.lastName}
@@ -122,7 +130,6 @@ export function ProjectEditDialog({
             </div>
           </div>
 
-          {/* description */}
           <div className="space-y-1">
             <label
               htmlFor="project-desc"
@@ -132,13 +139,15 @@ export function ProjectEditDialog({
             </label>
             <Textarea
               id="project-desc"
-              defaultValue={project.description}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
               placeholder="O czym jest ten projekt?"
               className="w-full"
             />
           </div>
 
-          {/* actions */}
+          {/* Remove Status, Priority, Scopes inputs as they are no longer editable here */}
+
           <DialogFooter>
             <Button type="submit">Zapisz zmiany</Button>
             <DialogClose asChild>
@@ -150,5 +159,5 @@ export function ProjectEditDialog({
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
