@@ -22,6 +22,13 @@ export interface Role
     department: Department
 }
 
+export interface NewRole
+{
+    name: string,
+    scopes: string[],
+    department: Department
+}
+
 export enum Department 
 {
     NaDr = 0, //not a department specific role

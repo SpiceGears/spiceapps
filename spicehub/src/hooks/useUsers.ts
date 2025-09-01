@@ -1,11 +1,19 @@
-import { UserInfo } from "@/models/User";
-import { api } from "@/services/api";
 import { useEffect, useState } from "react";
+import { api } from "@/services/api";
+import { UserInfo } from "@/models/User";
 
-export default function useUsers(refresh: boolean) {
-    const [users, setUsers] = useState<UserInfo[]>([]);
+export function useUsers(refresh?: boolean) {
+  const [users, setUsers] = useState<UserInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        api.getUsers().then(setUsers).catch(console.error);
-    }, [refresh]);
-} 
+  useEffect(() => {
+    setLoading(true);
+    api.getUsers()
+      .then(setUsers)
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, [refresh]);
+
+  return { users, loading, error };
+}
