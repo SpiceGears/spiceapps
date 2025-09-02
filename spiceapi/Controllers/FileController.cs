@@ -10,6 +10,33 @@ using System.Xml.Linq;
 
 namespace SpiceAPI.Controllers
 {
+    public class FileUploadRequest
+    {
+        [FromForm(Name = "file")]
+        public IFormFile File { get; set; }
+
+        [FromForm(Name = "name")]
+        public string Name { get; set; }
+
+        [FromForm(Name = "description")]
+        public string Description { get; set; }
+
+        [FromForm(Name = "tags")]
+        public string? TagsCsv { get; set; }
+
+        [FromForm(Name = "scopes")]
+        public string? ScopesCsv { get; set; }
+
+        [FromForm(Name = "perm")]
+        public FilePerm Perm { get; set; }
+
+        [FromForm(Name = "folderPath")]
+        public string? FolderPath { get; set; }
+
+        [FromForm(Name = "ownerWriteOnly")]
+        public bool OwnerWriteOnly { get; set; }
+    }
+
     [Route("files")]
     [ApiController]
     public class FileController : ControllerBase
@@ -81,9 +108,9 @@ namespace SpiceAPI.Controllers
         }
 
         [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetFileMeta([FromRoute] Guid id, [FromHeader] string? Authorization) 
+        public async Task<IActionResult> GetFileMeta([FromRoute] Guid id, [FromHeader] string? Authorization)
         {
-            if (Authorization == null) 
+            if (Authorization == null)
             {
                 SFile? filee = await db.Files.FirstOrDefaultAsync(f => f.Id == id);
                 if (filee == null) return NotFound("File not found");
@@ -108,7 +135,7 @@ namespace SpiceAPI.Controllers
             else return StatusCode(403, "You are not authorized to read this file");
         }
 
-        public class FileHeaders 
+        public class FileHeaders
         {
             public string Name { get; set; }
             public string Description { get; set; }
@@ -119,66 +146,62 @@ namespace SpiceAPI.Controllers
             public bool OwnerWriteOnly { get; set; }
         }
 
-[HttpPost("create")]
-[DisableRequestSizeLimit]
-[Consumes("multipart/form-data")]
-public async Task<IActionResult> StreamUpload(
-    [FromForm(Name = "file")] IFormFile file,
-    [FromForm(Name = "name")] string name,
-    [FromForm(Name = "description")] string description,
-    [FromForm(Name = "tags")] string? tagsCsv,
-    [FromForm(Name = "scopes")] string? scopesCsv,
-    [FromForm(Name = "perm")] FilePerm perm,
-    [FromForm(Name = "folderPath")] string? folderPath,
-    [FromForm(Name = "ownerWriteOnly")] bool ownerWriteOnly,
+        [HttpPost("create")]
+        [DisableRequestSizeLimit]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> StreamUpload(
+    [FromForm] FileUploadRequest request,
     [FromHeader(Name = "Authorization")] string? authorization)
-{
-    // 1) Auth
-    if (authorization == null)
-        return Unauthorized("Provide access token");
-    if (!tc.VerifyToken(authorization))
-        return Forbid("Invalid token");
-    var user = await tc.RetrieveUser(authorization);
-    if (user == null) return BadRequest("NULL USER");
-    if (!user.IsApproved)
-        return Forbid("You must be approved to do this");
+        {
+            if (authorization == null)
+                return Unauthorized("Provide access token");
+            if (!tc.VerifyToken(authorization))
+                return Forbid("Invalid token");
 
-    // 2) Parse metadata
-    var tags   = string.IsNullOrWhiteSpace(tagsCsv)   ? new List<string>() : tagsCsv.Split(',').ToList();
-    var scopes = string.IsNullOrWhiteSpace(scopesCsv) ? new List<string>() : scopesCsv.Split(',').ToList();
+            var user = await tc.RetrieveUser(authorization);
+            if (user == null) return BadRequest("NULL USER");
+            if (!user.IsApproved)
+                return Forbid("You must be approved to do this");
 
-    // 3) Build storage path
-    var id = Guid.NewGuid();
-    var safeFolder = string.IsNullOrWhiteSpace(folderPath)
-        ? ""
-        : folderPath.TrimStart('/', '\\');
-    if (safeFolder.Contains("..")) return Forbid("Invalid folderPath");
-    var fullFolder = Path.Combine(StoragePath, safeFolder);
-    Directory.CreateDirectory(fullFolder);
-    var outPath = Path.Combine(fullFolder, id.ToString());
+            var tags = string.IsNullOrWhiteSpace(request.TagsCsv)
+                ? new List<string>()
+                : request.TagsCsv.Split(',').ToList();
 
-    // 4) Save the file stream
-    await using (var fs = new FileStream(outPath, FileMode.Create))
-    await using (var fileStream = file.OpenReadStream())
-        await fileStream.CopyToAsync(fs);
+            var scopes = string.IsNullOrWhiteSpace(request.ScopesCsv)
+                ? new List<string>()
+                : request.ScopesCsv.Split(',').ToList();
 
-    // 5) Persist metadata
-    var entity = new SFile(
-        id,
-        name,
-        description,
-        tags,
-        outPath,
-        scopes,
-        perm,
-        user.Id,
-        ownerWriteOnly
-    );
-    await db.Files.AddAsync(entity);
-    await db.SaveChangesAsync();
+            var id = Guid.NewGuid();
+            var safeFolder = string.IsNullOrWhiteSpace(request.FolderPath)
+                ? ""
+                : request.FolderPath.TrimStart('/', '\\');
+            if (safeFolder.Contains("..")) return Forbid("Invalid folderPath");
 
-    return Ok(entity);
-}
+            var fullFolder = Path.Combine(StoragePath, safeFolder);
+            Directory.CreateDirectory(fullFolder);
+            var outPath = Path.Combine(fullFolder, id.ToString());
+
+            await using (var fs = new FileStream(outPath, FileMode.Create))
+            await using (var fileStream = request.File.OpenReadStream())
+                await fileStream.CopyToAsync(fs);
+
+            var entity = new SFile(
+                id,
+                request.Name,
+                request.Description,
+                tags,
+                outPath,
+                scopes,
+                request.Perm,
+                user.Id,
+                request.OwnerWriteOnly
+            );
+
+            await db.Files.AddAsync(entity);
+            await db.SaveChangesAsync();
+
+            return Ok(entity);
+        }
 
 
 
@@ -319,12 +342,12 @@ public async Task<IActionResult> StreamUpload(
 
 
         [HttpGet("download/{id:guid}")]
-        public async Task<IActionResult> GetFile([FromRoute] Guid id, 
+        public async Task<IActionResult> GetFile([FromRoute] Guid id,
             [FromHeader(Name = "Authorization")] string? Authorization,
             [FromHeader(Name = "FileType")] string? fileReturnType
             )
         {
-            
+
 
             if (Authorization == null)
             {
@@ -351,7 +374,7 @@ public async Task<IActionResult> StreamUpload(
             if (file.Perm == FilePerm.PublicReadOnly ||
                 file.Perm == FilePerm.PublicAll ||
                 file.Perm == FilePerm.ReadExternal ||
-                file.Owner == user.Id) 
+                file.Owner == user.Id)
             {
                 byte[] cont = await System.IO.File.ReadAllBytesAsync(file.Path);
                 var provider = new FileExtensionContentTypeProvider();
@@ -362,7 +385,7 @@ public async Task<IActionResult> StreamUpload(
                 return File(cont, contentType, file.Name);
             }
 
-            else if (user.CheckForClaims(file.Scopes.ToArray(), db)) 
+            else if (user.CheckForClaims(file.Scopes.ToArray(), db))
             {
                 byte[] cont = await System.IO.File.ReadAllBytesAsync(file.Path);
                 var provider = new FileExtensionContentTypeProvider();
@@ -448,7 +471,7 @@ public async Task<IActionResult> StreamUpload(
         }
 
         [NonAction]
-        public async Task<List<SFile>> GetExternalFiles(DataContext db) 
+        public async Task<List<SFile>> GetExternalFiles(DataContext db)
         {
             var files = await db.Files.Where(f => f.Perm == FilePerm.ReadExternal).ToListAsync();
             return files;

@@ -10,64 +10,51 @@ import { Task } from "@/models/Task";
 import { Project } from "@/models/Project";
 import { getCookie } from "typescript-cookie";
 import { getBackendUrl } from "../serveractions/backend-url";
+import { api } from "@/services/api";
+import { useUser } from "@/hooks/useUser";
+import { useProjects } from "@/hooks/useProjects";
+import { useAssignedTasks } from "@/hooks/useAssignedTasks";
+import Loading from "@/components/Loading";
 
 export default function Dashboard() {
   const [user, setUser] = useState<UserInfo | null>(null);
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [assignedTasks, setAssignedTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [refresh, setRefresh] = useState(false);
 
-  useEffect(() => {
-    async function loadAll() {
-      try {
-        const tk = getCookie("accessToken");
-        if (!tk) throw new Error("Brak tokena – zaloguj się ponownie");
-        const backend = await getBackendUrl();
-        const headers = {
-          "Content-Type": "application/json",
-          Authorization: tk,
-        };
+useEffect(() => {
+  async function fetchData() {
+    try {
+      setLoading(true);
 
-        const uRes = await fetch(`${backend}/api/user/getInfo`, { headers });
-        if (!uRes.ok) throw new Error("Nie udało się pobrać użytkownika");
-        const uData: UserInfo = await uRes.json();
-        setUser(uData);
+      const userData = await api.getUser();
+      const [projectsData, assignedTasksData] = await Promise.all([
+        api.getProjects(),
+        api.getAssignedTasks(userData.id),
+      ]);
 
-        const tRes = await fetch(
-          `${backend}/api/user/${uData.id}/getAssignedTasks`,
-          { headers }
-        );
-        if (!tRes.ok) throw new Error("Nie udało się pobrać zadań");
-        setTasks(await tRes.json());
-
-        const pRes = await fetch(`${backend}/api/project`, { headers });
-        if (!pRes.ok) throw new Error("Nie udało się pobrać projektów");
-        setProjects(await pRes.json());
-      } catch (err: any) {
-        setError(err.message || "Coś poszło nie tak");
-      } finally {
-        setLoading(false);
-      }
+      setUser(userData);
+      setProjects(projectsData);
+      setAssignedTasks(assignedTasksData);
+    } catch (err) {
+      console.error("Failed to fetch dashboard data", err);
+    } finally {
+      setLoading(false);
     }
-    loadAll();
-  }, []);
+  }
+  fetchData();
+}, [refresh]);
 
-  const uncompletedTasksCount = tasks.filter((task) => !task.finished).length;
+const uncompletedTasksCount = assignedTasks.filter((task) => !task.finished).length;
   const projectsCount = projects.length;
+
+  if (loading) return <Loading />;
 
   if (loading) {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white flex justify-center items-center">
         <p>Ładowanie...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white flex justify-center items-center">
-        <p className="text-red-500">{error}</p>
       </div>
     );
   }

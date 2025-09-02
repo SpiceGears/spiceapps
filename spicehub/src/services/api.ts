@@ -1,7 +1,11 @@
 import { getBackendUrl } from "@/app/serveractions/backend-url";
+import { Project } from "@/models/Project";
+import { Task } from "@/models/Task";
+import { Role, UserInfo } from "@/models/User";
+import { get } from "http";
 import { getCookie } from "typescript-cookie";
 
-async function apiFetch(path: string, options: RequestInit = {}) {
+async function apiFetch<T>(path: string, options: RequestInit = {}) {
     const backend = await getBackendUrl();
     if (!backend) throw new Error("Backend URL not found");
     const token = getCookie("accessToken");
@@ -19,13 +23,18 @@ async function apiFetch(path: string, options: RequestInit = {}) {
     if (!res.ok) {
         throw new Error(await res.text());
     }
-    return res.json().catch(() => null);
+    return res.json() as Promise<T>;
 }
 
 export const api = {
-  getUsers: () => apiFetch("/api/user/getAll"),
-  getRoles: () => apiFetch("/api/roles"),
-  getUnapprovedUsers: () => apiFetch("/api/admin/getUnapprovedUsers"),
+  getUsers: () => apiFetch<UserInfo[]>("/api/user/getAll"),
+  getUserById: (id: string) => apiFetch<UserInfo>(`/api/user/${id}`),
+  getUser: () => apiFetch<UserInfo>("/api/user/getInfo"),
+  getRoles: () => apiFetch<Role[]>("/api/roles"),
+  getProjects: () => apiFetch<Project[]>("/api/project"),
+  getTasks: (id: string) => apiFetch<Task[]>(`/api/project/${id}/getTasks`),
+  getUnapprovedUsers: () => apiFetch<UserInfo[]>("/api/admin/getUnapprovedUsers"),
+  getAssignedTasks: (userId: string) => apiFetch<Task[]>(`/api/user/${userId}/getAssignedTasks`),
 
   approveUser: (id: string) =>
     apiFetch(`/api/user/${id}/approve`, { method: "PUT" }),
