@@ -1,34 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { MoreHorizontal, Shield, Edit, Trash2 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { RolePicker } from "@/components/admin/RolePicker";
-import { Department, UserInfo } from "@/models/User";
-import { getBackendUrl } from "../serveractions/backend-url";
-import { getCookie } from "typescript-cookie";
-import { Switch } from "@/components/ui/switch";
+import { useEffect, useState } from "react";
+import { UserInfo } from "@/models/User";
 import { Role } from "@/models/User";
-import { toast, ToastClassnames } from "sonner";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import MembersTab from "@/components/admin/MembersTab";
 import { api } from "@/services/api";

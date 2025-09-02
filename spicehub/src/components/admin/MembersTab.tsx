@@ -8,6 +8,7 @@ import { Card } from "../ui/card";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Role, UserInfo } from "@/models/User";
+import { getBackendUrl } from "@/app/serveractions/backend-url";
 
 type Props = {
     users: UserInfo[];
@@ -32,9 +33,7 @@ export default function MembersTab({ users, roles, onRefresh }: Props) {
                         >
                             <div className="flex items-center gap-3">
                                 <Avatar>
-                                    <AvatarImage
-                                        src={`/api/user/${user.id}/avatar`}
-                                    />
+                                    <AvatarImage src={`${getBackendUrl()}/api/user/${user.id}/avatar`} />
                                     <AvatarFallback>
                                         {user.firstName[0]}
                                         {user.lastName ? user.lastName[0] : ""}
