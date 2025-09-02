@@ -9,12 +9,14 @@ import { api } from "@/services/api";
 import Loading from "@/components/Loading";
 import RolesTab from "@/components/admin/RolesTab";
 import ApprovalsTab from "@/components/admin/ApprovalsTab";
+import { getBackendUrl } from "../serveractions/backend-url";
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState<"members" | "roles" | "approvals">("members");
   const [users, setUsers] = useState<UserInfo[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [unapproved, setUnapproved] = useState<UserInfo[]>([]);
+  const [backendUrl, setBackendUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
 
@@ -26,10 +28,12 @@ export default function Admin() {
           api.getUsers(),
           api.getRoles(),
           api.getUnapprovedUsers(),
+          getBackendUrl(),
         ]);
         setUsers(usersData);
         setRoles(rolesData);
         setUnapproved(unapprovedData);
+        setBackendUrl(backendUrl);
       } catch (err) {
         console.error("Failed to fetch admin data", err);
       } finally {
@@ -54,6 +58,7 @@ export default function Admin() {
             users={users}
             roles={roles}
             onRefresh={() => setRefresh(!refresh)}
+            backendUrl={backendUrl}
           />
         )}
         {activeTab === "roles" && (

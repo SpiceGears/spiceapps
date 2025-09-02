@@ -1,22 +1,20 @@
 "use client";
 
-import { useUsers } from "@/hooks/useUsers";
-import Loading from "../Loading";
 import { AvatarFallback } from "../ui/avatar";
 import { Input } from "../ui/input";
 import { Card } from "../ui/card";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Role, UserInfo } from "@/models/User";
-import { getBackendUrl } from "@/app/serveractions/backend-url";
 
 type Props = {
     users: UserInfo[];
     roles: Role[];
+    backendUrl: string;
     onRefresh: () => void;
 }
 
-export default function MembersTab({ users, roles, onRefresh }: Props) {
+export default function MembersTab({ users, roles, backendUrl, onRefresh }: Props) {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -33,7 +31,7 @@ export default function MembersTab({ users, roles, onRefresh }: Props) {
                         >
                             <div className="flex items-center gap-3">
                                 <Avatar>
-                                    <AvatarImage src={`${getBackendUrl()}/api/user/${user.id}/avatar`} />
+                                    <AvatarImage src={`${backendUrl}/api/user/${user.id}/avatar`} />
                                     <AvatarFallback>
                                         {user.firstName[0]}
                                         {user.lastName ? user.lastName[0] : ""}
