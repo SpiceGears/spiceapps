@@ -15,6 +15,7 @@ import { getCookie } from "typescript-cookie";
 import { getBackendUrl } from "@/app/serveractions/backend-url";
 import { Department, Role, UserInfo } from "@/models/User";
 import { Skeleton } from "./ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 export default function ProfileDropdown() {
   const [open, setOpen] = useState(false);
@@ -56,28 +57,24 @@ export default function ProfileDropdown() {
           className="flex items-center space-x-2 text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-gray-100 focus-visible:ring-0 focus-visible:ring-offset-0"
         >
           {!loading && (
-            <>
-              {userData?.avatarSet ? ( // Use backendUrl here
-                <img
-                  src={`${getBackendUrl()}/api/user/${userData.id}/avatar`}
+            <Avatar>
+              {userData?.avatarSet ? (
+                <AvatarImage
+                  src={`${backendUrl}/api/user/${userData.id}/avatar`}
                   alt={`${userData.firstName} ${userData.lastName}`}
-                  className="w-8 h-8 rounded-full"
                 />
               ) : (
-                // Fallback to ui-avatars.com if avatarSet is false or backendUrl is not yet available
-                <img
-                  src={`https://ui-avatars.com/api/?name=${userData?.firstName}+${userData?.lastName}&background=random&color=fff`}
-                  alt={`${userData?.firstName} ${userData?.lastName}`}
-                  className="w-8 h-8 rounded-full"
-                />
+                <AvatarFallback className="bg-gray-300 text-gray-700 font-medium rounded-full flex items-center justify-center">
+                  {userData?.firstName[0]}
+                  {userData?.lastName ? userData.lastName[0] : ""}
+                </AvatarFallback>
               )}
-            </>
+            </Avatar>
           )}
           {loading && <Skeleton className="w-8 h-8 rounded-full"></Skeleton>}
           <ChevronDown
-            className={`ml-2 h-4 w-4 transition-transform duration-200 ${
-              open ? "rotate-180" : ""
-            }`}
+            className={`ml-2 h-4 w-4 transition-transform duration-200 ${open ? "rotate-180" : ""
+              }`}
           />
         </Button>
       </DropdownMenuTrigger>

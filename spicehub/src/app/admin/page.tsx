@@ -16,7 +16,6 @@ export default function Admin() {
   const [users, setUsers] = useState<UserInfo[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [unapproved, setUnapproved] = useState<UserInfo[]>([]);
-  const [backendUrl, setBackendUrl] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
 
@@ -28,12 +27,10 @@ export default function Admin() {
           api.getUsers(),
           api.getRoles(),
           api.getUnapprovedUsers(),
-          getBackendUrl(),
         ]);
         setUsers(usersData);
         setRoles(rolesData);
         setUnapproved(unapprovedData);
-        setBackendUrl(backendUrl);
       } catch (err) {
         console.error("Failed to fetch admin data", err);
       } finally {
@@ -44,7 +41,6 @@ export default function Admin() {
   }, [refresh]);
 
   if (loading) return <Loading />;
-
 
   return (
     <div className="flex h-full w-full justify-center">
@@ -58,7 +54,6 @@ export default function Admin() {
             users={users}
             roles={roles}
             onRefresh={() => setRefresh(!refresh)}
-            backendUrl={backendUrl}
           />
         )}
         {activeTab === "roles" && (
