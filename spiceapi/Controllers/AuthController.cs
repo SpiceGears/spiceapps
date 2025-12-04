@@ -36,26 +36,26 @@ namespace SpiceAPI.Controllers
                 AuthSecHeader = authsec;
             }
         }
-        
+
         public class LoginHeaders() //header names used for controller
         {
             public string Login { get; set; }
             public string Password { get; set; }
         }
 
-        public class RegisterHeaders() 
+        public class RegisterHeaders()
         {
             public string Email { get; set; }
             public string Password { get; set; }
             public string Name { get; set; }
             public string Surname { get; set; }
-            public DateOnly Birthday {  get; set; }
+            public DateOnly Birthday { get; set; }
 
             public string Department { get; set; }
         }
-        
+
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginHeaders form) 
+        public async Task<IActionResult> Login([FromBody] LoginHeaders form)
         {
             if (AuthLimitEnabled)
             {
@@ -81,15 +81,15 @@ namespace SpiceAPI.Controllers
 
 
             User? user = await db.Users.Where(u => u.Email == form.Login).FirstOrDefaultAsync(); //retrieve the user with the email
-            if (user == null) 
+            if (user == null)
             {
                 //who are we loggin' as? nonexistant one ig
                 return NotFound();
             }
 
             bool passwordTest = crypto.TestPassword(form.Password, user.Password); //test password hashes
-            
-            if (passwordTest) 
+
+            if (passwordTest)
             {
 
                 if (AuthLimitEnabled) //clear login attempts to zero
@@ -105,7 +105,7 @@ namespace SpiceAPI.Controllers
                     }
                 }
                 //generate access and refresh tokens
-                    UserToken utok = new UserToken(user.Id, user.FirstName, user.LastName, user.Email);
+                UserToken utok = new UserToken(user.Id, user.FirstName, user.LastName, user.Email);
                 string atok = tg.GenerateToken(utok);
 
                 RefreshToken rtok = new RefreshToken();
@@ -185,9 +185,9 @@ namespace SpiceAPI.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterHeaders ui) 
+        public async Task<IActionResult> Register([FromBody] RegisterHeaders ui)
         {
-            switch (ui.Department) 
+            switch (ui.Department)
             {
                 case "programmer":
                     break;
@@ -209,8 +209,8 @@ namespace SpiceAPI.Controllers
                 var err = new ErrorResponse("Password is too weak", "PASSWORD_TOO_WEAK", "One or more criteria were not met", innerErrors);
                 return BadRequest(err);
             }
-            
-            
+
+
             User user = new User();
             user.CreatedAt = DateTime.UtcNow;
             user.FirstName = ui.Name;
@@ -222,7 +222,8 @@ namespace SpiceAPI.Controllers
             user.BirthDay = ui.Birthday;
             switch (ui.Department)
             {
-                case "programmer": user.Department = Department.Programmers;
+                case "programmer":
+                    user.Department = Department.Programmers;
                     break;
                 case "mechanic":
                     user.Department = Department.Mechanics;
@@ -242,7 +243,7 @@ namespace SpiceAPI.Controllers
                 default: return BadRequest(new ErrorResponse("Department value is invalid", "INVALID_FORM", "Department parameter may only be: programmer, mechanic, socialmedia, marketing, mentor, executive"));
             }
 
-            await db.Users.AddAsync( user );
+            await db.Users.AddAsync(user);
             await db.SaveChangesAsync();
 
 
@@ -252,7 +253,7 @@ namespace SpiceAPI.Controllers
         }
 
         [HttpGet("logoutAll")]
-        public async Task<IActionResult> InvalidateRefreshTokens([FromHeader] string? Authorization) 
+        public async Task<IActionResult> InvalidateRefreshTokens([FromHeader] string? Authorization)
         {
             if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
             bool isValid = tg.VerifyToken(Authorization);
@@ -269,7 +270,7 @@ namespace SpiceAPI.Controllers
         }
 
         [HttpGet("logout")]
-        public async Task<IActionResult> Logout([FromHeader] string? Authorization) 
+        public async Task<IActionResult> Logout([FromHeader] string? Authorization)
         {
             if (Authorization == null) { return BadRequest("Provide the refresh token to continue"); }
             RefreshToken? rt = await db.RefreshTokens.FindAsync(Authorization);
@@ -279,8 +280,8 @@ namespace SpiceAPI.Controllers
             return Ok();
         }
 
-        [HttpGet("getUser") ]
-        public async Task<IActionResult> getUser([FromHeader] string? Authorization) 
+        [HttpGet("getUser")]
+        public async Task<IActionResult> getUser([FromHeader] string? Authorization)
         {
             if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
             bool isValid = tg.VerifyToken(Authorization);
@@ -293,13 +294,13 @@ namespace SpiceAPI.Controllers
         }
 
         [HttpPost("generateAccess")]
-        public async Task<IActionResult> GenerateAccess([FromHeader] string? Authorization) 
+        public async Task<IActionResult> GenerateAccess([FromHeader] string? Authorization)
         {
             if (Authorization == null) { return Unauthorized("Provide refresh token to continue"); }
             RefreshToken? rt = await db.RefreshTokens.FindAsync(Authorization);
             if (rt == null) { return NotFound("No such refresh token exists"); }
             User? user = await db.Users.FindAsync(rt.UserID);
-            if ( user == null)
+            if (user == null)
             {
                 return StatusCode(418, "HUH, how's that possible?");
             }
@@ -307,10 +308,10 @@ namespace SpiceAPI.Controllers
             return Ok(tg.GenerateToken(token));
         }
 
-        public class ChangePasswordBody {public string OldPassword { get; set; } public string NewPassword { get; set; } }
-        
+        public class ChangePasswordBody { public string OldPassword { get; set; } public string NewPassword { get; set; } }
+
         [HttpPut("changePassword")]
-        public async Task<IActionResult> ChangePassword([FromHeader] string? Authorization, [FromBody] ChangePasswordBody body) 
+        public async Task<IActionResult> ChangePassword([FromHeader] string? Authorization, [FromBody] ChangePasswordBody body)
         {
             if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
             bool isValid = tg.VerifyToken(Authorization);
@@ -331,7 +332,7 @@ namespace SpiceAPI.Controllers
             User? user = await db.Users.FindAsync(ut.Sub);
             if (user == null) { return BadRequest("NULL USER"); }
 
-            if (crypto.TestPassword(body.OldPassword, user.Password)) 
+            if (crypto.TestPassword(body.OldPassword, user.Password))
             {
                 if (!IsStrongPassword(body.NewPassword, out var errors))
                 {
@@ -342,10 +343,46 @@ namespace SpiceAPI.Controllers
                 await db.SaveChangesAsync();
                 return Ok(new UserInfo(user));
             }
-            else 
+            else
             {
                 return StatusCode(409, "Password Mismatch");
             }
+        }
+
+        public class RecoveryResetPasswordBody
+        {
+            public string Email { get; set; }
+            public string ResetCode { get; set; }
+            public string NewPassword { get; set; }
+        }
+
+        [HttpPut("recoveryResetPassword")]
+        public async Task<IActionResult> RecoveryResetPassword(
+            [FromHeader] string? Authorization,
+            [FromBody] RecoveryResetPasswordBody body
+            )
+        {
+            User? user = await db.Users.FirstOrDefaultAsync(u => u.Email == body.Email);
+
+            if (user == null)
+            {
+                return NotFound("This account does not exist!");
+            }
+
+            UserRecoveryCode? key = await db.RecoveryCodes.FirstOrDefaultAsync(r => r.Code == body.ResetCode);
+
+            if (key == null) return BadRequest("Bad request.");
+
+            if (key.UserId != user.Id) return BadRequest("Bad request.");
+
+            if (!IsStrongPassword(body.NewPassword, out var errors))
+            {
+                var err = new ErrorResponse("Password is too weak", "PASSWORD_TOO_WEAK", "One or more criteria were not met", errors);
+                return BadRequest(err);
+            }
+            user.Password = crypto.Hash(body.NewPassword);
+            await db.SaveChangesAsync();
+            return Ok(new UserInfo(user));
         }
     }
 }

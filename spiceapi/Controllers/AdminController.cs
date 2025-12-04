@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpiceAPI.Auth;
+using SpiceAPI.Helpers;
 using SpiceAPI.Models;
 
 namespace SpiceAPI.Controllers
@@ -62,6 +63,84 @@ namespace SpiceAPI.Controllers
             await db.SaveChangesAsync();
             return Ok();
 
+        }
+
+        [HttpGet("recoveryKey")]
+        public async Task<IActionResult> GetRecoveryKeys([FromHeader] string? Authorization)
+        {
+            if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
+            bool isValid = tc.VerifyToken(Authorization);
+            if (!isValid) { return StatusCode(403, "Invalid Token"); }
+
+            User? user = await tc.RetrieveUser(Authorization);
+            if (user == null) { return NotFound("NULL USER"); };
+            
+            if (user.CheckForClaims("admin", db) == false) 
+            {
+                return StatusCode(403, "You are not in the sudo-ers file. This incident will be reported");
+            }
+
+            var keys = await db.RecoveryCodes.ToListAsync();
+            return Ok(keys);
+        }
+
+        public class CreateRecoveryKeyBody { public Guid userId { get; set; } }
+
+        [HttpPost("recoveryKey/create")]
+        public async Task<IActionResult> CreateNewRecoveryKey([FromHeader] string? Authorization,
+            [FromBody] CreateRecoveryKeyBody body, [FromServices] Crypto crypto)
+        {
+            if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
+            bool isValid = tc.VerifyToken(Authorization);
+            if (!isValid) { return StatusCode(403, "Invalid Token"); }
+
+            User? user = await tc.RetrieveUser(Authorization);
+            if (user == null) { return NotFound("NULL USER"); }
+            ;
+
+            if (user.CheckForClaims("admin", db) == false)
+            {
+                return StatusCode(403, "You are not in the sudo-ers file. This incident will be reported");
+            }
+
+            var rkey = crypto.RandomRecoveryKey(10);
+
+            UserRecoveryCode recoveryCode = new UserRecoveryCode() { Code = rkey, Id = Guid.NewGuid(), UserId = body.userId };
+
+            await db.RecoveryCodes.AddAsync(recoveryCode);
+            await db.SaveChangesAsync();
+
+            return Ok(recoveryCode);
+        }
+
+        [HttpDelete("recoveryKey/{id}")]
+        public async Task<IActionResult> DeleteRecoveryKey([FromHeader] string? Authorization, [FromRoute] Guid id) 
+        {
+            if (Authorization == null) { return Unauthorized("Provide an Access Token to continue"); }
+            bool isValid = tc.VerifyToken(Authorization);
+            if (!isValid) { return StatusCode(403, "Invalid Token"); }
+
+            User? user = await tc.RetrieveUser(Authorization);
+            if (user == null) { return NotFound("NULL USER"); }
+            ;
+
+            if (user.CheckForClaims("admin", db) == false)
+            {
+                return StatusCode(403, "You are not in the sudo-ers file. This incident will be reported");
+            }
+
+            var rkey = await db.RecoveryCodes.FirstOrDefaultAsync(p => p.Id == id);
+
+            if (rkey == null) 
+            {
+                return NotFound("No such key exists.");
+            }
+
+            db.RecoveryCodes.Remove(rkey);
+
+            await db.SaveChangesAsync();
+
+            return Ok("The key has been removed successfully.");
         }
     }
 }

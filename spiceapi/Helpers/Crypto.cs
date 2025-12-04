@@ -15,6 +15,8 @@ namespace SpiceAPI.Helpers
         public readonly char[] TokenFormat =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_-".ToCharArray();
 
+        public readonly char[] recoverykeySymbols = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+
         public string Hash(string text) { 
             return BCrypt.Net.BCrypt.EnhancedHashPassword(text, timeCost); 
         }
@@ -65,6 +67,11 @@ namespace SpiceAPI.Helpers
         public string RandomToken(int length)
         {
             return System.Security.Cryptography.RandomNumberGenerator.GetString(TokenFormat, length);
+        }
+
+        public string RandomRecoveryKey(int lenght)
+        {
+            return System.Security.Cryptography.RandomNumberGenerator.GetString(recoverykeySymbols, lenght);
         }
     }
 }
