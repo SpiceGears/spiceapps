@@ -8,6 +8,7 @@ import { Button } from "../ui/button";
 import { Role, UserInfo } from "@/models/User";
 import { getBackendUrl } from "@/app/serveractions/backend-url";
 import Loading from "../Loading";
+import EditUserDialog from "./EditUserDialog";
 
 type Props = {
   users: UserInfo[];
@@ -17,18 +18,6 @@ type Props = {
 
 export default function MembersTab({ users, roles, onRefresh }: Props) {
   const [backendUrl, setBackendUrl] = useState<string>("");
-
-  useEffect(() => {
-    const fetchUrl = async () => {
-      const url: any = await getBackendUrl();
-      setBackendUrl(url);
-    };
-    fetchUrl();
-  }, []);
-
-  if (!backendUrl) {
-    return <Loading />;
-  }
 
   return (
     <div className="space-y-6">

@@ -1,0 +1,50 @@
+github.com/AlDanial/cloc v 2.06  T=9.49 s (4.5 files/s, 4479.3 lines/s)
+---------------------------------------------------------------------------------------------------------------------------
+File                                                                                    blank        comment           code
+---------------------------------------------------------------------------------------------------------------------------
+.\spicehub-mobile\package-lock.json                                                         0              0          18091
+.\spicescout\package-lock.json                                                              0              0          12648
+.\spiceapi\obj\project.assets.json                                                          0              0           4155
+.\spicehub\package-lock.json                                                                0              0           3816
+.\spiceapi\Debug\SpiceAPI.deps.json                                                         0              0           1494
+.\spiceapi\bin\Debug\net8.0\SpiceAPI.deps.json                                              0              0           1487
+.\spiceapi\obj\SpiceAPI.csproj.nuget.dgspec.json                                            0              0            146
+.\spicehub_init\roles.json                                                                  0              0             92
+.\spicehub-mobile\package.json                                                              0              0             79
+.\spicehub\package.json                                                                     0              0             58
+.\spiceapi\Properties\launchSettings.json                                                   0              0             52
+.\spicehub-mobile\app.json                                                                  0              0             46
+.\spicescout\package.json                                                                   0              0             36
+.\spicescout\app.json                                                                       6              0             32
+.\spicehub\tsconfig.json                                                                    0              0             27
+.\spicehub\.next\app-build-manifest.json                                                    0              0             25
+.\spiceapi\.vs\SpiceAPI\v17\DocumentLayout.json                                             0              0             23
+.\spicehub-mobile\tsconfig.json                                                             0              0             21
+.\spicehub\components.json                                                                  0              0             21
+.\spiceapi\Debug\SpiceAPI.runtimeconfig.json                                                0              0             20
+.\spicehub\.next\build-manifest.json                                                        0              0             20
+.\spiceapi\obj\Debug\net8.0\staticwebassets.build.json                                      0              0             12
+.\spicescout\tsconfig.json                                                                  1              0             11
+.\spiceapi\appsettings.Development.json                                                     0              0             10
+.\spicehub-mobile\gluestack-ui.config.json                                                  0              0             10
+.\spiceapi\Debug\appsettings.Development.json                                               0              0              8
+.\spicehub\.next\react-loadable-manifest.json                                               0              0              8
+.\spicehub\nodemon.json                                                                     0              0              7
+.\spicehub\.next\server\middleware-manifest.json                                            0              0              6
+.\spiceapi\obj\Debug\net8.0\staticwebassets.build.endpoints.json                            0              0              5
+.\spicehub\.next\server\server-reference-manifest.json                                      0              0              5
+.\spicehub\.next\server\app-paths-manifest.json                                             0              0              4
+.\spicehub-mobile\.expo\devices.json                                                        0              0              3
+.\spiceapi\obj\Debug\net8.0\SpiceAPI.sourcelink.json                                        0              0              1
+.\spicehub\.next\package.json                                                               0              0              1
+.\spicehub\.next\server\next-font-manifest.json                                             0              0              1
+.\spicehub\.next\server\pages-manifest.json                                                 0              0              1
+.\spicehub\.next\static\webpack\5d8d6069fc6de276.webpack.hot-update.json                    0              0              1
+.\spicehub\.next\static\webpack\633457081244afec._.hot-update.json                          0              0              1
+.\spicehub\.next\static\webpack\b4b1e57e5160043d.webpack.hot-update.json                    0              0              1
+.\spicehub\.next\static\webpack\bfbd61692f5e29c4.webpack.hot-update.json                    0              0              1
+.\spicehub\.next\static\webpack\caa34cb252fe400a.webpack.hot-update.json                    0              0              1
+.\spicehub\.next\types\package.json                                                         0              0              1
+---------------------------------------------------------------------------------------------------------------------------
+SUM:                                                                                        7              0          42488
+---------------------------------------------------------------------------------------------------------------------------
