@@ -62,3 +62,16 @@ export function getDepartmentScope(department: Department): string | undefined {
             return undefined;
     }
 }
+
+export interface ChangePasswordBody 
+{
+    oldPassword: string,
+    newPassword: string,
+}
+
+export interface RecoveryResetPasswordBody 
+{
+    email: string,
+    resetCode: string,
+    newPassword: string,
+}

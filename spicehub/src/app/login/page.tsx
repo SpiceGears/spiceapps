@@ -127,9 +127,9 @@ export default function LoginPage() {
                 >
                   {loading ? 'Logowanie...' : 'Zaloguj się'}
                 </button>
-                <Link href="/register" className="mt-5 text-blue-600 dark:text-blue-500 
+                <Link href="/register" className="mt-5 text-blue-600 dark:text-blue-500
                          hover:text-blue-700 dark:hover:text-blue-600">Nie masz konta? Zarejestruj się tutaj.</Link>
-                
+                <br/>
                 <Link href="/forgotPassword" className="mt-5 text-blue-600 dark:text-blue-500 
                          hover:text-blue-700 dark:hover:text-blue-600">Zapomniałeś hasła?</Link>
                 
