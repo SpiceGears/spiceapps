@@ -5,17 +5,20 @@ import { UserInfo } from "@/models/User";
 import { Role } from "@/models/User";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import MembersTab from "@/components/admin/MembersTab";
-import { api } from "@/services/api";
+import { api, RegistrationRequest } from "@/services/api";
 import Loading from "@/components/Loading";
 import RolesTab from "@/components/admin/RolesTab";
 import ApprovalsTab from "@/components/admin/ApprovalsTab";
-import { getBackendUrl } from "../serveractions/backend-url";
+import RegistrationRequestsTab from "@/components/admin/RegistrationRequestsTab";
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState<"members" | "roles" | "approvals">("members");
+  const [activeTab, setActiveTab] = useState<
+    "members" | "roles" | "approvals" | "requests"
+  >("members");
   const [users, setUsers] = useState<UserInfo[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [unapproved, setUnapproved] = useState<UserInfo[]>([]);
+  const [requests, setRequests] = useState<RegistrationRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(false);
 
@@ -23,14 +26,17 @@ export default function Admin() {
     async function fetchData() {
       try {
         setLoading(true);
-        const [usersData, rolesData, unapprovedData] = await Promise.all([
-          api.getUsers(),
-          api.getRoles(),
-          api.getUnapprovedUsers(),
-        ]);
+        const [usersData, rolesData, unapprovedData, requestsData] =
+          await Promise.all([
+            api.getUsers(),
+            api.getRoles(),
+            api.getUnapprovedUsers(),
+            api.getRegistrationRequests(),
+          ]);
         setUsers(usersData);
         setRoles(rolesData);
         setUnapproved(unapprovedData);
+        setRequests(requestsData);
       } catch (err) {
         console.error("Failed to fetch admin data", err);
       } finally {
@@ -62,6 +68,12 @@ export default function Admin() {
         {activeTab === "approvals" && (
           <ApprovalsTab
             unapproved={unapproved}
+            onRefresh={() => setRefresh(!refresh)}
+          />
+        )}
+        {activeTab === "requests" && (
+          <RegistrationRequestsTab
+            requests={requests}
             onRefresh={() => setRefresh(!refresh)}
           />
         )}
