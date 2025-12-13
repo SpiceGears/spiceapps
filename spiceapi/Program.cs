@@ -19,13 +19,14 @@ Log.Logger = new LoggerConfiguration().MinimumLevel.Information().WriteTo.Consol
 string ConnectionString = $"{Environment.GetEnvironmentVariable("CONSTRING")}";
 try
 {
-    string dbPass = Environment.GetEnvironmentVariable("DB_PASS") ?? "test";
-    string dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+    string dbHost = Environment.GetEnvironmentVariable("DB_HOST") ?? "localhost";
+    string dbPort = Environment.GetEnvironmentVariable("DB_PORT") ?? "5433";
     string dbUser = Environment.GetEnvironmentVariable("DB_USER") ?? "spicegears";
     string dbName = Environment.GetEnvironmentVariable("DB_NAME") ?? "spicelab";
+    string dbPass = Environment.GetEnvironmentVariable("DB_PASS") ?? "test";
 
-    string connectionString = $"Host={dbHost};Database={dbName};Username={dbUser};Password={dbPass};";
-
+    string connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPass};";
+    
     Log.Information(connectionString);
     builder.Services.AddDbContext<DataContext>(options => options.UseNpgsql(connectionString));
     Log.Information("Postgres init complete");

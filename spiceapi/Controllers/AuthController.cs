@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using SpiceAPI.Auth;
 using SpiceAPI.Helpers;
 using SpiceAPI.Models;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace SpiceAPI.Controllers
 {
@@ -245,7 +243,34 @@ namespace SpiceAPI.Controllers
             await db.Users.AddAsync( user );
             await db.SaveChangesAsync();
 
+            var sourceApp = Request.Headers["X-Source-App"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(sourceApp) && sourceApp != "SpiceHub")
+            {
+                try
+                {
+                    var registrationRequest = new RegistrationRequest
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = user.Id,
+                        SourceApp = sourceApp,
+                        Username = user.Email,
+                        Email = user.Email,
+                        FirstName = user.FirstName,
+                        LastName = user.LastName,
+                        RequestedAt = DateTime.UtcNow,
+                        Status = RegistrationRequestStatus.Pending
+                    };
+                    await db.RegistrationRequests.AddAsync(registrationRequest);
+                    await db.SaveChangesAsync();
 
+                    Log.Information("Auto-created registration request for user {UserId} from {SourceApp}",
+                        user.Id, sourceApp);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error(ex, "Failed to create registration request for user {UserId}", user.Id);
+                }
+            }
 
 
             return Ok(new UserInfo(user));

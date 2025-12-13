@@ -10,11 +10,8 @@ namespace SpiceAPI
 {
     public class DataContext : DbContext
     {
-        public DataContext(DbContextOptions<DataContext> options) : base(options)
-        {
-        }
-
-
+        public DataContext(DbContextOptions<DataContext> options) : base(options) {}
+        
         public DbSet<User> Users { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<RSAParam> RSAParams { get; set; }
@@ -29,8 +26,9 @@ namespace SpiceAPI
         public DbSet<SFile> Files { get; set; }
         
         public DbSet<Notification> Notifications { get; set; }
-
         public DbSet<LoginErrorAttempt> LoginErrorAttempts { get; set; }
+        
+        public DbSet<RegistrationRequest> RegistrationRequests { get; set; }
 
 
         //w taki sposób dodajesz obiekty do przechowywania
@@ -60,7 +58,10 @@ namespace SpiceAPI
 
             modelBuilder.Entity<Notification>().HasKey(k => k.Id);
 
-
+            modelBuilder.Entity<RegistrationRequest>().HasKey(r => r.Id);
+            modelBuilder.Entity<RegistrationRequest>()
+                .HasIndex(r => new { r.UserId, r.SourceApp })
+                .IsUnique();
 
             //modelBuilder.Entity<Project>()
             //    .HasMany(s => s.Sections)
