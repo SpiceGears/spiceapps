@@ -1,23 +1,23 @@
 // components/project/ProjectCard.tsx
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { useUserById } from "@/hooks/userById"
-import { Project, ProjectStatus, ProjectUpdateEntry } from "@/models/Project"
-import { ChevronRight, User } from "lucide-react"
-import { useRouter } from "next/navigation"
-import React from "react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useUserById } from "@/hooks/useUserById";
+import { Project, ProjectStatus, ProjectUpdateEntry } from "@/models/Project";
+import { ChevronRight, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React from "react";
 
 // Helper to format dates
 function formatDate(dateString?: string | Date) {
-  if (!dateString) return "—"
+  if (!dateString) return "—";
   const date =
-    typeof dateString === "string" ? new Date(dateString) : dateString
+    typeof dateString === "string" ? new Date(dateString) : dateString;
   return date.toLocaleDateString("pl-PL", {
     year: "numeric",
     month: "short",
     day: "numeric",
-  })
+  });
 }
 
 const statusConfig: Record<ProjectStatus, { label: string; color: string }> = {
@@ -41,28 +41,25 @@ const statusConfig: Record<ProjectStatus, { label: string; color: string }> = {
     label: "Porzucony",
     color: "bg-gray-100 text-gray-800",
   },
-}
+};
 
 const getInitials = (name: string) => {
-  const parts = name.split(" ")
-  if (parts.length < 2) return parts[0]?.[0]?.toUpperCase() ?? ""
-  return (parts[0][0] + parts[1][0]).toUpperCase()
-}
+  const parts = name.split(" ");
+  if (parts.length < 2) return parts[0]?.[0]?.toUpperCase() ?? "";
+  return (parts[0][0] + parts[1][0]).toUpperCase();
+};
 
 export interface ProjectCardProps {
-  project: Project
-  events: ProjectUpdateEntry[]
+  project: Project;
+  events: ProjectUpdateEntry[];
 }
 
-export default function ProjectCard({
-  project,
-  events,
-}: ProjectCardProps) {
-  const router = useRouter()
-  const { data, loading, error } = useUserById(project.creator)
+export default function ProjectCard({ project, events }: ProjectCardProps) {
+  const router = useRouter();
+  const { user: data, loading } = useUserById(project.creator);
 
   // pick the very last update entry
-  const last = events.at(-1)
+  const last = events.at(-1);
 
   return (
     <div
@@ -89,7 +86,7 @@ export default function ProjectCard({
             <Skeleton className="h-5 w-5 rounded-full" />
             <Skeleton className="h-4 w-24 ml-1 rounded" />
           </>
-        ) : error || !data ? (
+        ) : !data ? (
           <span className="italic text-red-500 text-xs">
             nie udało się załadować autora
           </span>
@@ -114,13 +111,12 @@ export default function ProjectCard({
         ) : (
           <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
             <span>
-              Ostatnia aktualizacja:{" "}
-              {last ? formatDate(last.happenedAt) : "—"}
+              Ostatnia aktualizacja: {last ? formatDate(last.happenedAt) : "—"}
             </span>
             <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }
