@@ -77,7 +77,7 @@ export default function EditUserDialog({
                                         key={r}
                                         className="inline-flex items-center px-2 py-0.5 text-sm font-medium bg-gray-200 dark:bg-gray-700 rounded"
                                     >
-                                        {r}
+                                        {roles.find((rr) => rr.roleId === r)?.name ?? r}
                                         <button
                                             onClick={() =>
                                                 setAssignedRoles((prev) => prev.filter((x) => x !== r))
@@ -94,8 +94,8 @@ export default function EditUserDialog({
                                 roles={roles}
                                 onSelect={(role) => {
                                     setAssignedRoles((prev) => {
-                                        if (prev.includes(role.name)) return prev;
-                                        return [...prev, role.name];
+                                        if (prev.includes(role.roleId)) return prev;
+                                        return [...prev, role.roleId];
                                     });
                                 }}
                                 currentUser={currentUser}
