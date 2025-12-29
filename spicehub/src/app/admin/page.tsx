@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { UserInfo } from "@/models/User";
+import { RecoveryKey, UserInfo } from "@/models/User";
 import { Role } from "@/models/User";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import MembersTab from "@/components/admin/MembersTab";
@@ -10,10 +10,12 @@ import Loading from "@/components/Loading";
 import RolesTab from "@/components/admin/RolesTab";
 import ApprovalsTab from "@/components/admin/ApprovalsTab";
 import { getBackendUrl } from "../serveractions/backend-url";
+import RecoveryKeysTab from "@/components/admin/RecoveryKeys";
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState<"members" | "roles" | "approvals">("members");
+  const [activeTab, setActiveTab] = useState<"members" | "roles" | "approvals" | "recoveryKeys">("members");
   const [users, setUsers] = useState<UserInfo[]>([]);
+  const [recoveryKeys, setRecoveryKeys] = useState<RecoveryKey[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [unapproved, setUnapproved] = useState<UserInfo[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,14 +25,16 @@ export default function Admin() {
     async function fetchData() {
       try {
         setLoading(true);
-        const [usersData, rolesData, unapprovedData] = await Promise.all([
+        const [usersData, rolesData, unapprovedData, recoveryKeysData] = await Promise.all([
           api.getUsers(),
           api.getRoles(),
           api.getUnapprovedUsers(),
+          api.getRecoveryKeys()
         ]);
         setUsers(usersData);
         setRoles(rolesData);
         setUnapproved(unapprovedData);
+        setRecoveryKeys(recoveryKeysData);
       } catch (err) {
         console.error("Failed to fetch admin data", err);
       } finally {
@@ -62,6 +66,13 @@ export default function Admin() {
         {activeTab === "approvals" && (
           <ApprovalsTab
             unapproved={unapproved}
+            onRefresh={() => setRefresh(!refresh)}
+          />
+        )}
+        {activeTab === "recoveryKeys" && (
+          <RecoveryKeysTab
+            users={users}
+            recoveryKeys={recoveryKeys}
             onRefresh={() => setRefresh(!refresh)}
           />
         )}

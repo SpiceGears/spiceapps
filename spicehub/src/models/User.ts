@@ -75,3 +75,15 @@ export interface RecoveryResetPasswordBody
     resetCode: string,
     newPassword: string,
 }
+
+export interface CreateRecoveryKey 
+{
+    userId: string
+}
+
+export interface RecoveryKey 
+{
+    id: string,
+    code: string,
+    userId: string,    
+}

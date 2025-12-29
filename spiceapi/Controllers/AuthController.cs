@@ -381,6 +381,7 @@ namespace SpiceAPI.Controllers
                 return BadRequest(err);
             }
             user.Password = crypto.Hash(body.NewPassword);
+            db.RecoveryCodes.Remove(key); //remove the used recovery code
             await db.SaveChangesAsync();
             return Ok(new UserInfo(user));
         }

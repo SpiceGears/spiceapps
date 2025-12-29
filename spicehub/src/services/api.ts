@@ -1,7 +1,7 @@
 import { getBackendUrl } from "@/app/serveractions/backend-url";
 import { Project } from "@/models/Project";
 import { Task } from "@/models/Task";
-import { Role, UserInfo } from "@/models/User";
+import { CreateRecoveryKey, RecoveryKey, Role, UserInfo } from "@/models/User";
 import { get } from "http";
 import { getCookie } from "typescript-cookie";
 
@@ -26,6 +26,27 @@ async function apiFetch<T>(path: string, options: RequestInit = {}) {
     return res.json() as Promise<T>;
 }
 
+async function apiFetchText<T>(path: string, options: RequestInit = {}) {
+    const backend = await getBackendUrl();
+    if (!backend) throw new Error("Backend URL not found");
+    const token = getCookie("accessToken");
+    if (!token) throw new Error("Access token not found");
+
+    const res = await fetch(`${backend}${path}`, {
+        ...options,
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+            ...options.headers,
+        },
+    });
+
+    if (!res.ok) {
+        throw new Error(await res.text());
+    }
+    return res.text() as Promise<T>;
+}
+
 export const api = {
   getUsers: () => apiFetch<UserInfo[]>("/api/user/getAll"),
   getUserById: (id: string) => apiFetch<UserInfo>(`/api/user/${id}`),
@@ -35,6 +56,15 @@ export const api = {
   getTasks: (id: string) => apiFetch<Task[]>(`/api/project/${id}/getTasks`),
   getUnapprovedUsers: () => apiFetch<UserInfo[]>("/api/admin/getUnapprovedUsers"),
   getAssignedTasks: (userId: string) => apiFetch<Task[]>(`/api/user/${userId}/getAssignedTasks`),
+  getRecoveryKeys: () => apiFetch<RecoveryKey[]>(`/api/admin/recoveryKey`),
+
+  createRecoveryKey: (userId: CreateRecoveryKey) => {apiFetch<RecoveryKey>(`/api/admin/recoveryKey/create`, 
+    {
+      method: "POST",
+      body: JSON.stringify(userId)
+    })},
+
+  deleteRecoveryKey: (keyId: string) => apiFetchText<string>(`/api/admin/recoveryKey/${keyId}`, {method: "DELETE"}),
 
   approveUser: (id: string) =>
     apiFetch(`/api/user/${id}/approve`, { method: "PUT" }),
