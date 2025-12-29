@@ -8,6 +8,8 @@ import { Button } from "../ui/button";
 import { Role, UserInfo } from "@/models/User";
 import { getBackendUrl } from "@/app/serveractions/backend-url";
 import Loading from "../Loading";
+import EditUserDialog from "./EditUserDialog";
+import { api } from "@/services/api";
 
 type Props = {
   users: UserInfo[];
@@ -17,18 +19,26 @@ type Props = {
 
 export default function MembersTab({ users, roles, onRefresh }: Props) {
   const [backendUrl, setBackendUrl] = useState<string>("");
+  const [isEditingUser, setIsEditingUser] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<UserInfo | null>(null);
+  const [assignedRoles, setAssignedRoles] = useState<string[]>([]);
 
   useEffect(() => {
-    const fetchUrl = async () => {
-      const url: any = await getBackendUrl();
-      setBackendUrl(url);
-    };
-    fetchUrl();
+    getBackendUrl()
+      .then((url) => setBackendUrl(url ?? ""))
+      .catch(() => {});
   }, []);
 
-  if (!backendUrl) {
-    return <Loading />;
-  }
+  const handleUserEdit = async () => {
+    if (!currentUser) return;
+    try {
+      await api.updateUserRoles(currentUser.id, assignedRoles);
+      onRefresh();
+    } catch (err) {
+      console.error(err);
+      alert("Błąd podczas zapisu użytkownika: " + (err instanceof Error ? err.message : String(err)));
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -65,11 +75,30 @@ export default function MembersTab({ users, roles, onRefresh }: Props) {
                   <p className="text-sm text-gray-500">{user.email}</p>
                 </div>
               </div>
-              <Button>Edytuj</Button>
+              <Button
+                onClick={() => {
+                  setCurrentUser(user);
+                  setAssignedRoles(user.roles?.map((r) => r.roleId) ?? []);
+                  setIsEditingUser(true);
+                }}
+              >
+                Edytuj
+              </Button>
             </div>
           ))}
         </div>
       </Card>
+
+      <EditUserDialog
+        isEditingUser={isEditingUser}
+        setIsEditingUser={setIsEditingUser}
+        currentUser={currentUser}
+        setCurrentUser={setCurrentUser}
+        roles={roles}
+        assignedRoles={assignedRoles}
+        setAssignedRoles={setAssignedRoles}
+        handleUserEdit={handleUserEdit}
+      />
     </div>
   );
 }

@@ -34,7 +34,7 @@ export function RolePicker({
   function getUnassignedRoles(allRoles: Role[], user: UserInfo | null): Role[] {
     if (!user || !user.roles) return allRoles;
     return allRoles.filter(
-      (role) => !user.roles.some((userRole) => userRole.name === role.name)
+      (role) => !user.roles.some((userRole) => userRole.roleId === role.roleId)
     );
   }
   // Filter out roles that are already selected

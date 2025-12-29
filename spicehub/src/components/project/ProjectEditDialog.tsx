@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Project } from "@/models/Project"; // No need for ProjectPriority, ProjectStatus if not editable here
-import { useUserById } from "@/hooks/userById";
+import { useUserById } from "@/hooks/useUserById";
 
 // Define the exact shape of data the dialog will return
 interface ProjectEditDialogData {
