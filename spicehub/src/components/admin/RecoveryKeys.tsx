@@ -1,10 +1,11 @@
 import { RecoveryKey, UserInfo } from '@/models/User';
-import React from 'react'
+import React, { useState } from 'react'
 import { Input } from '../ui/input';
 import { Card } from '../ui/card';
 import { api } from '@/services/api';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
+import CreateRecoveryKeyDialog from './CreateRecoveryKeyDialog';
 
 type Props = {
   users: UserInfo[];
@@ -13,6 +14,8 @@ type Props = {
 };
 
 const RecoveryKeysTab = ({ users, recoveryKeys, onRefresh }: Props) => {
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
     const handleDeleteKey = async (key: RecoveryKey) => 
         {
             api.deleteRecoveryKey(key.id).then(() => {
@@ -23,11 +26,24 @@ const RecoveryKeysTab = ({ users, recoveryKeys, onRefresh }: Props) => {
                 toast.error("Nie udało się usunąć klucza odzyskiwania: " + err.message);
             }); 
         };
+
+    const handleCreateKey = async (userId: string) => {
+        api.createRecoveryKey({ userId }).then(() => {
+            onRefresh();
+            toast.success("Klucz odzyskiwania utworzony");
+        }).catch((err) => {
+            console.error("Failed to create recovery key", err);
+            toast.error("Nie udało się utworzyć klucza odzyskiwania: " + err.message);
+        });
+    };
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Klucze odzyskiwania</h2>
+        <div className='flex space-x-2'>
+        <Button variant={"default"} onClick={() => setIsCreateDialogOpen(true)}>Utwórz klucz</Button>
         <Input placeholder="Wyszukaj oczekujących..." className="w-64" />
+        </div>
       </div>
 
       <Card className="p-4">
@@ -75,6 +91,13 @@ const RecoveryKeysTab = ({ users, recoveryKeys, onRefresh }: Props) => {
           ))}
         </div>
       </Card>
+
+      <CreateRecoveryKeyDialog
+        isOpen={isCreateDialogOpen}
+        setIsOpen={setIsCreateDialogOpen}
+        users={users}
+        onCreate={handleCreateKey}
+      />
     </div>
   )
 }

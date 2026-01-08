@@ -1,7 +1,7 @@
 import { getBackendUrl } from "@/app/serveractions/backend-url";
 import { Project } from "@/models/Project";
 import { Task } from "@/models/Task";
-import { CreateRecoveryKey, RecoveryKey, Role, UserInfo } from "@/models/User";
+import { CreateRecoveryKey, RecoveryKey, RecoveryResetPasswordBody, Role, UserInfo } from "@/models/User";
 import { get } from "http";
 import { getCookie } from "typescript-cookie";
 
@@ -58,13 +58,27 @@ export const api = {
   getAssignedTasks: (userId: string) => apiFetch<Task[]>(`/api/user/${userId}/getAssignedTasks`),
   getRecoveryKeys: () => apiFetch<RecoveryKey[]>(`/api/admin/recoveryKey`),
 
-  createRecoveryKey: (userId: CreateRecoveryKey) => {apiFetch<RecoveryKey>(`/api/admin/recoveryKey/create`, 
+  createRecoveryKey: (userId: CreateRecoveryKey) =>  apiFetch<RecoveryKey>(`/api/admin/recoveryKey/create`, 
     {
       method: "POST",
       body: JSON.stringify(userId)
-    })},
+    }),
 
   deleteRecoveryKey: (keyId: string) => apiFetchText<string>(`/api/admin/recoveryKey/${keyId}`, {method: "DELETE"}),
+
+
+  recoverPasswordViaKey: async (recoveryResetBody: RecoveryResetPasswordBody) => {
+    const backend = await getBackendUrl();
+    if (!backend) { throw new Error("Backend URL not found"); }
+
+    return fetch(`${backend}/api/auth/recoveryResetPassword`, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "PUT",
+      body: JSON.stringify(recoveryResetBody)
+    });
+  },
 
   approveUser: (id: string) =>
     apiFetch(`/api/user/${id}/approve`, { method: "PUT" }),
