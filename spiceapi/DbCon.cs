@@ -32,7 +32,7 @@ namespace SpiceAPI
 
         public DbSet<LoginErrorAttempt> LoginErrorAttempts { get; set; }
 
-
+        public DbSet<UserRecoveryCode> RecoveryCodes { get; set; }
         //w taki sposób dodajesz obiekty do przechowywania
         //public DbSet<obiekt> zestawObiektów { get; set; };
 
@@ -59,6 +59,8 @@ namespace SpiceAPI
                 .IsRequired().OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Notification>().HasKey(k => k.Id);
+
+            modelBuilder.Entity<UserRecoveryCode>().HasKey(r => r.Id);
 
 
 

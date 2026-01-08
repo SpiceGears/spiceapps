@@ -79,6 +79,6 @@ export const config = {
      * - /register - registration page
      * - _next (Next.js internals like static files)
      */
-    '/((?!login|api|maintanance|unapproved|logout|register|_next|favicon.ico).*)',
+    '/((?!login|api|maintanance|unapproved|forgotPassword|logout|register|_next|favicon.ico).*)',
   ],
 };

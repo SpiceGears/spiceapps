@@ -162,4 +162,14 @@ namespace SpiceAPI.Models
         Mentor = 10,
         
     }
+
+    public class UserRecoveryCode 
+    {
+        [Key]
+        public Guid Id { get; set; }
+        
+        
+        public string Code { get; set; }
+        public Guid UserId { get; set; }
+    }
 }
