@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Project } from "@/models/Project"
 import { Task } from "@/models/Task"
-import { useUserById } from "@/hooks/userById"
+import { useUserById } from "@/hooks/useUserById"
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
@@ -216,13 +216,13 @@ export default function Dashboard({
                                   <>
                                     <Avatar className="h-5 w-5">
                                       <AvatarFallback>
-                                        {u?.data?.firstName?.[0]}
-                                        {u?.data?.lastName?.[0]}
+                                        {u?.user?.firstName?.[0]}
+                                        {u?.user?.lastName?.[0]}
                                       </AvatarFallback>
                                     </Avatar>
                                     <span className="truncate">
-                                      {u?.data?.firstName}{" "}
-                                      {u?.data?.lastName}
+                                      {u?.user?.firstName}{" "}
+                                      {u?.user?.lastName}
                                     </span>
                                   </>
                                 )
@@ -240,8 +240,8 @@ export default function Dashboard({
                                                dark:border-gray-900"
                                   >
                                     <AvatarFallback>
-                                      {u?.data?.firstName?.[0]}
-                                      {u?.data?.lastName?.[0]}
+                                      {u?.user?.firstName?.[0]}
+                                      {u?.user?.lastName?.[0]}
                                     </AvatarFallback>
                                   </Avatar>
                                 )

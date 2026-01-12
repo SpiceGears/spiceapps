@@ -48,7 +48,7 @@ export function ProjectEditDialog({
   onSave,
 }: ProjectEditDialogProps) {
   const userId = project?.creator ?? "";
-  const { data, loading, error } = useUserById(userId);
+  const { user, loading} = useUserById(userId);
 
   // Only states for editable fields
   const [name, setName] = useState(project?.name ?? "");
@@ -111,7 +111,7 @@ export function ProjectEditDialog({
                   <Avatar className="w-8 h-8">
                     <AvatarFallback>
                       {getInitials(
-                        `${data?.firstName ?? ""} ${data?.lastName ?? ""}`
+                        `${user?.firstName ?? ""} ${user?.lastName ?? ""}`
                       )}
                     </AvatarFallback>
                   </Avatar>
@@ -119,11 +119,9 @@ export function ProjectEditDialog({
 
                 {loading ? (
                   <Skeleton className="h-4 w-32" />
-                ) : error ? (
-                  <span className="text-sm text-red-500">Błąd ładowania</span>
                 ) : (
                   <span className="text-sm text-gray-900 dark:text-gray-100">
-                    {data?.firstName} {data?.lastName}
+                    {user?.firstName} {user?.lastName}
                   </span>
                 )}
               </div>

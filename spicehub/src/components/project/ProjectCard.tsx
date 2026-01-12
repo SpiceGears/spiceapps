@@ -2,7 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useUserById } from "@/hooks/userById"
+import { useUserById } from "@/hooks/useUserById"
 import { Project, ProjectStatus, ProjectUpdateEntry } from "@/models/Project"
 import { ChevronRight, User } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -59,7 +59,7 @@ export default function ProjectCard({
   events,
 }: ProjectCardProps) {
   const router = useRouter()
-  const { data, loading, error } = useUserById(project.creator)
+  const { user, loading} = useUserById(project.creator)
 
   // pick the very last update entry
   const last = events.at(-1)
@@ -89,7 +89,7 @@ export default function ProjectCard({
             <Skeleton className="h-5 w-5 rounded-full" />
             <Skeleton className="h-4 w-24 ml-1 rounded" />
           </>
-        ) : error || !data ? (
+        ) : !user ? (
           <span className="italic text-red-500 text-xs">
             nie udało się załadować autora
           </span>
@@ -98,11 +98,11 @@ export default function ProjectCard({
             <Avatar className="w-5 h-5">
               <AvatarImage src={undefined} />
               <AvatarFallback className="text-xs">
-                {getInitials(`${data.firstName} ${data.lastName}`)}
+                {getInitials(`${user.firstName} ${user.lastName}`)}
               </AvatarFallback>
             </Avatar>
             <span>
-              {data.firstName} {data.lastName}
+              {user.firstName} {user.lastName}
             </span>
           </>
         )}

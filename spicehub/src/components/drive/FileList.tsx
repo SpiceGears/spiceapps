@@ -1,7 +1,7 @@
 'use client';
 
 import FileIcon from './FileIcon';
-import { useUserById } from '@/hooks/userById';
+import { useUserById } from '@/hooks/useUserById';
 import { SFile } from '@/models/SFile';
 
 interface FileListProps {
@@ -49,7 +49,7 @@ export default function FileList({
             </span>
           </div>
           <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
-            {userData.data?.firstName} {userData.data?.lastName}
+            {userData.user?.firstName} {userData.user?.lastName}
           </div>
           {/* <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
             {file.modifiedAt.toLocaleDateString()}
