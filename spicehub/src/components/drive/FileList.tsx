@@ -1,7 +1,7 @@
 'use client';
 
 import FileIcon from './FileIcon';
-import { useUserById } from '@/hooks/userById';
+import { useUserById } from '@/hooks/useUserById';
 import { SFile } from '@/models/SFile';
 
 interface FileListProps {

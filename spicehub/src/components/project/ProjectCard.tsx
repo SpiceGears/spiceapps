@@ -2,7 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useUserById } from "@/hooks/userById"
+import { useUserById } from "@/hooks/useUserById"
 import { Project, ProjectStatus, ProjectUpdateEntry } from "@/models/Project"
 import { ChevronRight, User } from "lucide-react"
 import { useRouter } from "next/navigation"

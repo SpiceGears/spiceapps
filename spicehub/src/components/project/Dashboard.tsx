@@ -13,7 +13,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Project } from "@/models/Project"
 import { Task } from "@/models/Task"
-import { useUserById } from "@/hooks/userById"
+import { useUserById } from "@/hooks/useUserById"
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
