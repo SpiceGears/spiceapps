@@ -49,7 +49,7 @@ export default function FileList({
             </span>
           </div>
           <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
-            {userData.user?.firstName} {userData.user?.lastName}
+            {userData.data?.firstName} {userData.data?.lastName}
           </div>
           {/* <div className="col-span-2 text-sm text-gray-600 dark:text-gray-400">
             {file.modifiedAt.toLocaleDateString()}

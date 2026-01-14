@@ -216,13 +216,13 @@ export default function Dashboard({
                                   <>
                                     <Avatar className="h-5 w-5">
                                       <AvatarFallback>
-                                        {u?.user?.firstName?.[0]}
-                                        {u?.user?.lastName?.[0]}
+                                        {u?.data?.firstName?.[0]}
+                                        {u?.data?.lastName?.[0]}
                                       </AvatarFallback>
                                     </Avatar>
                                     <span className="truncate">
-                                      {u?.user?.firstName}{" "}
-                                      {u?.user?.lastName}
+                                      {u?.data?.firstName}{" "}
+                                      {u?.data?.lastName}
                                     </span>
                                   </>
                                 )
@@ -240,8 +240,8 @@ export default function Dashboard({
                                                dark:border-gray-900"
                                   >
                                     <AvatarFallback>
-                                      {u?.user?.firstName?.[0]}
-                                      {u?.user?.lastName?.[0]}
+                                      {u?.data?.firstName?.[0]}
+                                      {u?.data?.lastName?.[0]}
                                     </AvatarFallback>
                                   </Avatar>
                                 )
