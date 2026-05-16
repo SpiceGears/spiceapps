@@ -14,20 +14,6 @@ const AvatarGetSet = (props: {user: UserInfo | null}) => {
   
   async function deleteAvatar() {
     setLoading(true);
-    const backend = await getBackendUrl();
-    if (!backend) 
-    {
-        toast("Error", {description:"SpiceHub is offline"});
-        setLoading(false);
-        throw new Error("Backend is not set!")
-    }
-    const at = getCookie("accessToken");
-    if (!at) 
-    {
-        toast("Error", {description:"An unknown error occured, login again"});
-        setLoading(false);
-        throw new Error("access token is not set!")
-    }
     const res = await fetch(`${backend}/api/user/${props.user?.id}/avatar`, 
         {
             method: 'DELETE',

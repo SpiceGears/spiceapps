@@ -70,11 +70,7 @@ const uncompletedTasksCount = assignedTasks.filter((task) => !task.finished).len
         <div className="space-y-6 max-w-4xl mx-auto">
           {/* Season widget */}
           <SeasonCard
-            program="First Global Challenge"
-            seasonName="Eco Equilibrium"
-            seasonYear={2025}
-            kickoffDate="2025-10-29"
-            seasonUrl="https://first.global/fgc/"
+            isOffseason={true}
           />
 
           <SpicelabCard
