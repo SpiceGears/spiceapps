@@ -7,12 +7,28 @@ import { getBackendUrl } from '../serveractions/backend-url';
 import { toast } from 'sonner';
 import { getCookie } from 'typescript-cookie';
 import { UserInfo } from '@/models/User';
+import { api } from "@/services/api"
 
 const AvatarGetSet = (props: {user: UserInfo | null}) => {
   const avatarInput = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   
-  async function deleteAvatar() {
+  async function deleteAvatarOld() {
+    const backend = await getBackendUrl();
+    if (!backend) 
+    {
+        toast("Error", {description:"SpiceHub is offline"});
+        setLoading(false);
+        throw new Error("Backend is not set!")
+    }
+    const at = getCookie("accessToken");
+    if (!at) 
+    {
+        toast("Error", {description:"An unknown error occured, login again"});
+        setLoading(false);
+        throw new Error("access token is not set!")
+    }
+    
     setLoading(true);
     const res = await fetch(`${backend}/api/user/${props.user?.id}/avatar`, 
         {
@@ -83,7 +99,7 @@ const AvatarGetSet = (props: {user: UserInfo | null}) => {
           <p className="text-sm">Avatar musi być w formacie .jpeg albo .jpg</p>
           <span className="inline space-x-2">
               <Button className="" onClick={() => setAvatar()} disabled={loading}>Ustaw avatar</Button>
-              <Button className="" variant={"destructive"} onClick={() => deleteAvatar()} disabled={loading}>Usuń avatar</Button>
+              <Button className="" variant={"destructive"} onClick={() => api.deleteAvatar((props.user != undefined) ? (props.user?.id) : "")} disabled={loading}>Usuń avatar</Button>
           </span>
       </div>
   )
