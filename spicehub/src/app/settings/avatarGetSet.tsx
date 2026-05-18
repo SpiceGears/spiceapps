@@ -7,13 +7,13 @@ import { getBackendUrl } from '../serveractions/backend-url';
 import { toast } from 'sonner';
 import { getCookie } from 'typescript-cookie';
 import { UserInfo } from '@/models/User';
+import { api } from "@/services/api"
 
 const AvatarGetSet = (props: {user: UserInfo | null}) => {
   const avatarInput = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   
   async function deleteAvatar() {
-    setLoading(true);
     const backend = await getBackendUrl();
     if (!backend) 
     {
@@ -28,6 +28,8 @@ const AvatarGetSet = (props: {user: UserInfo | null}) => {
         setLoading(false);
         throw new Error("access token is not set!")
     }
+    
+    setLoading(true);
     const res = await fetch(`${backend}/api/user/${props.user?.id}/avatar`, 
         {
             method: 'DELETE',

@@ -1,5 +1,3 @@
-// app/maintenance/page.tsx
-
 import React from 'react';
 
 type Props = {
