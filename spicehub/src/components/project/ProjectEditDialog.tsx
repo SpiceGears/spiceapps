@@ -48,7 +48,7 @@ export function ProjectEditDialog({
   onSave,
 }: ProjectEditDialogProps) {
   const userId = project?.creator ?? "";
-  const { user, loading } = useUserById(userId);
+  const { data: user, loading } = useUserById(userId);
 
   // Only states for editable fields
   const [name, setName] = useState(project?.name ?? "");

@@ -59,7 +59,7 @@ export default function ProjectCard({
   events,
 }: ProjectCardProps) {
   const router = useRouter()
-  const { user, loading } = useUserById(project.creator)
+  const { data, loading } = useUserById(project.creator)
 
   // pick the very last update entry
   const last = events.at(-1)
@@ -89,16 +89,16 @@ export default function ProjectCard({
             <Skeleton className="h-5 w-5 rounded-full" />
             <Skeleton className="h-4 w-24 ml-1 rounded" />
           </>
-        ) : user ? (
+        ) : data ? (
           <>
             <Avatar className="w-5 h-5">
               <AvatarImage src={undefined} />
               <AvatarFallback className="text-xs">
-                {getInitials(`${user.firstName} ${user.lastName}`)}
+                {getInitials(`${data.firstName} ${data.lastName}`)}
               </AvatarFallback>
             </Avatar>
             <span>
-              {user.firstName} {user.lastName}
+              {data.firstName} {data.lastName}
             </span>
           </>
         ) : null}
