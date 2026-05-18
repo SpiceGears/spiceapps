@@ -13,7 +13,7 @@ const AvatarGetSet = (props: {user: UserInfo | null}) => {
   const avatarInput = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   
-  async function deleteAvatarOld() {
+  async function deleteAvatar() {
     const backend = await getBackendUrl();
     if (!backend) 
     {
@@ -99,7 +99,7 @@ const AvatarGetSet = (props: {user: UserInfo | null}) => {
           <p className="text-sm">Avatar musi być w formacie .jpeg albo .jpg</p>
           <span className="inline space-x-2">
               <Button className="" onClick={() => setAvatar()} disabled={loading}>Ustaw avatar</Button>
-              <Button className="" variant={"destructive"} onClick={() => api.deleteAvatar((props.user != undefined) ? (props.user?.id) : "")} disabled={loading}>Usuń avatar</Button>
+              <Button className="" variant={"destructive"} onClick={() => deleteAvatar()} disabled={loading}>Usuń avatar</Button>
           </span>
       </div>
   )
