@@ -133,6 +133,14 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Zawsze ukrywaj porzucone i ukończone projekty
+  const [hiddenStatuses, setHiddenStatuses] = useState<ProjectStatus[]>([
+    ProjectStatus.Abandoned,
+    ProjectStatus.Finished,
+  ])
+
+  const visibleProjects = projects.filter((p) => !hiddenStatuses.includes(p.status))
+
   useEffect(() => {
     async function loadAll() {
       try {
@@ -397,7 +405,7 @@ export default function HomePage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 gap-4 sm:gap-6 mt-4">
-              {projects.map((p) => (
+              {visibleProjects.map((p) => (
                 <Link key={p.id} href={`/spicelab/project/${p.id}`}>
                   <div
                     className="
