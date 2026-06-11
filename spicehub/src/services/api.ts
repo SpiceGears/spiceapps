@@ -59,6 +59,7 @@ export const api = {
   getAssignedTasks: (userId: string) => apiFetch<Task[]>(`/api/user/${userId}/getAssignedTasks`),
   getRecoveryKeys: () => apiFetch<RecoveryKey[]>(`/api/admin/recoveryKey`),
   logout: () => apiFetch("/api/auth/logout"),
+  getUserAssignedTasks: (userId: string) => apiFetch<Task[]>(`/api/user/${userId}/getAssignedTasks`),
 
   // POST
   createRecoveryKey: (userId: CreateRecoveryKey) => 

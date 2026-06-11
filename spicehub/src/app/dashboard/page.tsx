@@ -72,11 +72,6 @@ const uncompletedTasksCount = assignedTasks.filter((task) => !task.finished).len
           <SeasonCard
             isOffseason={true}
           />
-
-          <SpicelabCard
-            uncompletedTasksCount={uncompletedTasksCount}
-            projectsCount={projectsCount}
-          />
         </div>
       </div>
     </div>

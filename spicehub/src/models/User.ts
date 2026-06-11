@@ -87,3 +87,13 @@ export interface RecoveryKey
     code: string,
     userId: string,    
 }
+
+export interface RegisterBody
+{
+    email: string,
+    password: string,
+    name: string,
+    surname: string,
+    birthday: string,
+    department: string,
+}
